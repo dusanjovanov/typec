@@ -14,6 +14,4 @@ export type Autocomplete<T extends string> = T | (string & {});
 
 export type TextLike = string | number;
 
-export type Condition = TextLike;
-
 export type AutocompletedCType = Autocomplete<CType>;
