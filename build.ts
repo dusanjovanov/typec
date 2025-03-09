@@ -4,6 +4,8 @@ import dts from "bun-plugin-dts";
 const defaultBuildConfig: BuildConfig = {
   entrypoints: ["./src/index.ts"],
   outdir: "./dist",
+  minify: true,
+  sourcemap: "external",
 };
 
 await Promise.all([
@@ -12,14 +14,10 @@ await Promise.all([
     plugins: [dts()],
     format: "esm",
     naming: "[dir]/[name].js",
-    minify: true,
-    sourcemap: "external",
   }),
   Bun.build({
     ...defaultBuildConfig,
     format: "cjs",
     naming: "[dir]/[name].cjs",
-    minify: true,
-    sourcemap: "external",
   }),
 ]);
