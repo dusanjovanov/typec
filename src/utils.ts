@@ -28,26 +28,14 @@ export const joinWithPrefix = (arr: TextLike[], prefix: string, sep = " ") => {
   );
 };
 
-/** Return statement */
 export const _return = (value: TextLike) => `return ${value};`;
 
-/**
- * Returns a while loop statement.
- */
 export const _while = (condition: TextLike, body: string[]) => {
   return `while(${condition})${block(body)}`;
 };
 
-/**
- * Returns a string meant to be used as a string literal in c code.
- *
- * Surrounds the string with quotes and automatically escapes all quotes inside of the string.
- */
 export const str = (s: string) => `"${s.replaceAll(/"/g, `\\"`)}"`;
 
-/**
- * Returns a type cast expression.
- */
 export const cast = (type: AutocompletedCType, exp: string) => {
   return `(${type})(${exp})`;
 };

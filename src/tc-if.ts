@@ -26,17 +26,10 @@ const condBlock = (type: CondBlockType, cond: TextLike, body: string[]) => {
   return `${type}(${cond})${block(body)}`;
 };
 
-/**
- * Starts control block if statement that can be chained with else if and else.
- * Finally returns a string with `.toString()`.
- */
 export const _if = (cond: TextLike, body: string[]) => {
   return new TcIf(cond, body);
 };
 
-/**
- * Returns just the if block.
- */
 export const ifOnly = (cond: TextLike, body: string[]) => {
   return condBlock("if", cond, body);
 };
