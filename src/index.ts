@@ -152,6 +152,8 @@ export const tc = {
   bitXorAssign,
   bitLeftAssign,
   bitRightAssign,
+  /** -> operator */
   dotRef,
+  /** . ( dot ) operator */
   dotVal,
 };
