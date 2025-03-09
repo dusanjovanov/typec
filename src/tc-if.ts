@@ -3,16 +3,12 @@ import type { TextLike } from "./types";
 
 export class TcIf {
   constructor(cond: TextLike, body: string[]) {
-    this._condBlock("if", cond, body);
+    this.str.push(condBlock("if", cond, body));
   }
   str: string[] = [];
 
-  private _condBlock(type: CondBlockType, cond: TextLike, body: string[]) {
-    this.str.push(condBlock(type, cond, body));
-  }
-
   _elseif(cond: TextLike, body: string[]) {
-    this._condBlock("else if", cond, body);
+    this.str.push(condBlock("else if", cond, body));
     return this;
   }
 
