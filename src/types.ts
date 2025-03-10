@@ -1,5 +1,3 @@
-import type { PointerType, VariableType } from "./type";
-
 export type TypeSpecifier =
   | "bool"
   | "char"
@@ -43,11 +41,7 @@ export type AutoPointerQualifier = Autocomplete<PointerQualifier>;
 
 export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 
-export type FuncParamType = VariableType | PointerType;
-
-export type FuncReturnType = AutoSpecifier;
-
-export type FuncParam = [type: FuncParamType, name: string];
+export type FuncParam = [type: AutoSpecifier, name: string];
 
 export type StructMembers = { [key: string]: AutoSpecifier };
 

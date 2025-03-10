@@ -3,64 +3,19 @@ import type {
   AutoQualifier,
   AutoSpecifier,
 } from "./types";
-import { emptyFalsy, fillArray } from "./utils";
+import { emptyFalsy } from "./utils";
 
 export const Type = {
   var(type: AutoSpecifier, qualifier?: AutoQualifier) {
-    return new VariableType({ type, qualifier });
+    return `${emptyFalsy(qualifier, (q) => `${q} `)}${type}`;
   },
   pointer(type: AutoSpecifier, qualifier?: AutoPointerQualifier) {
-    return new PointerType({ type, qualifier });
+    return `${type}${emptyFalsy(qualifier, (q) => ` ${q}`)}`;
   },
-  struct(name: string) {
-    return new StructType(name);
+  struct(name: string, qualifier?: AutoQualifier) {
+    return Type.var(`struct ${name}`, qualifier);
+  },
+  structPointer(name: string, qualifer?: AutoPointerQualifier) {
+    return Type.pointer(`struct ${name}`, qualifer);
   },
 };
-
-export class VariableType {
-  constructor({
-    type,
-    qualifier,
-  }: {
-    type: AutoSpecifier;
-    qualifier?: AutoQualifier;
-  }) {
-    this.type = type;
-    this.qualifier = qualifier;
-    this.full = `${emptyFalsy(qualifier)}${type}`;
-  }
-  type;
-  qualifier;
-  full;
-}
-
-export class PointerType {
-  constructor({
-    type,
-    qualifier,
-    level = 1,
-  }: {
-    type: AutoSpecifier;
-    qualifier?: AutoPointerQualifier;
-    level?: number;
-  }) {
-    this.type = type;
-    this.qualifier = qualifier;
-    this.full = `${type}${fillArray(level, () => "*")}${emptyFalsy(
-      qualifier,
-      (q) => ` ${q}`
-    )}`;
-  }
-  type;
-  qualifier;
-  full;
-}
-
-export class StructType {
-  constructor(structName: string) {
-    this.structName = structName;
-    this.full = `struct ${structName}`;
-  }
-  structName;
-  full;
-}

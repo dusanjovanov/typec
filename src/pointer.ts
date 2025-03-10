@@ -1,15 +1,13 @@
-import { value } from "./operators";
-import type { PointerType } from "./type";
+import { assign, value } from "./operators";
+import type { AutoSpecifier } from "./types";
 
-export class Pointer {
-  constructor(type: PointerType, name: string) {
-    this.name = name;
-    this.type = type;
-    this.value = value(name);
-  }
-  name;
-  type;
-  value;
-
-  //
-}
+export const createPointer = (type: AutoSpecifier, name: string) => {
+  return {
+    name,
+    type,
+    value: value(name),
+    assignRef: (ref: string) => {
+      return assign(name, ref);
+    },
+  };
+};
