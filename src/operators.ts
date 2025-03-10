@@ -1,4 +1,4 @@
-import type { AutocompletedCType, StringLike } from "./types";
+import type { AutoSpecifier, StringLike } from "./types";
 
 const preUn = (op: string) => (name: string) => `${op}${name}`;
 const postUn = (op: string) => (name: string) => `${name}${op}`;
@@ -85,7 +85,7 @@ export const bitLeftAssign = binOp("<<=");
 
 export const bitRightAssign = binOp(">>=");
 
-export const cast = (type: AutocompletedCType, exp: string) => {
+export const cast = (type: AutoSpecifier, exp: string) => {
   return `(${type})(${exp})`;
 };
 

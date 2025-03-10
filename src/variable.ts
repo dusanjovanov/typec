@@ -1,31 +1,13 @@
-import { ref, assign } from "./operators";
-import { pointer } from "./pointer";
-import type { AutocompletedCType, StringLike } from "./types";
+import { ref } from "./operators";
+import type { VariableType } from "./type";
 
-export const varDeclare = (type: AutocompletedCType, name: string) => {
-  return `${type} ${name}`;
-};
-
-export const varInit = (
-  type: AutocompletedCType,
-  name: string,
-  value: StringLike
-) => {
-  return assign(varDeclare(type, name), value);
-};
-
-export const variable = (type: AutocompletedCType, name: string) => {
-  return {
-    declare: varDeclare(type, name),
-    init: (value: StringLike) => varInit(type, name, value),
-    name,
-    type,
-    ref: ref(name),
-    assign: (value: StringLike) => {
-      return assign(name, value);
-    },
-    pointer: (name: string) => {
-      return pointer(type, name);
-    },
-  };
-};
+export class Variable {
+  constructor(type: VariableType, name: string) {
+    this.name = name;
+    this.type = type;
+    this.ref = ref(name);
+  }
+  name;
+  type;
+  ref;
+}

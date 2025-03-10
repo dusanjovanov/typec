@@ -1,10 +1,10 @@
 import { assign, ref, value } from "./operators";
 import { pointer } from "./pointer";
-import type { AutocompletedCType, StringLike } from "./types";
+import type { AutoSpecifier, StringLike } from "./types";
 import { fillArray, join } from "./utils";
 
 export const arrType = (
-  elementType: AutocompletedCType,
+  elementType: AutoSpecifier,
   name: string,
   len: number
 ) => {
@@ -12,7 +12,7 @@ export const arrType = (
 };
 
 export const arrDeclare = (
-  elementType: AutocompletedCType,
+  elementType: AutoSpecifier,
   name: string,
   len: number
 ) => {
@@ -20,14 +20,14 @@ export const arrDeclare = (
 };
 
 export const arrInit = (
-  elementType: AutocompletedCType,
+  elementType: AutoSpecifier,
   name: string,
   values: StringLike[]
 ) => {
   return assign(`${elementType} ${name}[]`, `{${join(values, ",")}}`);
 };
 
-export const arr = (elementType: AutocompletedCType, name: string) => {
+export const arr = (elementType: AutoSpecifier, name: string) => {
   return {
     declare: (len: number) => arrDeclare(elementType, name, len),
     init: (value: StringLike[]) => arrInit(elementType, name, value),
@@ -44,7 +44,7 @@ export const arr = (elementType: AutocompletedCType, name: string) => {
 };
 
 export const arrPointerType = (
-  elementType: AutocompletedCType,
+  elementType: AutoSpecifier,
   len: number,
   level = 1
 ) => {
@@ -52,7 +52,7 @@ export const arrPointerType = (
 };
 
 export const arrPointerDeclare = (
-  elementType: AutocompletedCType,
+  elementType: AutoSpecifier,
   name: string,
   len: number,
   level = 1
@@ -61,7 +61,7 @@ export const arrPointerDeclare = (
 };
 
 export const arrPointerInit = (
-  elementType: AutocompletedCType,
+  elementType: AutoSpecifier,
   name: string,
   len: number,
   arrRef: string,
@@ -71,7 +71,7 @@ export const arrPointerInit = (
 };
 
 export const arrPointer = (
-  elementType: AutocompletedCType,
+  elementType: AutoSpecifier,
   name: string,
   len: number,
   level = 1

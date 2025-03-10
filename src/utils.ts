@@ -44,3 +44,21 @@ export const _while = (condition: StringLike, body: string[]) => {
 };
 
 export const str = (s: string) => `"${s.replaceAll(/"/g, `\\"`)}"`;
+
+// export const qualifiedType = (fullType: VariableFullType) => {
+//   return `${emptyFalsy(
+//     fullType.qualifiers && fullType.qualifiers.length > 0,
+//     () => `${join(fullType.qualifiers!)} `
+//   )}${fullType.type}`;
+// };
+
+// export const qualifiedPointerType = (fullType: PointerFullType, level = 1) => {
+//   return `${qualifiedType({
+//     kind: "variable",
+//     type: fullType.type,
+//     qualifiers: fullType.qualifiers,
+//   })}${fillArray(level, () => "*")} ${emptyFalsy(
+//     fullType.pointerQualifiers && fullType.pointerQualifiers.length > 0,
+//     () => `${join(fullType.pointerQualifiers!)}`
+//   )}`;
+// };
