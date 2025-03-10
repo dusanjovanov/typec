@@ -1,5 +1,6 @@
 import { block, chunk, curly } from "./chunk";
-import { callFunc, func, funcProto } from "./func";
+import { _if, ifOnly } from "./conditional";
+import { _return, call, func, funcProto, funcImpl } from "./func";
 import { gcc } from "./gcc";
 import { includeRel, includeSys } from "./include";
 import {
@@ -16,10 +17,11 @@ import {
   bitRightAssign,
   bitXor,
   bitXorAssign,
+  byPointer,
+  byValue,
+  cast,
   div,
   divAssign,
-  dotRef,
-  dotVal,
   eq,
   gt,
   gte,
@@ -42,10 +44,10 @@ import {
   preInc,
   ternary,
 } from "./operators";
+import { funcPointerDeclare } from "./pointer";
 import { std } from "./std";
-import { _if, ifOnly } from "./tc-if";
-import { _var, arrInit, arrVar } from "./tc-var";
-import { _return, _while, cast, join, joinWithPrefix, str } from "./utils";
+import { _while, join, joinWithPrefix, str } from "./utils";
+import { arrInit, arrVariable, variable } from "./variable";
 
 export * from "./types";
 
@@ -61,7 +63,7 @@ export const tc = {
   /** #include <> */
   includeSys,
   /** Returns a variable declaration statement and optionally an assignment. */
-  _var,
+  _var: variable,
   /**
    * Starts control block if statement that can be chained with else if and else.
    * Finally returns a string with `.toString()`.
@@ -76,13 +78,19 @@ export const tc = {
    */
   _while,
   /** Returns a function prototype statement */
-  funcProto,
-  /** Returns a function implementation statement */
-  func,
+  funcProto: funcProto,
+  /** Returns a function definition statement */
+  funcDef: funcImpl,
+  funcPointerDeclare,
   /**
    * Returns a function call expression.
    */
-  callFunc,
+  call,
+  /**
+   * Returns an object which has the definition, prototype and a call helper for that function.
+   */
+  func,
+
   /** Return statement */
   _return,
   /**
@@ -98,12 +106,12 @@ export const tc = {
   /**
    * Returns an array variable declaration without initialization.
    */
-  arrVar,
+  arrVar: arrVariable,
   /**
    * Returns an array variable declaration with initialization.
    */
   arrInit,
-  /** Shortcuts for standard C modules */
+  /** Shortcuts for standard C libraries */
   std,
   join,
   joinWithPrefix,
@@ -153,7 +161,7 @@ export const tc = {
   bitLeftAssign,
   bitRightAssign,
   /** -> operator */
-  dotRef,
+  dotRef: byPointer,
   /** . ( dot ) operator */
-  dotVal,
+  dotVal: byValue,
 };

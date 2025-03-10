@@ -1,5 +1,5 @@
 import { block } from "./chunk";
-import type { AutocompletedCType, TextLike } from "./types";
+import type { StringLike } from "./types";
 
 /**
  * Returns an empty string when the value is falsy.
@@ -17,33 +17,30 @@ export const emptyFalsy = <T>(
     : "";
 };
 
-export const join = (arr: TextLike[], sep = " ") => {
-  return arr.filter(Boolean).join(sep);
+export const join = (arr: StringLike[], sep = " ") => {
+  return arr.filter((v) => v != null).join(sep);
 };
 
-export const joinWithPrefix = (arr: TextLike[], prefix: string, sep = " ") => {
+export const joinWithPrefix = (
+  arr: StringLike[],
+  prefix: string,
+  sep = " "
+) => {
   return join(
     arr.map((e) => `${prefix}${e}`),
     sep
   );
 };
 
-export const _return = (value: TextLike) => `return ${value};`;
+export const fillArray = <T>(
+  length: number,
+  callback: (index: number) => T
+) => {
+  return Array.from({ length }).map((_, index) => callback(index));
+};
 
-export const _while = (condition: TextLike, body: string[]) => {
+export const _while = (condition: StringLike, body: string[]) => {
   return `while(${condition})${block(body)}`;
 };
 
 export const str = (s: string) => `"${s.replaceAll(/"/g, `\\"`)}"`;
-
-export const cast = (type: AutocompletedCType, exp: string) => {
-  return `(${type})(${exp})`;
-};
-
-export const argsWithVarArgs = (startArgs: TextLike[], varArgs: TextLike[]) => {
-  const _args = [...startArgs];
-  if (varArgs.length > 0) {
-    _args.push(...varArgs);
-  }
-  return _args;
-};

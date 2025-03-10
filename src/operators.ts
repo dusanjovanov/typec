@@ -1,4 +1,4 @@
-import type { TextLike } from "./types";
+import type { AutocompletedCType, StringLike } from "./types";
 
 const preUn = (op: string) => (name: string) => `${op}${name}`;
 const postUn = (op: string) => (name: string) => `${name}${op}`;
@@ -15,8 +15,17 @@ export const not = preUn("!");
 
 export const bitNot = preUn("~");
 
-const binOp = (op: string) => (left: string, right: TextLike) =>
-  `${left}${op}${right}`;
+export const sizeOf = (exp: string) => `sizeof(${exp})`;
+
+export const alignOf = (exp: string) => `alignof(${exp})`;
+
+export const value = (pointerName: string) => `*${pointerName}`;
+
+export const ref = preUn("&");
+
+const binOp = (op: string) => (name: string, valueExp: StringLike) => {
+  return `${name}${op}${valueExp}`;
+};
 
 export const modulo = binOp("%");
 
@@ -76,10 +85,14 @@ export const bitLeftAssign = binOp("<<=");
 
 export const bitRightAssign = binOp(">>=");
 
-export const dotVal = binOp("->");
+export const cast = (type: AutocompletedCType, exp: string) => {
+  return `(${type})(${exp})`;
+};
 
-export const dotRef = binOp(".");
-
-export const ternary = (condition: string, exp1: TextLike, exp2: TextLike) => {
+export const ternary = (
+  condition: string,
+  exp1: StringLike,
+  exp2: StringLike
+) => {
   return `${condition}?${exp1}:${exp2}`;
 };

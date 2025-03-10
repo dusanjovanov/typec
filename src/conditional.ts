@@ -1,13 +1,13 @@
 import { block, chunk, curly } from "./chunk";
-import type { TextLike } from "./types";
+import type { StringLike } from "./types";
 
 export class TcIf {
-  constructor(cond: TextLike, body: string[]) {
+  constructor(cond: StringLike, body: string[]) {
     this.str.push(condBlock("if", cond, body));
   }
   str: string[] = [];
 
-  _elseif(cond: TextLike, body: string[]) {
+  _elseif(cond: StringLike, body: string[]) {
     this.str.push(condBlock("else if", cond, body));
     return this;
   }
@@ -22,15 +22,15 @@ export class TcIf {
   }
 }
 
-const condBlock = (type: CondBlockType, cond: TextLike, body: string[]) => {
+const condBlock = (type: CondBlockType, cond: StringLike, body: string[]) => {
   return `${type}(${cond})${block(body)}`;
 };
 
-export const _if = (cond: TextLike, body: string[]) => {
+export const _if = (cond: StringLike, body: string[]) => {
   return new TcIf(cond, body);
 };
 
-export const ifOnly = (cond: TextLike, body: string[]) => {
+export const ifOnly = (cond: StringLike, body: string[]) => {
   return condBlock("if", cond, body);
 };
 
