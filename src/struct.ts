@@ -1,129 +1,85 @@
 import { block } from "./chunk";
 import { assign } from "./operators";
+import { createPointer } from "./pointer";
+import { Type } from "./type";
 import type {
+  AutoPointerQualifier,
   AutoQualifier,
+  StringKeyOf,
   StringLike,
   StructMembers,
   StructMemberValuesFromMembers,
 } from "./types";
 import { join } from "./utils";
+import { createVar } from "./variable";
 
-export class Struct<Members extends StructMembers> {
-  constructor(name: string, members: Members) {
-    this.name = name;
-    this.members = members;
-    this.type = `struct ${name}`;
-    this.declaration = `${this.type}${block(
-      Object.entries(this.members).map(([name, type]) => `${type} ${name}`)
-    )}`;
-  }
-  name;
-  members;
-  type;
-  declaration;
+export const struct = <Members extends StructMembers>(
+  name: string,
+  members: Members
+) => {
+  const type = `struct ${name}`;
 
-  var(name: string, qualifier?: AutoQualifier) {
-    const v = createVar(this.type, name);
-    return {
-      ...v,
-      init: (values: StructMemberValuesFromMembers<Members>) => {
-        return assign(v.type.declaration, this.literal(values));
-      },
-      initSeq: (values: StringLike[]) => {
-        return assign(v.type.declaration, this.literalSeq(values));
-      },
-      assign: (values: StructMemberValuesFromMembers<Members>) => {
-        return assign(v.name, this.literal(values));
-      },
-    };
-  }
-
-  literal(values: StructMemberValuesFromMembers<Members>) {
+  const literal = (values: StructMemberValuesFromMembers<Members>) => {
     return `{ ${join(
       Object.entries(values).map(([name, value]) => `.${name}=${value}`),
       ","
     )} }`;
-  }
+  };
 
-  literalSeq(values: StringLike[]) {
+  const literalSeq = (values: StringLike[]) => {
     return `{ ${join(values, ",")} }`;
-  }
-}
+  };
 
-// export class StructVar<Members extends StructMembers> {
-//   constructor(
-//     struct: Struct<Members>,
-//     name: string,
-//     qualifier?: AutoQualifier
-//   ) {
-//     this.struct = struct;
-//     this.name = name;
-//     this.type = Type.var(this.struct.type.full, qualifier);
-//     this.declaration = `${this.type} ${this.name}`;
-//     this.ref = ref(this.name);
-//   }
-//   struct;
-//   type;
-//   name;
-//   declaration;
-//   ref;
+  return {
+    name,
+    members,
+    type,
+    declare: () => {
+      return `${type}${block(
+        Object.entries(members).map(([name, type]) => `${type} ${name}`)
+      )}`;
+    },
+    literal,
+    literalSeq,
+    var: (name: string, qualifier?: AutoQualifier) => {
+      const varType = Type.var(type, qualifier);
+      const declaration = `${varType} ${name}`;
 
-//   init(values: StructMemberValuesFromMembers<Members>) {
-//     return assign(this.declaration, this.struct.literal(values));
-//   }
+      const structVar = createVar(varType, name);
 
-//   initSeq(values: StringLike[]) {
-//     return assign(this.declaration, this.struct.literalSeq(values));
-//   }
+      return {
+        ...structVar,
+        declare: () => declaration,
+        initStructVal: (values: StructMemberValuesFromMembers<Members>) => {
+          return assign(declaration, literal(values));
+        },
+        initStructSeq: (values: StringLike[]) => {
+          return assign(declaration, literalSeq(values));
+        },
+        assignStructVal: (values: StructMemberValuesFromMembers<Members>) => {
+          return assign(name, literal(values));
+        },
+        assignStructSeq: (values: StringLike[]) => {
+          return assign(name, literalSeq(values));
+        },
+        byValue: (member: StringKeyOf<Members>) => {
+          return `${name}.${member}`;
+        },
+        pointer: (name: string, qualifer?: AutoPointerQualifier) => {
+          const pointerType = Type.pointer(varType, qualifer);
+          const declaration = `${pointerType} ${name}`;
 
-//   assignVar(structVar: StructVar<Members>) {
-//     return assign(this.name, structVar.name);
-//   }
-
-//   assign(values: StructMemberValuesFromMembers<Members>) {
-//     return assign(this.name, this.struct.literal(values));
-//   }
-
-//   assignSeq(values: StringLike[]) {
-//     return assign(this.name, this.struct.literalSeq(values));
-//   }
-
-//   pointer(name: string, qualifier?: AutoPointerQualifier) {
-//     return new StructPointer(this, name, qualifier);
-//   }
-
-//   byValue(member: StringKeyOf<Members>) {
-//     return `${this.name}.${member}`;
-//   }
-// }
-
-// export class StructPointer<Members extends StructMembers> {
-//   constructor(
-//     source: StructVar<Members> | StructPointer<Members>,
-//     name: string,
-//     qualifier?: AutoPointerQualifier
-//   ) {
-//     this.source = source;
-//     this.type = Type.pointer(this.source.type.full, qualifier);
-//     this.name = name;
-//     this.declaration = `${this.type} ${this.name}`;
-//     this.init = assign(this.declaration, this.source.ref);
-//     this.assign = assign(this.name, this.source.ref);
-//     this.ref = ref(this.name);
-//   }
-//   source;
-//   type;
-//   name;
-//   declaration;
-//   init;
-//   assign;
-//   ref;
-
-//   byRef(member: StringKeyOf<Members>) {
-//     return `${this.name}->${member}`;
-//   }
-
-//   pointer(name: string) {
-//     return new StructPointer(this, name);
-//   }
-// }
+          return {
+            ...createPointer(pointerType, name),
+            declare: () => declaration,
+            assignStructVarAddr: () => assign(name, structVar.addr()),
+            initStructVarAddr: () => assign(declaration, structVar.addr()),
+            byAddress: (member: StringKeyOf<Members>) => {
+              return `${name}->${member}`;
+            },
+          };
+        },
+      };
+    },
+  };
+};

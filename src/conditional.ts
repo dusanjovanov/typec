@@ -1,4 +1,4 @@
-import { block, chunk, curly } from "./chunk";
+import { block, chunk } from "./chunk";
 import type { StringLike } from "./types";
 
 export class TcIf {
@@ -7,13 +7,13 @@ export class TcIf {
   }
   str: string[] = [];
 
-  _elseif(cond: StringLike, body: string[]) {
+  elseif(cond: StringLike, body: string[]) {
     this.str.push(condBlock("else if", cond, body));
     return this;
   }
 
-  _else(body: string[]) {
-    this.str.push(`else${curly(chunk(body))}`);
+  else(body: string[]) {
+    this.str.push(`else${block(body)}`);
     return this;
   }
 

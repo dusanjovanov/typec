@@ -15,10 +15,10 @@ export const chunk = (statements: string[]) => {
     .join(`\n`);
 };
 
-export const curly = (chunk: string) => {
-  return `\n{\n${chunk}\n}`;
+export const curly = (code: string) => {
+  return `{${code}}`;
 };
 
 export const block = (statements: string[]) => {
-  return curly(chunk(statements));
+  return `\n${curly(`\n${chunk(statements)}\n`)}`;
 };

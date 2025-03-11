@@ -1,13 +1,16 @@
-import { assign, value } from "./operators";
+import { assign, valueOf } from "./operators";
 import type { AutoSpecifier } from "./types";
 
 export const createPointer = (type: AutoSpecifier, name: string) => {
   return {
     name,
     type,
-    value: value(name),
-    assignRef: (ref: string) => {
-      return assign(name, ref);
+    value: () => valueOf(name),
+    assignPointer: (pointerName: string) => {
+      return assign(name, pointerName);
+    },
+    assignAddress: (address: string) => {
+      return assign(name, address);
     },
   };
 };

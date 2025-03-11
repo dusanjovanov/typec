@@ -1,39 +1,18 @@
-import { assign, ref, value } from "./operators";
-import { pointer } from "./pointer";
+import { addressOf, assign, valueOf } from "./operators";
+import { Type } from "./type";
 import type { AutoSpecifier, StringLike } from "./types";
 import { fillArray, join } from "./utils";
 
-export const arrType = (
-  elementType: AutoSpecifier,
-  name: string,
-  len: number
-) => {
-  return `${elementType} ${name}[${len}]`;
-};
+export const arr = (elementType: AutoSpecifier, name: string, len: number) => {
+  const type = Type.arr(elementType, len);
 
-export const arrDeclare = (
-  elementType: AutoSpecifier,
-  name: string,
-  len: number
-) => {
-  return arrType(elementType, name, len);
-};
-
-export const arrInit = (
-  elementType: AutoSpecifier,
-  name: string,
-  values: StringLike[]
-) => {
-  return assign(`${elementType} ${name}[]`, `{${join(values, ",")}}`);
-};
-
-export const arr = (elementType: AutoSpecifier, name: string) => {
   return {
-    declare: (len: number) => arrDeclare(elementType, name, len),
-    init: (value: StringLike[]) => arrInit(elementType, name, value),
+    declare: () => `${elementType} ${name}[${len}]`,
+    init: (value: StringLike[]) =>
+      assign(`${elementType} ${name}[]`, `{${join(value, ",")}}`),
     name,
     type: elementType,
-    ref: ref(name),
+    ref: addressOf(name),
     pointer: (pointerName: string, len: number) => {
       return arrPointer(elementType, pointerName, len);
     },
@@ -83,7 +62,7 @@ export const arrPointer = (
     },
     name,
     type: arrPointerType(elementType, len, level),
-    value: value(name),
+    value: valueOf(name),
     len,
     level,
   };

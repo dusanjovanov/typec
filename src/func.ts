@@ -1,72 +1,69 @@
 import { block } from "./chunk";
-import { assign, ref } from "./operators";
+import { addressOf, assign } from "./operators";
 import { createPointer } from "./pointer";
+import { Type } from "./type";
 import type { AutoSpecifier, FuncParam, StringLike } from "./types";
 import { emptyFalsy, fillArray, join } from "./utils";
 import { createVar } from "./variable";
 
-export class Func {
-  constructor(returnType: AutoSpecifier, name: string, params: FuncParam[]) {
-    this.returnType = returnType;
-    this.name = name;
-    this.params = params;
-    this.paramTypes = params.map((p) => p[0]);
-    this.declaration = `${this.returnType} ${this.name}(${
-      this.params.length > 0
-        ? join(
-            this.params.map((param) => `${param[0]} ${param[1]}`),
-            ","
-          )
-        : "void"
-    })`;
-    this.ref = ref(this.name);
-  }
-  returnType;
-  name;
-  params;
-  paramTypes;
-  declaration;
-  ref;
+export const func = (
+  returnType: AutoSpecifier,
+  name: string,
+  params: FuncParam[]
+) => {
+  const declaration = `${returnType} ${name}(${
+    params.length > 0
+      ? join(
+          params.map((param) => `${param[0]} ${param[1]}`),
+          ","
+        )
+      : "void"
+  })`;
 
-  define(body: string[]) {
-    return `${this.declaration}${block(body)}`;
-  }
+  const paramTypes = params.map((p) => p[0]);
 
-  call(args?: StringLike[]) {
-    return `${this.name}(${emptyFalsy(args, (args) => args.join(","))})`;
-  }
+  const pointerType = (level = 1) => {
+    return Type.funcPointer(returnType, paramTypes, level);
+  };
 
-  variable(name: string) {
-    return {
-      ...createVar(this.returnType, name),
-      assignReturn: (args?: StringLike[]) => {
-        return this.call(args);
-      },
-    };
-  }
+  const funcAddr = addressOf(name);
 
-  pointer(name: string) {
-    return {
-      ...createPointer(this.pointerType(), name),
-      declaration: `${this.returnType} (${join(fillArray(1, () => "*"))}${
-        this.name
-      })(${join(this.paramTypes, ",")})`,
-      init: assign(this.declaration, this.ref),
-      assignFunc: assign(this.name, this.ref),
-    };
-  }
+  const fnName = name;
 
-  pointerType(level = 1) {
-    return `${this.returnType} (${join(fillArray(level, () => "*"))})(${join(
-      this.paramTypes,
-      ","
-    )})`;
-  }
-
-  static return(value: StringLike) {
-    return `return ${value};`;
-  }
-}
+  return {
+    returnType,
+    name,
+    params,
+    paramTypes,
+    addr: () => funcAddr,
+    declare: () => declaration,
+    define: (body: string[]) => {
+      return `${declaration}${block(body)}`;
+    },
+    call,
+    var: (name: string) => {
+      return {
+        ...createVar(returnType, name),
+        assignReturn: (args?: StringLike[]) => {
+          return call(fnName, args);
+        },
+      };
+    },
+    pointer: (name: string) => {
+      return {
+        ...createPointer(pointerType(), name),
+        declare: () => {
+          return `${returnType} (${join(
+            fillArray(1, () => "*")
+          )}${name})(${join(paramTypes, ",")})`;
+        },
+        initFuncAddr: () => assign(declaration, funcAddr),
+        assignFuncAddr: () => assign(name, funcAddr),
+      };
+    },
+    pointerType,
+  };
+};
 
 export const argsWithVarArgs = (
   startArgs: StringLike[],
@@ -77,4 +74,12 @@ export const argsWithVarArgs = (
     _args.push(...varArgs);
   }
   return _args;
+};
+
+export const _return = (value: StringLike) => {
+  return `return ${value};`;
+};
+
+export const call = (fnName: string, args?: StringLike[]) => {
+  return `${fnName}(${emptyFalsy(args, (args) => args.join(","))})`;
 };

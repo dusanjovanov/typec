@@ -1,7 +1,6 @@
-import { call } from "./func";
+import { argsWithVarArgs, call } from "./func";
 import { includeSys } from "./include";
 import type { StringLike } from "./types";
-import { argsWithVarArgs } from "./utils";
 
 export const std = {
   includeIo: () => includeSys("stdio.h"),

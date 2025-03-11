@@ -19,10 +19,8 @@ export type TypeSpecifier =
 
 export type Qualifier =
   | "const"
-  | "const volatile"
   | "volatile"
   | "static"
-  | "static volatile"
   | "register"
   | "auto"
   | "extern";
@@ -48,5 +46,5 @@ export type StructMembers = { [key: string]: AutoSpecifier };
 export type StructMemberValues = { [key: string]: StringLike };
 
 export type StructMemberValuesFromMembers<Members extends StructMembers> = {
-  [key in keyof Members]: StringLike;
+  [key in keyof Members]?: StringLike;
 };

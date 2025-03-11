@@ -19,9 +19,9 @@ export const sizeOf = (exp: string) => `sizeof(${exp})`;
 
 export const alignOf = (exp: string) => `alignof(${exp})`;
 
-export const value = (pointerName: string) => `*${pointerName}`;
+export const valueOf = (pointerName: string) => `*${pointerName}`;
 
-export const ref = preUn("&");
+export const addressOf = preUn("&");
 
 const binOp = (op: string) => (name: string, valueExp: StringLike) => {
   return `${name}${op}${valueExp}`;

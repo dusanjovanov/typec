@@ -1,11 +1,11 @@
-import { assign, ref } from "./operators";
+import { addressOf, assign } from "./operators";
 import type { AutoSpecifier, StringLike } from "./types";
 
 export const createVar = (type: AutoSpecifier, name: string) => {
   return {
     name,
-    type,
-    ref: ref(name),
+    type: type as string,
+    addr: () => addressOf(name),
     assignVar: (varName: string) => {
       return assign(name, varName);
     },

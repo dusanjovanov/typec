@@ -1,6 +1,6 @@
 import { block, chunk, curly } from "./chunk";
 import { _if, ifOnly } from "./conditional";
-import { _return, call, func, funcProto, funcImpl } from "./func";
+import { _return, call, func, funcImpl, funcProto } from "./func";
 import { gcc } from "./gcc";
 import { includeRel, includeSys } from "./include";
 import {
@@ -63,12 +63,12 @@ export const tc = {
   /** #include <> */
   includeSys,
   /** Returns a variable declaration statement and optionally an assignment. */
-  _var: variable,
+  variable,
   /**
    * Starts control block if statement that can be chained with else if and else.
    * Finally returns a string with `.toString()`.
    */
-  _if,
+  if: _if,
   /**
    * Returns just the if block.
    */
@@ -92,7 +92,7 @@ export const tc = {
   func,
 
   /** Return statement */
-  _return,
+  return: _return,
   /**
    * Returns a string meant to be used as a string literal in c code.
    *
