@@ -1,8 +1,10 @@
+import { arr } from "./array";
 import { block, chunk, curly } from "./chunk";
 import { _if, ifOnly } from "./conditional";
-import { _return, call, func, funcImpl, funcProto } from "./func";
+import { func } from "./func";
 import { gcc } from "./gcc";
 import { includeRel, includeSys } from "./include";
+import { whileLoop } from "./loops";
 import {
   and,
   assign,
@@ -17,8 +19,6 @@ import {
   bitRightAssign,
   bitXor,
   bitXorAssign,
-  byPointer,
-  byValue,
   cast,
   div,
   divAssign,
@@ -44,10 +44,9 @@ import {
   preInc,
   ternary,
 } from "./operators";
-import { funcPointerDeclare } from "./pointer";
 import { std } from "./std";
-import { _while, join, joinWithPrefix, str } from "./utils";
-import { arrInit, arrVariable, variable } from "./variable";
+import { join, joinWithPrefix, str } from "./utils";
+import { variable } from "./variable";
 
 export * from "./types";
 
@@ -76,23 +75,11 @@ export const tc = {
   /**
    * Returns a while loop statement.
    */
-  _while,
-  /** Returns a function prototype statement */
-  funcProto: funcProto,
-  /** Returns a function definition statement */
-  funcDef: funcImpl,
-  funcPointerDeclare,
-  /**
-   * Returns a function call expression.
-   */
-  call,
+  whileLoop,
   /**
    * Returns an object which has the definition, prototype and a call helper for that function.
    */
   func,
-
-  /** Return statement */
-  return: _return,
   /**
    * Returns a string meant to be used as a string literal in c code.
    *
@@ -106,12 +93,8 @@ export const tc = {
   /**
    * Returns an array variable declaration without initialization.
    */
-  arrVar: arrVariable,
-  /**
-   * Returns an array variable declaration with initialization.
-   */
-  arrInit,
-  /** Shortcuts for standard C libraries */
+  arr,
+  /** Functions and helpers for standard C libraries */
   std,
   join,
   joinWithPrefix,
@@ -160,8 +143,4 @@ export const tc = {
   bitXorAssign,
   bitLeftAssign,
   bitRightAssign,
-  /** -> operator */
-  dotRef: byPointer,
-  /** . ( dot ) operator */
-  dotVal: byValue,
 };
