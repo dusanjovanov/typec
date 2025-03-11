@@ -23,8 +23,8 @@ export const valueOf = (pointerName: string) => `*${pointerName}`;
 
 export const addressOf = preUn("&");
 
-const binOp = (op: string) => (name: string, valueExp: StringLike) => {
-  return `${name}${op}${valueExp}`;
+const binOp = (op: string) => (left: string, right: StringLike) => {
+  return `${left}${op}${right}`;
 };
 
 export const modulo = binOp("%");

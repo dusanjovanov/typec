@@ -39,3 +39,33 @@ export const fillArray = <T>(
 };
 
 export const str = (s: string) => `"${s.replaceAll(/"/g, `\\"`)}"`;
+
+export const pointerStars = (level = 1) => {
+  return join(fillArray(level, () => "*"));
+};
+
+export const joinArgs = (args: StringLike[]) => {
+  return join(args, ",");
+};
+
+export const valueOfFull = (pointerType: string, pointerName: string) => {
+  const stars = starRegex.exec(pointerType)?.[0];
+
+  return `${stars}${pointerName}`;
+};
+
+export const getPointerTypeLevel = (pointerType: string) => {
+  return starRegex.exec(pointerType)?.[0];
+};
+
+export const increasePointerTypeLevel = (pointerType: string) => {
+  return pointerType.replaceAll(starRegex, (found) => {
+    return found + "*";
+  });
+};
+
+export const removePointerStars = (pointerType: string) => {
+  return pointerType.replaceAll(starRegex, "");
+};
+
+const starRegex = /\*+/g;

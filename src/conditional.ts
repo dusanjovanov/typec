@@ -1,7 +1,7 @@
 import { block, chunk } from "./chunk";
 import type { StringLike } from "./types";
 
-export class TcIf {
+export class IfConditional {
   constructor(cond: StringLike, body: string[]) {
     this.str.push(condBlock("if", cond, body));
   }
@@ -27,7 +27,7 @@ const condBlock = (type: CondBlockType, cond: StringLike, body: string[]) => {
 };
 
 export const _if = (cond: StringLike, body: string[]) => {
-  return new TcIf(cond, body);
+  return new IfConditional(cond, body);
 };
 
 export const ifOnly = (cond: StringLike, body: string[]) => {

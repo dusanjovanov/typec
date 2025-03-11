@@ -1,6 +1,6 @@
 import { block } from "./chunk";
 import { assign } from "./operators";
-import { createPointer } from "./pointer";
+import { pointer } from "./pointer";
 import { Type } from "./type";
 import type {
   AutoPointerQualifier,
@@ -10,24 +10,23 @@ import type {
   StructMembers,
   StructMemberValuesFromMembers,
 } from "./types";
-import { join } from "./utils";
-import { createVar } from "./variable";
+import { joinArgs } from "./utils";
+import { variable } from "./variable";
 
 export const struct = <Members extends StructMembers>(
   name: string,
   members: Members
 ) => {
-  const type = `struct ${name}`;
+  const type = Type.struct(name);
 
   const literal = (values: StructMemberValuesFromMembers<Members>) => {
-    return `{ ${join(
-      Object.entries(values).map(([name, value]) => `.${name}=${value}`),
-      ","
+    return `{ ${joinArgs(
+      Object.entries(values).map(([name, value]) => `.${name}=${value}`)
     )} }`;
   };
 
   const literalSeq = (values: StringLike[]) => {
-    return `{ ${join(values, ",")} }`;
+    return `{ ${joinArgs(values)} }`;
   };
 
   return {
@@ -41,15 +40,16 @@ export const struct = <Members extends StructMembers>(
     },
     literal,
     literalSeq,
-    var: (name: string, qualifier?: AutoQualifier) => {
+    /** Create a variable to hold an instance of the struct */
+    variable: (name: string, qualifier?: AutoQualifier) => {
       const varType = Type.var(type, qualifier);
-      const declaration = `${varType} ${name}`;
 
-      const structVar = createVar(varType, name);
+      const structVar = variable(varType, name);
+
+      const declaration = structVar.declare();
 
       return {
         ...structVar,
-        declare: () => declaration,
         initStructVal: (values: StructMemberValuesFromMembers<Members>) => {
           return assign(declaration, literal(values));
         },
@@ -65,12 +65,13 @@ export const struct = <Members extends StructMembers>(
         byValue: (member: StringKeyOf<Members>) => {
           return `${name}.${member}`;
         },
+        /** Create a pointer to a struct instance */
         pointer: (name: string, qualifer?: AutoPointerQualifier) => {
           const pointerType = Type.pointer(varType, qualifer);
           const declaration = `${pointerType} ${name}`;
 
           return {
-            ...createPointer(pointerType, name),
+            ...pointer(pointerType, name),
             declare: () => declaration,
             assignStructVarAddr: () => assign(name, structVar.addr()),
             initStructVarAddr: () => assign(declaration, structVar.addr()),
