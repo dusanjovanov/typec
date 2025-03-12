@@ -1,4 +1,4 @@
-import { arr } from "./array";
+import { array } from "./array";
 import { block, chunk, curly } from "./chunk";
 import { _if, ifOnly } from "./conditional";
 import { func } from "./func";
@@ -51,9 +51,11 @@ import { variable } from "./variable";
 export * from "./types";
 
 export const tc = {
+  /** Functions and helpers for standard C libraries */
+  std,
   /** Takes in an array of statements as strings and adds semicolons and new lines appropriately. */
   chunk,
-  /** Statements ( chunk ) between curly braces and adds new lines. */
+  /** Code between curly braces */
   curly,
   /** Chunk of code within curly braces. */
   block,
@@ -93,9 +95,7 @@ export const tc = {
   /**
    * Returns an array variable declaration without initialization.
    */
-  arr,
-  /** Functions and helpers for standard C libraries */
-  std,
+  array,
   join,
   joinWithPrefix,
   gcc,

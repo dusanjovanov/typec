@@ -2,8 +2,9 @@ import type {
   AutoPointerQualifier,
   AutoQualifier,
   AutoSpecifier,
+  Qualifier,
 } from "./types";
-import { emptyFalsy, join, pointerStars } from "./utils";
+import { emptyFalsy, joinArgs, pointerStars } from "./utils";
 
 export const Type = {
   /** Any simple non-pointer type */
@@ -25,21 +26,37 @@ export const Type = {
       `const${emptyFalsy(qualifier, (q) => ` ${q}`)}`
     );
   },
+  /** Entire type of a function */
+  func(returnType: AutoSpecifier, paramTypes: AutoSpecifier[]) {
+    return `${returnType} (${joinArgs(paramTypes)})`;
+  },
   /** Type of a pointer to a function */
   funcPointer(
     returnType: AutoSpecifier,
     paramTypes: AutoSpecifier[],
+    qualifier?: AutoPointerQualifier,
     level = 1
   ) {
-    return `${returnType} (${pointerStars(level)})(${join(paramTypes, ",")})`;
+    return `${returnType} (${pointerStars(level)}${emptyFalsy(
+      qualifier,
+      (q) => ` ${q}`
+    )})(${joinArgs(paramTypes)})`;
   },
   /** Type of an entire array */
-  arr(elementType: AutoSpecifier, len: number) {
-    return `${elementType} [${len}]`;
+  arr(elementType: AutoSpecifier, len: number, qualifier?: Qualifier) {
+    return `${emptyFalsy(qualifier, (q) => `${q} `)}${elementType} [${len}]`;
   },
   /** Type of a pointer to an entire array */
-  arrPointer(elementType: AutoSpecifier, len: number, level = 1) {
-    return `${elementType} (${pointerStars(level)})[${len}]`;
+  arrPointer(
+    elementType: AutoSpecifier,
+    len: number,
+    qualifier?: AutoPointerQualifier,
+    level = 1
+  ) {
+    return `${elementType} (${pointerStars(level)}${emptyFalsy(
+      qualifier,
+      (q) => ` ${q}`
+    )})[${len}]`;
   },
   /** Type of a struct instance */
   struct(structName: string) {

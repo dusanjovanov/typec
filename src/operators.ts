@@ -89,6 +89,14 @@ export const cast = (type: AutoSpecifier, exp: string) => {
   return `(${type})(${exp})`;
 };
 
+export const byValue = (structName: string, member: string) => {
+  return `${structName}.${member}`;
+};
+
+export const byAddress = (structName: string, member: string) => {
+  return `${structName}->${member}`;
+};
+
 export const ternary = (
   condition: string,
   exp1: StringLike,
