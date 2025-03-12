@@ -1,4 +1,6 @@
-import type { Param, PointerParam, VarArgsParam } from "./func";
+import type { Param, VarArgsParam } from "./func";
+import type { Address, PointerType } from "./pointer";
+import type { Value, VarType } from "./variable";
 
 export type TypeSpecifier =
   | "bool"
@@ -17,7 +19,8 @@ export type TypeSpecifier =
   | "float"
   | "double"
   | "long double"
-  | "void";
+  | "void"
+  | "size_t";
 
 export type Qualifier =
   | "const"
@@ -50,6 +53,10 @@ export type StructMemberValuesFromMembers<Members extends StructMembers> = {
   [key in keyof Members]?: StringLike;
 };
 
-export type FuncParam = Param | PointerParam | VarArgsParam;
-
-export type FuncParams = [Param | PointerParam, ...FuncParam[]] | [];
+export type TypeValue<T extends VarType | PointerType> = T extends VarType<
+  infer S
+>
+  ? Value<S>
+  : T extends PointerType<infer S>
+  ? Address<S>
+  : never;

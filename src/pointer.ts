@@ -1,7 +1,10 @@
 import { addressOf, assign, valueOf } from "./operators";
+import type { AutoSpecifier } from "./types";
+import { Value, Var } from "./variable";
 
-export class Pointer {
-  constructor(type: string, name: string) {
+/** Create a pointer for a simple type. */
+export class Pointer<T extends AutoSpecifier> {
+  constructor(type: PointerType<T>, name: string) {
     this.type = type;
     this.name = name;
   }
@@ -10,29 +13,59 @@ export class Pointer {
 
   /** Returns the address of the pointer itself. */
   addr() {
-    return addressOf(this.name);
+    return new Address(this.type.specifier, addressOf(this.name));
   }
 
   /** Returns the dereferenced value of the pointer. */
   value() {
-    return valueOf(this.name);
+    return new Value(this.type.specifier, valueOf(this.name));
   }
 
   declare() {
-    return `${this.type} ${this.name}`;
+    return `${this.type}* ${this.name}`;
   }
 
-  /** Simple aliasing of another pointer. */
-  assignPointer(pointerName: string) {
-    return assign(this.name, pointerName);
+  /** Assign an entity to this pointer. */
+  assign(entity: Var<T> | Pointer<T>) {
+    return assign(this.name, entity.addr());
   }
 
-  /** Assign an address to this pointer. */
-  assignAddr(address: string) {
+  /** Assign an address. */
+  assignAddress(address: Address<T>) {
     return assign(this.name, address);
+  }
+
+  static type<T extends AutoSpecifier>(type: T) {
+    return new PointerType(type);
+  }
+
+  static new<T extends PointerType>(type: T, name: string) {
+    return new Pointer(type, name);
   }
 }
 
-export const pointer = (type: string, name: string) => {
-  return new Pointer(type, name);
-};
+export class PointerType<T extends AutoSpecifier = any> {
+  constructor(specifier: T) {
+    this.specifier = specifier;
+  }
+  kind = "pointer" as const;
+  specifier;
+
+  wrap(value: string) {
+    return new Address<T>(this.specifier, value);
+  }
+}
+
+export class Address<T extends AutoSpecifier> {
+  constructor(type: T, value: string) {
+    this.type = type;
+    this.value = value;
+  }
+  kind = "address" as const;
+  type;
+  value;
+
+  toString() {
+    return this.value;
+  }
+}

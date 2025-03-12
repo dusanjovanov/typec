@@ -147,7 +147,7 @@ export const tc = {
   bitRightAssign,
 };
 
-export { TcArray } from "./array";
+export { Arr as TcArray } from "./array";
 export { Func } from "./func";
 export { Pointer } from "./pointer";
 export { Struct } from "./struct";

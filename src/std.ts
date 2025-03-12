@@ -1,30 +1,34 @@
 import { chunk } from "./chunk";
-import { func, param, varArgsParam } from "./func";
+import { Func, Param, VarArgsParam } from "./func";
 import { includeSys } from "./include";
-import { Type } from "./type";
-import type { AutoSpecifier } from "./types";
+import { Address, Pointer } from "./pointer";
+import { Var, VarType } from "./variable";
 
 export const std = {
   io: {
     include: () => includeSys("stdio.h"),
-    printf: func(Type.var("int"), "printf", [
-      param(Type.constPointer(Type.const("char")), "_Format"),
-      varArgsParam(),
+    printf: Func.new(Var.type("int"), "printf", [
+      Param.new(Pointer.type("char"), "_Format"),
+      VarArgsParam.new(),
     ]),
   },
   lib: {
     include: () => includeSys("stdlib.h"),
     includeCpp: () => includeSys("cstdlib.h"),
-    malloc: func(Type.pointer("void"), "malloc", [param("size_t", "_Size")]),
-    calloc: func(Type.pointer("void"), "calloc", [
-      param("size_t", "_Count"),
-      param("size_t", "_Size"),
+    malloc: Func.new(Pointer.type("void"), "malloc", [
+      Param.new(Var.type("size_t"), "_Size"),
     ]),
-    realloc: func(Type.pointer("void"), "realloc", [
-      param(Type.pointer("void"), "_Block"),
-      param("size_t", "_Size"),
+    calloc: Func.new(Pointer.type("void"), "calloc", [
+      Param.new(Var.type("size_t"), "_Count"),
+      Param.new(Var.type("size_t"), "_Size"),
     ]),
-    free: func("void", "free", [param(Type.pointer("void"), "_Block")]),
+    realloc: Func.new(Pointer.type("void"), "realloc", [
+      Param.new(Pointer.type("void"), "_Block"),
+      Param.new(Var.type("size_t"), "_Size"),
+    ]),
+    free: Func.new(Var.type("void"), "free", [
+      Param.new(Pointer.type("void"), "_Block"),
+    ]),
   },
   arg: {
     include: () => includeSys("stdarg.h"),
@@ -48,7 +52,7 @@ export const std = {
          *
          * You should assign the returned string to a variable.
          */
-        nextArg(type: AutoSpecifier) {
+        nextArg(type: VarType) {
           return `va_arg(${args}, ${type})`;
         },
         /** Cleanup - this has to be called when you're done reading the var args. */
@@ -59,3 +63,7 @@ export const std = {
     },
   },
 };
+
+std.io.printf.call([new Address("char", "asdasd")]);
+
+Func.new(Var.type("void"), "asd", []).call([]);

@@ -1,4 +1,6 @@
+import type { Address } from "./pointer";
 import type { AutoSpecifier, StringLike } from "./types";
+import type { Value } from "./variable";
 
 const preUn = (op: string) => (name: string) => `${op}${name}`;
 const postUn = (op: string) => (name: string) => `${name}${op}`;
@@ -23,9 +25,10 @@ export const valueOf = (pointerName: string) => `*${pointerName}`;
 
 export const addressOf = preUn("&");
 
-const binOp = (op: string) => (left: string, right: StringLike) => {
-  return `${left}${op}${right}`;
-};
+const binOp =
+  (op: string) => (left: string, right: Value<any> | Address<any>) => {
+    return `${left}${op}${right}`;
+  };
 
 export const modulo = binOp("%");
 

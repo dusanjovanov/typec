@@ -15,7 +15,7 @@ export const chunk = (statements: string[]) => {
     .join(`\n`);
 };
 
-export const curly = (code: string) => {
+export const curly = (code: any) => {
   return `{${code}}`;
 };
 

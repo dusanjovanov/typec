@@ -1,3 +1,4 @@
+import { Pointer } from "./pointer";
 import type { StringLike } from "./types";
 
 /**
@@ -38,7 +39,9 @@ export const fillArray = <T>(
   return Array.from({ length }).map((_, index) => callback(index));
 };
 
-export const str = (s: string) => `"${s.replaceAll(/"/g, `\\"`)}"`;
+export const str = (s: string) => {
+  return Pointer.type("char").wrap(`"${s.replaceAll(/"/g, `\\"`)}"`);
+};
 
 export const pointerStars = (level = 1) => {
   return join(fillArray(level, () => "*"));
