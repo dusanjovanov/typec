@@ -36,3 +36,10 @@ export class Struct<Members extends StructMembers> {
     return `{ ${joinArgs(values)} }`;
   }
 }
+
+export const struct = <Members extends StructMembers>(
+  name: string,
+  members: Members
+) => {
+  return new Struct(name, members);
+};

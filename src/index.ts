@@ -44,11 +44,11 @@ import {
   preInc,
   ternary,
 } from "./operators";
+import { pointer } from "./pointer";
 import { std } from "./std";
+import { struct } from "./struct";
 import { join, joinWithPrefix, str } from "./utils";
 import { variable } from "./variable";
-
-export * from "./types";
 
 export const tc = {
   /** Functions and helpers for standard C libraries */
@@ -65,6 +65,16 @@ export const tc = {
   includeSys,
   /** Returns a variable declaration statement and optionally an assignment. */
   variable,
+  pointer,
+  /**
+   * Returns an object which has the definition, prototype and a call helper for that function.
+   */
+  func,
+  /**
+   * Returns an array variable declaration without initialization.
+   */
+  array,
+  struct,
   /**
    * Starts control block if statement that can be chained with else if and else.
    * Finally returns a string with `.toString()`.
@@ -79,10 +89,6 @@ export const tc = {
    */
   whileLoop,
   /**
-   * Returns an object which has the definition, prototype and a call helper for that function.
-   */
-  func,
-  /**
    * Returns a string meant to be used as a string literal in c code.
    *
    * Surrounds the string with quotes and automatically escapes all quotes inside of the string.
@@ -92,10 +98,6 @@ export const tc = {
    * Returns a type cast expression.
    */
   cast,
-  /**
-   * Returns an array variable declaration without initialization.
-   */
-  array,
   join,
   joinWithPrefix,
   gcc,
@@ -144,3 +146,10 @@ export const tc = {
   bitLeftAssign,
   bitRightAssign,
 };
+
+export { TcArray } from "./array";
+export { Func } from "./func";
+export { Pointer } from "./pointer";
+export { Struct } from "./struct";
+
+export * from "./types";

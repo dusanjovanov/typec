@@ -29,3 +29,11 @@ export class TcArray {
     return assign(`${this.elementType} ${this.name}[]`, `{${joinArgs(value)}}`);
   }
 }
+
+export const array = (
+  elementType: AutoSpecifier,
+  name: string,
+  len: number
+) => {
+  return new TcArray(elementType, name, len);
+};

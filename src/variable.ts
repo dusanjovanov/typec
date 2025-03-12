@@ -27,3 +27,7 @@ export class Variable {
     return assign(this.name, value);
   }
 }
+
+export const variable = (type: AutoSpecifier, name: string) => {
+  return new Variable(type, name);
+};
