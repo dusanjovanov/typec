@@ -1,5 +1,5 @@
+import { Address } from "./address";
 import { addressOf, assign } from "./operators";
-import { Address } from "./pointer";
 import type { AutoSimpleSpecifier } from "./types";
 
 export class Arr<const T extends AutoSimpleSpecifier, Length extends number> {

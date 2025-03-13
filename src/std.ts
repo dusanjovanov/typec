@@ -1,33 +1,33 @@
 import { chunk } from "./chunk";
 import { Func, Param, VarArgsParam } from "./func";
 import { includeSys } from "./include";
-import { Address, Pointer } from "./pointer";
-import { SimpleType, Value, Var } from "./variable";
+import { Pointer } from "./pointer";
+import { SimpleType, Variable } from "./variable";
 
 export const std = {
   io: {
     include: () => includeSys("stdio.h"),
-    printf: Func.new(Var.type("int"), "printf", [
-      Param.new(Pointer.type(Var.type("char")), "_Format"),
+    printf: Func.new(Variable.type("int"), "printf", [
+      Param.new(Pointer.type(Variable.type("char")), "_Format"),
       VarArgsParam.new(),
     ]),
   },
   lib: {
     include: () => includeSys("stdlib.h"),
     includeCpp: () => includeSys("cstdlib.h"),
-    malloc: Func.new(Pointer.type(Var.type("void")), "malloc", [
-      Param.new(Var.type("size_t"), "_Size"),
+    malloc: Func.new(Pointer.type(Variable.type("void")), "malloc", [
+      Param.new(Variable.type("size_t"), "_Size"),
     ]),
-    calloc: Func.new(Pointer.type(Var.type("void")), "calloc", [
-      Param.new(Var.type("size_t"), "_Count"),
-      Param.new(Var.type("size_t"), "_Size"),
+    calloc: Func.new(Pointer.type(Variable.type("void")), "calloc", [
+      Param.new(Variable.type("size_t"), "_Count"),
+      Param.new(Variable.type("size_t"), "_Size"),
     ]),
-    realloc: Func.new(Pointer.type(Var.type("void")), "realloc", [
-      Param.new(Pointer.type(Var.type("void")), "_Block"),
-      Param.new(Var.type("size_t"), "_Size"),
+    realloc: Func.new(Pointer.type(Variable.type("void")), "realloc", [
+      Param.new(Pointer.type(Variable.type("void")), "_Block"),
+      Param.new(Variable.type("size_t"), "_Size"),
     ]),
-    free: Func.new(Var.type("void"), "free", [
-      Param.new(Pointer.type(Var.type("void")), "_Block"),
+    free: Func.new(Variable.type("void"), "free", [
+      Param.new(Pointer.type(Variable.type("void")), "_Block"),
     ]),
   },
   arg: {
@@ -63,11 +63,3 @@ export const std = {
     },
   },
 };
-
-std.io.printf.call([new Address("char", "asdasd")]);
-
-const someParam = Param.new(Pointer.type(Var.type("char")), "blah");
-
-const someFn = Func.new(Var.type("void"), "asd", [someParam]);
-
-someFn.call([Address.string("3")]);

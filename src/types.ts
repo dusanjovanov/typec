@@ -1,7 +1,9 @@
+import type { Address } from "./address";
 import type { ArrType } from "./array";
 import type { FuncType } from "./func";
-import type { Address, PointerType } from "./pointer";
-import type { SimpleType, Value } from "./variable";
+import type { PointerType } from "./pointer";
+import type { Value } from "./value";
+import type { SimpleType } from "./variable";
 
 export type SimpleSpecifier =
   | "bool"
@@ -36,15 +38,18 @@ export type StructMembers = {
 export type StructMemberValues = { [key: string]: PassingValue };
 
 export type StructMemberValuesFromMembers<Members extends StructMembers> = {
-  [Key in keyof Members]?: TypeValue<Members[Key]>;
+  [Key in keyof Members]?: UnwrapValue<Members[Key]>;
 };
 
-export type TypeValue<T extends SimpleType | PointerType | ArrType | FuncType> =
-  T extends SimpleType<infer S>
-    ? Value<S>
-    : T extends PointerType<infer S>
-    ? Address<S extends SimpleType ? S["specifier"] : S>
-    : never;
+export type UnwrapValue<
+  T extends SimpleType | PointerType | ArrType | FuncType
+> = T extends SimpleType<infer S>
+  ? Value<S>
+  : T extends ArrType<infer S> | FuncType<infer S>
+  ? Address<S>
+  : T extends PointerType<infer S>
+  ? Address<S extends SimpleType ? S["specifier"] : S>
+  : never;
 
 export type StringLike = string | number;
 

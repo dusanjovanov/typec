@@ -1,7 +1,9 @@
+import { Address } from "./address";
 import type { ArrType } from "./array";
 import { addressOf, assign, valueOf } from "./operators";
-import type { AutoSimpleSpecifier, SimpleSpecifier } from "./types";
-import { SimpleType, Value, Var } from "./variable";
+import type { SimpleSpecifier } from "./types";
+import { Value } from "./value";
+import { SimpleType, Variable } from "./variable";
 
 /** Create a pointer. */
 export class Pointer<T extends SimpleType | ArrType<any, any> = any> {
@@ -31,7 +33,7 @@ export class Pointer<T extends SimpleType | ArrType<any, any> = any> {
   }
 
   /** Assign an entity to this pointer. */
-  assign(entity: Var<SimpleSpecifier> | Pointer<T>) {
+  assign(entity: Variable<SimpleSpecifier> | Pointer<T>) {
     return assign(this.name, entity.address());
   }
 
@@ -53,23 +55,5 @@ export class PointerType<T extends SimpleType | ArrType<any, any> = any> {
 
   wrap(value: string) {
     return new Address(this.specifier, value);
-  }
-}
-
-export class Address<T extends AutoSimpleSpecifier> {
-  constructor(type: T, value: string) {
-    this.type = type;
-    this.value = value;
-  }
-  kind = "address" as const;
-  type;
-  value;
-
-  toString() {
-    return this.value;
-  }
-
-  static string(value: string) {
-    return new Address("char", `"${value.replaceAll(/"/g, `\\"`)}"`);
   }
 }

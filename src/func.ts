@@ -1,7 +1,7 @@
 import { block } from "./chunk";
 import { addressOf } from "./operators";
 import type { PointerType } from "./pointer";
-import type { PassingValue, TypeValue } from "./types";
+import type { PassingValue, UnwrapValue } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
 import { SimpleType } from "./variable";
 
@@ -54,7 +54,7 @@ export class Func<
   call(args: FuncArgsFromParams<Params>) {
     return this.returnType.wrap(
       Func.call(this.name, args as any)
-    ) as TypeValue<Return>;
+    ) as UnwrapValue<Return>;
   }
 
   /** Returns a function call expression with support for var args. */
@@ -162,11 +162,7 @@ export type FuncArgsFromParams<
 export type FuncArgFromParam<T extends Param | VarArgsParam> = T extends Param<
   infer V
 >
-  ? TypeValue<V>
+  ? UnwrapValue<V>
   : T extends VarArgsParam
   ? PassingValue
   : never;
-
-const arr = [1, "abc", 2] as const;
-
-type A = typeof arr extends readonly "abc"[] ? "yes" : "no";

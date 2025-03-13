@@ -5,7 +5,8 @@ import type {
   StructMemberValuesFromMembers,
 } from "./types";
 import { joinArgs } from "./utils";
-import { Value, Var } from "./variable";
+import { Value } from "./value";
+import { Variable } from "./variable";
 
 export class Struct<Members extends StructMembers> {
   constructor(name: string, members: Members) {
@@ -24,15 +25,15 @@ export class Struct<Members extends StructMembers> {
     )}`;
   }
 
-  /** Returns a struct compound literal expression. */
-  literal(values: StructMemberValuesFromMembers<Members>) {
+  /** Returns a struct designated initializer expression. */
+  designated(values: StructMemberValuesFromMembers<Members>) {
     return `{ ${joinArgs(
       Object.entries(values).map(([name, value]) => `.${name}=${value}`)
     )} }`;
   }
 
-  /** Returns a struct literal expression. */
-  literalSeq(values: PassingValue[]) {
+  /** Returns a struct compound literal expression. */
+  compound(values: PassingValue[]) {
     return `{ ${joinArgs(values)} }`;
   }
 
@@ -48,6 +49,6 @@ export class StructType<Name extends string = any> {
   specifier;
 }
 
-const s = Struct.new("Person", { a: Var.type("int") });
+const s = Struct.new("Person", { a: Variable.type("int") });
 
-s.literal({ a: Value.int(3) });
+s.designated({ a: Value.int(3) });
