@@ -42,7 +42,7 @@ export class Pointer<T extends Simple | ArrayType<any, any> = any> {
     return Operator.assign(this.name, address);
   }
 
-  static type<T extends Simple | ArrayType<any, any> = any>(type: T) {
+  static type<T extends Simple | ArrayType | FuncType = any>(type: T) {
     return new PointerType(type);
   }
 }
