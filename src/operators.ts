@@ -3,104 +3,101 @@ import type { AutoSimpleSpecifier, PassingValue } from "./types";
 const preUn = (op: string) => (name: string) => `${op}${name}`;
 const postUn = (op: string) => (name: string) => `${name}${op}`;
 
-export const preInc = preUn("++");
-
-export const postInc = postUn("++");
-
-export const preDec = preUn("--");
-
-export const postDec = postUn("--");
-
-export const not = preUn("!");
-
-export const bitNot = preUn("~");
-
-export const sizeOf = (exp: string) => `sizeof(${exp})`;
-
-export const alignOf = (exp: string) => `alignof(${exp})`;
-
-export const valueOf = (pointerName: string) => `*${pointerName}`;
-
-export const addressOf = preUn("&");
-
 const binOp = (op: string) => (left: string, right: PassingValue) => {
   return `${left}${op}${right}`;
 };
 
-export const modulo = binOp("%");
+export class Operator {
+  // Unary operators
 
-export const plus = binOp("+");
+  /** Prefix increment */
+  static preInc = preUn("++");
+  /** Postfix increment */
+  static postInc = postUn("++");
+  /** Prefix decrement */
+  static preDec = preUn("--");
+  /** Postfix decrement */
+  static postDec = postUn("--");
+  /** Unary not ( ! ) */
+  static not = preUn("!");
 
-export const minus = binOp("-");
+  static bitNot = preUn("~");
 
-export const div = binOp("/");
+  static sizeOf(exp: string) {
+    return `sizeof(${exp})`;
+  }
+  static alignOf(exp: string) {
+    return `alignof(${exp})`;
+  }
 
-export const mult = binOp("*");
+  /** Dereference operator */
+  static valueOf(pointerName: string) {
+    return `*${pointerName}`;
+  }
 
-export const eq = binOp("==");
+  static addressOf = preUn("&");
 
-export const neq = binOp("!=");
+  // Binary operators
+  static modulo = binOp("%");
+  static plus = binOp("+");
+  static minus = binOp("-");
+  /** Division */
+  static div = binOp("/");
+  static mult = binOp("*");
+  static eq = binOp("==");
+  static neq = binOp("!=");
+  static gt = binOp(">");
+  static lt = binOp("<");
+  static gte = binOp(">=");
+  static lte = binOp("<=");
+  static and = binOp("&&");
+  static or = binOp("||");
+  static bitAnd = binOp("&");
+  static bitOr = binOp("|");
+  static bitXor = binOp("^");
+  /** Shift left */
+  static bitLeft = binOp("<<");
+  /** Shift right */
+  static bitRight = binOp(">>");
 
-export const gt = binOp(">");
+  // Assignment operators
+  static assign = binOp("=");
+  static plusAssign = binOp("+=");
+  static minusAssign = binOp("-=");
+  static multAssign = binOp("*=");
+  static divAssign = binOp("/=");
+  static moduloAssign = binOp("%=");
+  static bitAndAssign = binOp("&=");
+  static bitOrAssign = binOp("|=");
+  static bitXorAssign = binOp("^=");
+  static bitLeftAssign = binOp("<<=");
+  static bitRightAssign = binOp(">>=");
 
-export const lt = binOp("<");
+  /**
+   * Returns a type cast expression.
+   */
+  static cast(type: AutoSimpleSpecifier, exp: string) {
+    return `(${type})(${exp})`;
+  }
 
-export const gte = binOp(">=");
+  /**
+   * Accesses a struct member by value (e.g., structName.member).
+   */
+  static byValue(structName: string, member: string) {
+    return `${structName}.${member}`;
+  }
 
-export const lte = binOp("<=");
+  /**
+   * Accesses a struct member by pointer (e.g., structName->member).
+   */
+  static byAddress(structName: string, member: string) {
+    return `${structName}->${member}`;
+  }
 
-export const and = binOp("&&");
-
-export const or = binOp("||");
-
-export const bitAnd = binOp("&");
-
-export const bitOr = binOp("|");
-
-export const bitXor = binOp("^");
-
-export const bitLeft = binOp("<<");
-
-export const bitRight = binOp(">>");
-
-export const assign = binOp("=");
-
-export const plusAssign = binOp("+=");
-
-export const minusAssign = binOp("-=");
-
-export const multAssign = binOp("*=");
-
-export const divAssign = binOp("/=");
-
-export const moduloAssign = binOp("%=");
-
-export const bitAndAssign = binOp("&=");
-
-export const bitOrAssign = binOp("|=");
-
-export const bitXorAssign = binOp("^=");
-
-export const bitLeftAssign = binOp("<<=");
-
-export const bitRightAssign = binOp(">>=");
-
-export const cast = (type: AutoSimpleSpecifier, exp: string) => {
-  return `(${type})(${exp})`;
-};
-
-export const byValue = (structName: string, member: string) => {
-  return `${structName}.${member}`;
-};
-
-export const byAddress = (structName: string, member: string) => {
-  return `${structName}->${member}`;
-};
-
-export const ternary = (
-  condition: string,
-  exp1: PassingValue,
-  exp2: PassingValue
-) => {
-  return `${condition}?${exp1}:${exp2}`;
-};
+  /**
+   * Creates a ternary expression (e.g., condition ? exp1 : exp2).
+   */
+  static ternary(condition: string, exp1: PassingValue, exp2: PassingValue) {
+    return `${condition}?${exp1}:${exp2}`;
+  }
+}

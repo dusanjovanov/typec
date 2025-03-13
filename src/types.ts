@@ -5,6 +5,7 @@ import type { PointerType } from "./pointer";
 import type { Simple } from "./simple";
 import type { Value } from "./value";
 
+/** Type union for all simple C types. */
 export type SimpleSpecifier =
   | "bool"
   | "char"
@@ -25,6 +26,7 @@ export type SimpleSpecifier =
   | "void"
   | "size_t";
 
+/** Typescript helper for loosely typed string unions. You get suggestions, but accepts any string. */
 export type Autocomplete<T> = T | (string & {});
 
 export type AutoSimpleSpecifier = Autocomplete<SimpleSpecifier>;

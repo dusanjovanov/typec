@@ -1,23 +1,30 @@
+import { Address } from "./address";
 import { chunk } from "./chunk";
 import { Func, Param, VarArgsParam } from "./func";
-import { includeSys } from "./include";
+import { Include } from "./include";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
 
+const printfFn = Func.new(
+  Simple.type("int"),
+  "printf",
+  [Param.new(Pointer.type(Simple.type("char")), "_Format")],
+  undefined,
+  VarArgsParam.new()
+);
+
+/** Functions and helpers for standard C libraries */
 export const std = {
+  printf: (format: string, ...args: any[]) => {
+    return printfFn.callVarArgs([Address.string(format)], args);
+  },
   io: {
-    include: () => includeSys("stdio.h"),
-    printf: Func.new(
-      Simple.type("int"),
-      "printf",
-      [Param.new(Pointer.type(Simple.type("char")), "_Format")],
-      undefined,
-      VarArgsParam.new()
-    ),
+    include: () => Include.system("stdio.h"),
+    printf: printfFn,
   },
   lib: {
-    include: () => includeSys("stdlib.h"),
-    includeCpp: () => includeSys("cstdlib.h"),
+    include: () => Include.system("stdlib.h"),
+    includeCpp: () => Include.system("cstdlib.h"),
     malloc: Func.new(Pointer.type(Simple.type("void")), "malloc", [
       Param.new(Simple.type("size_t"), "_Size"),
     ]),
@@ -34,7 +41,7 @@ export const std = {
     ]),
   },
   arg: {
-    include: () => includeSys("stdarg.h"),
+    include: () => Include.system("stdarg.h"),
     /** Helper for implementing a var arg function parameter. */
     varArgs: () => {
       const args = "args";

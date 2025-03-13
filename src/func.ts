@@ -1,6 +1,6 @@
 import { Address } from "./address";
 import { block } from "./chunk";
-import { addressOf } from "./operators";
+import { Operator } from "./operators";
 import type { PointerType } from "./pointer";
 import { Simple } from "./simple";
 import { AnyType, type PassingValue, type TypeToValue } from "./types";
@@ -36,7 +36,7 @@ export class Func<
   varArgsParam;
 
   address() {
-    return new Address(this.type, addressOf(this.name));
+    return new Address(this.type, Operator.addressOf(this.name));
   }
 
   /** Returns the declaration ( prototype ) of the function. */
@@ -140,9 +140,10 @@ export class Param<T extends Simple | PointerType = any> {
   name;
 
   address() {
-    return new Address(this.type.specifier, addressOf(this.name)) as Address<
-      T["specifier"]
-    >;
+    return new Address(
+      this.type.specifier,
+      Operator.addressOf(this.name)
+    ) as Address<T["specifier"]>;
   }
 
   declare() {

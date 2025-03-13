@@ -1,5 +1,5 @@
 import { Address } from "./address";
-import { addressOf, assign } from "./operators";
+import { Operator } from "./operators";
 import { Simple } from "./simple";
 import type { SimpleSpecifier } from "./types";
 import { Value } from "./value";
@@ -15,7 +15,7 @@ export class Variable<T extends SimpleSpecifier> {
 
   /** Returns the address of this variable's value. */
   address() {
-    return new Address(this.type, addressOf(this.name));
+    return new Address(this.type, Operator.addressOf(this.name));
   }
 
   /** Returns the value of this variable ( its name wrapped in a Value ). */
@@ -28,21 +28,21 @@ export class Variable<T extends SimpleSpecifier> {
   }
 
   init(value: Value<T>) {
-    return assign(this.declare(), value);
+    return Operator.assign(this.declare(), value);
   }
 
   initEnt(entity: Variable<T>) {
-    return assign(this.declare(), entity.value());
+    return Operator.assign(this.declare(), entity.value());
   }
 
   /** Assign a value. */
   assign(value: Value<T>) {
-    return assign(this.name, value);
+    return Operator.assign(this.name, value);
   }
 
   /** Assign a variable. */
   assignVar(variable: Variable<T>) {
-    return assign(this.name, variable.value());
+    return Operator.assign(this.name, variable.value());
   }
 
   static new<T extends SimpleSpecifier>(type: Simple<T>, name: string) {

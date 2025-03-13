@@ -1,6 +1,6 @@
 import { Address } from "./address";
 import { curly } from "./chunk";
-import { addressOf, assign } from "./operators";
+import { Operator } from "./operators";
 import type { PointerType } from "./pointer";
 import type { Simple } from "./simple";
 import type { PassingValue } from "./types";
@@ -22,7 +22,7 @@ export class ArrayC<
   length;
 
   address() {
-    return new Address(this.type, addressOf(this.name));
+    return new Address(this.type, Operator.addressOf(this.name));
   }
 
   /** Returns the array declaration. */
@@ -32,7 +32,7 @@ export class ArrayC<
 
   /** Returns the array initialization. */
   init(value: PassingValue) {
-    return assign(this.declare(), value);
+    return Operator.assign(this.declare(), value);
   }
 
   static type<const T extends Simple | PointerType, Length extends number>(

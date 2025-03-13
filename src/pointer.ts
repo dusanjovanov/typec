@@ -1,7 +1,7 @@
 import { Address } from "./address";
 import type { ArrayType } from "./array";
 import type { FuncType } from "./func";
-import { addressOf, assign, valueOf } from "./operators";
+import { Operator } from "./operators";
 import type { Simple } from "./simple";
 import type { SimpleSpecifier } from "./types";
 import { Value } from "./value";
@@ -18,12 +18,12 @@ export class Pointer<T extends Simple | ArrayType<any, any> = any> {
 
   /** Returns the address of the pointer itself. */
   address() {
-    return new Address(this.type, addressOf(this.name));
+    return new Address(this.type, Operator.addressOf(this.name));
   }
 
   /** Returns the dereferenced value of the pointer. */
   value() {
-    return new Value(this.type as any, valueOf(this.name)) as Value<
+    return new Value(this.type as any, Operator.valueOf(this.name)) as Value<
       T extends SimpleSpecifier ? T : never
     >;
   }
@@ -34,12 +34,12 @@ export class Pointer<T extends Simple | ArrayType<any, any> = any> {
 
   /** Assign an entity to this pointer. */
   assign(entity: Variable<SimpleSpecifier> | Pointer<T>) {
-    return assign(this.name, entity.address());
+    return Operator.assign(this.name, entity.address());
   }
 
   /** Assign an address. */
   assignAddress(address: Address<T["specifier"]>) {
-    return assign(this.name, address);
+    return Operator.assign(this.name, address);
   }
 
   static type<T extends Simple | ArrayType<any, any> = any>(type: T) {
