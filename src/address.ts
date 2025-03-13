@@ -1,6 +1,8 @@
-import type { AutoSimpleSpecifier } from "./types";
+import type { ArrayType } from "./array";
+import type { FuncType } from "./func";
+import { Simple } from "./simple";
 
-export class Address<T extends AutoSimpleSpecifier> {
+export class Address<T extends Simple | ArrayType | FuncType> {
   constructor(type: T, value: string) {
     this.type = type;
     this.value = value;
@@ -14,6 +16,9 @@ export class Address<T extends AutoSimpleSpecifier> {
   }
 
   static string(value: string) {
-    return new Address("char", `"${value.replaceAll(/"/g, `\\"`)}"`);
+    return new Address(
+      Simple.type("char"),
+      `"${value.replaceAll(/"/g, `\\"`)}"`
+    );
   }
 }

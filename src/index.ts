@@ -1,7 +1,8 @@
-import { array } from "./array";
+import { Address } from "./address";
+import { ArrayC, ArrayType } from "./array";
 import { block, chunk, curly } from "./chunk";
 import { _if, ifOnly } from "./conditional";
-import { func } from "./func";
+import { Func, FuncType, Param, VarArgsParam } from "./func";
 import { gcc } from "./gcc";
 import { includeRel, includeSys } from "./include";
 import { whileLoop } from "./loops";
@@ -44,11 +45,12 @@ import {
   preInc,
   ternary,
 } from "./operators";
-import { pointer } from "./pointer";
+import { Pointer, PointerType } from "./pointer";
+import { Simple } from "./simple";
 import { std } from "./std";
-import { struct } from "./struct";
-import { join, joinWithPrefix, str } from "./utils";
-import { variable } from "./variable";
+import { Struct, StructType } from "./struct";
+import { join, joinWithPrefix } from "./utils";
+import { Variable } from "./variable";
 
 export const tc = {
   /** Functions and helpers for standard C libraries */
@@ -64,17 +66,25 @@ export const tc = {
   /** #include <> */
   includeSys,
   /** Returns a variable declaration statement and optionally an assignment. */
-  variable,
-  pointer,
+  Variable,
+  Simple,
+  Pointer,
+  PointerType,
+  Address,
   /**
    * Returns an object which has the definition, prototype and a call helper for that function.
    */
-  func,
+  Func,
+  FuncType,
+  Param,
+  VarArgsParam,
   /**
    * Returns an array variable declaration without initialization.
    */
-  array,
-  struct,
+  ArrayC,
+  ArrayType,
+  Struct,
+  StructType,
   /**
    * Starts control block if statement that can be chained with else if and else.
    * Finally returns a string with `.toString()`.
@@ -88,12 +98,6 @@ export const tc = {
    * Returns a while loop statement.
    */
   whileLoop,
-  /**
-   * Returns a string meant to be used as a string literal in c code.
-   *
-   * Surrounds the string with quotes and automatically escapes all quotes inside of the string.
-   */
-  str,
   /**
    * Returns a type cast expression.
    */
@@ -147,7 +151,7 @@ export const tc = {
   bitRightAssign,
 };
 
-export { Arr as TcArray } from "./array";
+export { ArrayC as TcArray } from "./array";
 export { Func } from "./func";
 export { Pointer } from "./pointer";
 export { Struct } from "./struct";

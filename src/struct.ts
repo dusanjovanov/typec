@@ -1,4 +1,5 @@
 import { block } from "./chunk";
+import { Simple } from "./simple";
 import type {
   PassingValue,
   StructMembers,
@@ -6,7 +7,6 @@ import type {
 } from "./types";
 import { joinArgs } from "./utils";
 import { Value } from "./value";
-import { Variable } from "./variable";
 
 export class Struct<Members extends StructMembers> {
   constructor(name: string, members: Members) {
@@ -49,6 +49,6 @@ export class StructType<Name extends string = any> {
   specifier;
 }
 
-const s = Struct.new("Person", { a: Variable.type("int") });
+const s = Struct.new("Person", { a: Simple.type("int") });
 
 s.designated({ a: Value.int(3) });

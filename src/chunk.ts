@@ -1,3 +1,5 @@
+import type { PassingValue } from "./types";
+
 export const chunk = (statements: string[]) => {
   return statements
     .map((b) => {
@@ -15,7 +17,7 @@ export const chunk = (statements: string[]) => {
     .join(`\n`);
 };
 
-export const curly = (code: any) => {
+export const curly = (code: PassingValue) => {
   return `{${code}}`;
 };
 

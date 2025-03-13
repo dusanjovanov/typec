@@ -2,32 +2,35 @@ import { chunk } from "./chunk";
 import { Func, Param, VarArgsParam } from "./func";
 import { includeSys } from "./include";
 import { Pointer } from "./pointer";
-import { SimpleType, Variable } from "./variable";
+import { Simple } from "./simple";
 
 export const std = {
   io: {
     include: () => includeSys("stdio.h"),
-    printf: Func.new(Variable.type("int"), "printf", [
-      Param.new(Pointer.type(Variable.type("char")), "_Format"),
-      VarArgsParam.new(),
-    ]),
+    printf: Func.new(
+      Simple.type("int"),
+      "printf",
+      [Param.new(Pointer.type(Simple.type("char")), "_Format")],
+      undefined,
+      VarArgsParam.new()
+    ),
   },
   lib: {
     include: () => includeSys("stdlib.h"),
     includeCpp: () => includeSys("cstdlib.h"),
-    malloc: Func.new(Pointer.type(Variable.type("void")), "malloc", [
-      Param.new(Variable.type("size_t"), "_Size"),
+    malloc: Func.new(Pointer.type(Simple.type("void")), "malloc", [
+      Param.new(Simple.type("size_t"), "_Size"),
     ]),
-    calloc: Func.new(Pointer.type(Variable.type("void")), "calloc", [
-      Param.new(Variable.type("size_t"), "_Count"),
-      Param.new(Variable.type("size_t"), "_Size"),
+    calloc: Func.new(Pointer.type(Simple.type("void")), "calloc", [
+      Param.new(Simple.type("size_t"), "_Count"),
+      Param.new(Simple.type("size_t"), "_Size"),
     ]),
-    realloc: Func.new(Pointer.type(Variable.type("void")), "realloc", [
-      Param.new(Pointer.type(Variable.type("void")), "_Block"),
-      Param.new(Variable.type("size_t"), "_Size"),
+    realloc: Func.new(Pointer.type(Simple.type("void")), "realloc", [
+      Param.new(Pointer.type(Simple.type("void")), "_Block"),
+      Param.new(Simple.type("size_t"), "_Size"),
     ]),
-    free: Func.new(Variable.type("void"), "free", [
-      Param.new(Pointer.type(Variable.type("void")), "_Block"),
+    free: Func.new(Simple.type("void"), "free", [
+      Param.new(Pointer.type(Simple.type("void")), "_Block"),
     ]),
   },
   arg: {
@@ -52,7 +55,7 @@ export const std = {
          *
          * You should assign the returned string to a variable.
          */
-        nextArg(type: SimpleType) {
+        nextArg(type: Simple) {
           return `va_arg(${args}, ${type})`;
         },
         /** Cleanup - this has to be called when you're done reading the var args. */

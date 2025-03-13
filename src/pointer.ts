@@ -1,12 +1,14 @@
 import { Address } from "./address";
-import type { ArrType } from "./array";
+import type { ArrayType } from "./array";
+import type { FuncType } from "./func";
 import { addressOf, assign, valueOf } from "./operators";
+import type { Simple } from "./simple";
 import type { SimpleSpecifier } from "./types";
 import { Value } from "./value";
-import { SimpleType, Variable } from "./variable";
+import { Variable } from "./variable";
 
-/** Create a pointer. */
-export class Pointer<T extends SimpleType | ArrType<any, any> = any> {
+/** Create a pointer to any value. */
+export class Pointer<T extends Simple | ArrayType<any, any> = any> {
   constructor(type: T, name: string) {
     this.type = type;
     this.name = name;
@@ -16,9 +18,7 @@ export class Pointer<T extends SimpleType | ArrType<any, any> = any> {
 
   /** Returns the address of the pointer itself. */
   address() {
-    return new Address(this.type.specifier, addressOf(this.name)) as Address<
-      T["specifier"]
-    >;
+    return new Address(this.type, addressOf(this.name));
   }
 
   /** Returns the dereferenced value of the pointer. */
@@ -29,7 +29,7 @@ export class Pointer<T extends SimpleType | ArrType<any, any> = any> {
   }
 
   declare() {
-    return `${this.type}* ${this.name}`;
+    return `${this.type.specifier}* ${this.name}`;
   }
 
   /** Assign an entity to this pointer. */
@@ -42,18 +42,20 @@ export class Pointer<T extends SimpleType | ArrType<any, any> = any> {
     return assign(this.name, address);
   }
 
-  static type<T extends SimpleType | ArrType<any, any> = any>(type: T) {
+  static type<T extends Simple | ArrayType<any, any> = any>(type: T) {
     return new PointerType(type);
   }
 }
 
-export class PointerType<T extends SimpleType | ArrType<any, any> = any> {
+export class PointerType<T extends Simple | ArrayType | FuncType = any> {
   constructor(type: T) {
-    this.specifier = type.specifier;
+    this.type = type;
+    this.specifier = this.type.specifier as string;
   }
+  type;
   specifier;
 
   wrap(value: string) {
-    return new Address(this.specifier, value);
+    return new Address(this.type, value);
   }
 }

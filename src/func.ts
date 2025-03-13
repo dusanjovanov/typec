@@ -1,20 +1,23 @@
+import { Address } from "./address";
 import { block } from "./chunk";
 import { addressOf } from "./operators";
 import type { PointerType } from "./pointer";
-import type { PassingValue, UnwrapValue } from "./types";
+import { Simple } from "./simple";
+import { AnyType, type PassingValue, type TypeToValue } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
-import { SimpleType } from "./variable";
 
 /** Used for creating functions or just declaring them if they come from other C libraries. */
 export class Func<
-  Return extends SimpleType | PointerType,
-  const Params extends readonly (Param | VarArgsParam)[] = []
+  Return extends Simple | PointerType = any,
+  const Params extends readonly Param[] = any,
+  VarArgs extends VarArgsParam = any
 > {
   constructor(
     returnType: Return,
     name: string,
     params: Params,
-    body?: (fn: Func<Return, Params>) => string[]
+    body?: (fn: Func<Return, Params>) => string[],
+    varArgsParam?: VarArgs
   ) {
     this.returnType = returnType;
     this.name = name;
@@ -22,6 +25,7 @@ export class Func<
     this.paramTypes = params.map((p) => p.type);
     this.type = Func.type(returnType, params);
     this.body = body;
+    this.varArgsParam = varArgsParam;
   }
   type;
   returnType;
@@ -29,9 +33,10 @@ export class Func<
   params;
   paramTypes;
   body;
+  varArgsParam;
 
   address() {
-    return addressOf(this.name);
+    return new Address(this.type, addressOf(this.name));
   }
 
   /** Returns the declaration ( prototype ) of the function. */
@@ -51,15 +56,21 @@ export class Func<
   }
 
   /** Returns a function call expression. */
-  call(args: FuncArgsFromParams<Params>) {
+  call(args: FuncCallArgs<Params, VarArgs>) {
     return this.returnType.wrap(
       Func.call(this.name, args as any)
-    ) as UnwrapValue<Return>;
+    ) as TypeToValue<Return>;
   }
 
   /** Returns a function call expression with support for var args. */
-  callVarArgs(startArgs: PassingValue[], varArgs: PassingValue[]) {
-    return Func.callVarArgs(this.name, startArgs, varArgs);
+  callVarArgs(startArgs: FuncArgsFromParams<Params>, varArgs: PassingValue[]) {
+    return this.returnType.wrap(
+      Func.callVarArgs(this.name, startArgs as any, varArgs)
+    ) as TypeToValue<Return>;
+  }
+
+  return(value: TypeToValue<Return>) {
+    return value;
   }
 
   /** Returns a return statement expression. */
@@ -84,42 +95,43 @@ export class Func<
   }
 
   static new<
-    Return extends SimpleType | PointerType,
-    const Params extends readonly (Param | VarArgsParam)[]
+    Return extends Simple | PointerType,
+    const Params extends readonly Param[]
   >(
     returnType: Return,
     name: string,
     params: Params,
-    body?: (fn: any) => string[]
+    body?: (fn: any) => string[],
+    varArgsParam?: VarArgsParam
   ) {
-    return new Func(returnType, name, params, body);
+    return new Func(returnType, name, params, body, varArgsParam);
   }
 
   static type<
-    Return extends SimpleType | PointerType,
-    Params extends readonly (Param | VarArgsParam)[] = []
+    Return extends Simple | PointerType,
+    Params extends readonly Param[] = []
   >(returnType: Return, params: Params) {
     return new FuncType(returnType, params);
   }
 }
 
 export class FuncType<
-  Return extends SimpleType | PointerType = any,
-  const Params extends readonly (Param | VarArgsParam)[] = []
+  Return extends Simple | PointerType = any,
+  const Params extends readonly Param[] = any
 > {
   constructor(returnType: Return, params: Params) {
     this.returnType = returnType;
     this.params = params;
     this.specifier = `${this.returnType.specifier} (${joinArgs(
       this.params.map((p) => p.type.specifier)
-    )})`;
+    )})` as const;
   }
   returnType;
   params;
   specifier;
 }
 
-export class Param<T extends SimpleType | PointerType = any> {
+export class Param<T extends Simple | PointerType = any> {
   constructor(type: T, name: string) {
     this.type = type;
     this.name = name;
@@ -128,20 +140,22 @@ export class Param<T extends SimpleType | PointerType = any> {
   name;
 
   address() {
-    return addressOf(this.name);
+    return new Address(this.type.specifier, addressOf(this.name)) as Address<
+      T["specifier"]
+    >;
   }
 
   declare() {
     return `${this.type} ${this.name}`;
   }
 
-  static new<T extends SimpleType | PointerType>(type: T, name: string) {
+  static new<T extends Simple | PointerType>(type: T, name: string) {
     return new Param(type, name);
   }
 }
 
 export class VarArgsParam {
-  type = "...";
+  type = new AnyType("...");
   kind = "varargs" as const;
 
   declare() {
@@ -153,16 +167,17 @@ export class VarArgsParam {
   }
 }
 
-export type FuncArgsFromParams<
-  Params extends readonly (Param | VarArgsParam)[]
-> = Params extends readonly [...any, VarArgsParam]
-  ? { [index in keyof Params]?: FuncArgFromParam<Params[index]> }
-  : { [index in keyof Params]: FuncArgFromParam<Params[index]> };
+export type FuncCallArgs<
+  Params extends readonly Param[],
+  VarArgs extends VarArgsParam
+> = VarArgs extends void
+  ? FuncArgsFromParams<Params>
+  : [...FuncArgsFromParams<Params>, ...PassingValue[]];
 
-export type FuncArgFromParam<T extends Param | VarArgsParam> = T extends Param<
-  infer V
->
-  ? UnwrapValue<V>
-  : T extends VarArgsParam
-  ? PassingValue
+export type FuncArgsFromParams<Params extends readonly Param[]> = {
+  [index in keyof Params]: FuncArgFromParam<Params[index]>;
+};
+
+export type FuncArgFromParam<T extends Param> = T extends Param<infer V>
+  ? TypeToValue<V>
   : never;

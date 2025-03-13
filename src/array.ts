@@ -1,13 +1,20 @@
 import { Address } from "./address";
+import { curly } from "./chunk";
 import { addressOf, assign } from "./operators";
-import type { AutoSimpleSpecifier } from "./types";
+import type { PointerType } from "./pointer";
+import type { Simple } from "./simple";
+import type { PassingValue } from "./types";
+import { joinArgs } from "./utils";
 
-export class Arr<const T extends AutoSimpleSpecifier, Length extends number> {
-  constructor(elementType: T, length: Length, name: string) {
+export class ArrayC<
+  const ElementType extends Simple | PointerType,
+  Length extends number
+> {
+  constructor(elementType: ElementType, length: Length, name: string) {
     this.elementType = elementType;
     this.name = name;
     this.length = length;
-    this.type = Arr.type(elementType, length);
+    this.type = ArrayC.type(elementType, length);
   }
   type;
   elementType;
@@ -15,10 +22,7 @@ export class Arr<const T extends AutoSimpleSpecifier, Length extends number> {
   length;
 
   address() {
-    return new Address(
-      `${this.elementType} [${this.length}]`,
-      addressOf(this.name)
-    );
+    return new Address(this.type, addressOf(this.name));
   }
 
   /** Returns the array declaration. */
@@ -27,33 +31,40 @@ export class Arr<const T extends AutoSimpleSpecifier, Length extends number> {
   }
 
   /** Returns the array initialization. */
-  init(value: any) {
-    return assign(`${this.elementType} ${this.name}[]`, value);
+  init(value: PassingValue) {
+    return assign(this.declare(), value);
   }
 
-  static type<const T extends AutoSimpleSpecifier, Length extends number>(
+  static type<const T extends Simple | PointerType, Length extends number>(
     elementType: T,
     length: Length
   ) {
-    return new ArrType(elementType, length);
+    return new ArrayType(elementType, length);
   }
 
-  static pointerType<T extends AutoSimpleSpecifier, Length extends number>(
-    elementType: T,
-    length: Length
-  ) {
-    return `${elementType} (*)[${length}]` as const;
+  /** Returns an array compund literal expression. */
+  static compound(values: PassingValue[]) {
+    return curly(joinArgs(values));
+  }
+
+  /** Returns an array designated literal expression. */
+  static designated(values: Record<number, PassingValue>) {
+    return curly(
+      joinArgs(
+        Object.entries(values).map(([index, value]) => `[${index}] = ${value}`)
+      )
+    );
   }
 }
 
-export class ArrType<
-  T extends AutoSimpleSpecifier = any,
+export class ArrayType<
+  T extends Simple | PointerType = any,
   Length extends number = any
 > {
   constructor(elementType: T, length: Length) {
     this.elementType = elementType;
     this.length = length;
-    this.specifier = `${this.elementType} [${this.length}]` as const;
+    this.specifier = `${this.elementType.specifier} [${this.length}]`;
   }
   elementType;
   length;

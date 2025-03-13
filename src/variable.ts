@@ -1,20 +1,21 @@
 import { Address } from "./address";
 import { addressOf, assign } from "./operators";
-import type { AutoSimpleSpecifier, SimpleSpecifier, StringLike } from "./types";
+import { Simple } from "./simple";
+import type { SimpleSpecifier } from "./types";
 import { Value } from "./value";
 
 /** Create a variable for a simple type. */
 export class Variable<T extends SimpleSpecifier> {
-  constructor(type: SimpleType<T>, name: string) {
+  constructor(type: Simple<T>, name: string) {
     this.type = type;
     this.name = name;
   }
   type;
   name;
 
-  /** Returns the address of this variable. */
+  /** Returns the address of this variable's value. */
   address() {
-    return new Address(this.type.specifier, addressOf(this.name));
+    return new Address(this.type, addressOf(this.name));
   }
 
   /** Returns the value of this variable ( its name wrapped in a Value ). */
@@ -44,18 +45,7 @@ export class Variable<T extends SimpleSpecifier> {
     return assign(this.name, variable.value());
   }
 
-  static type<T extends AutoSimpleSpecifier>(type: T) {
-    return new SimpleType(type);
-  }
-}
-
-export class SimpleType<T extends AutoSimpleSpecifier = any> {
-  constructor(type: T) {
-    this.specifier = type;
-  }
-  specifier;
-
-  wrap(value: StringLike) {
-    return new Value(this.specifier, value);
+  static new<T extends SimpleSpecifier>(type: Simple<T>, name: string) {
+    return new Variable(type, name);
   }
 }
