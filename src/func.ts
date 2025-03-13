@@ -23,7 +23,11 @@ export class Func<
     this.name = name;
     this.params = params;
     this.paramTypes = params.map((p) => p.type);
-    this.type = Func.type(returnType, params);
+    this.type = Func.type(
+      returnType,
+      params.map((p) => p.type),
+      varArgsParam
+    ) as FuncType<Return, FuncParamTypes<Params>, VarArgs>;
     this.body = body;
     this.varArgsParam = varArgsParam;
   }
@@ -109,25 +113,31 @@ export class Func<
 
   static type<
     Return extends Simple | PointerType,
-    Params extends readonly Param[] = []
-  >(returnType: Return, params: Params) {
-    return new FuncType(returnType, params);
+    const ParamTypes extends readonly (Simple | PointerType)[] = any,
+    VarArgs extends VarArgsParam = any
+  >(returnType: Return, paramTypes: ParamTypes, varArgsParam?: VarArgs) {
+    return new FuncType(returnType, paramTypes, varArgsParam);
   }
 }
 
 export class FuncType<
   Return extends Simple | PointerType = any,
-  const Params extends readonly Param[] = any
+  const ParamTypes extends readonly (Simple | PointerType)[] = any,
+  VarArgs extends VarArgsParam = any
 > {
-  constructor(returnType: Return, params: Params) {
+  constructor(
+    returnType: Return,
+    paramTypes: ParamTypes,
+    varArgsParam?: VarArgs
+  ) {
     this.returnType = returnType;
-    this.params = params;
+    this.paramTypes = paramTypes;
     this.specifier = `${this.returnType.specifier} (${joinArgs(
-      this.params.map((p) => p.type.specifier)
-    )})` as const;
+      this.paramTypes.map((p) => p.specifier)
+    )}${emptyFalsy(varArgsParam, (v) => `,${v.type.specifier}`)})` as const;
   }
   returnType;
-  params;
+  paramTypes;
   specifier;
 }
 
@@ -182,3 +192,7 @@ export type FuncArgsFromParams<Params extends readonly Param[]> = {
 export type FuncArgFromParam<T extends Param> = T extends Param<infer V>
   ? TypeToValue<V>
   : never;
+
+export type FuncParamTypes<Params extends readonly Param[]> = {
+  [index in keyof Params]: Params[index]["type"];
+};
