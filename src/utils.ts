@@ -1,5 +1,4 @@
-import { Pointer } from "./pointer";
-import type { StringLike } from "./types";
+import type { PassingValue } from "./types";
 
 /**
  * Returns an empty string when the value is falsy.
@@ -17,12 +16,12 @@ export const emptyFalsy = <T>(
     : "";
 };
 
-export const join = (arr: StringLike[], sep = " ") => {
+export const join = (arr: PassingValue[], sep = " ") => {
   return arr.filter((v) => v != null).join(sep);
 };
 
 export const joinWithPrefix = (
-  arr: StringLike[],
+  arr: PassingValue[],
   prefix: string,
   sep = " "
 ) => {
@@ -39,15 +38,11 @@ export const fillArray = <T>(
   return Array.from({ length }).map((_, index) => callback(index));
 };
 
-export const str = (s: string) => {
-  return Pointer.type("char").wrap(`"${s.replaceAll(/"/g, `\\"`)}"`);
-};
-
 export const pointerStars = (level = 1) => {
   return join(fillArray(level, () => "*"));
 };
 
-export const joinArgs = (args: StringLike[]) => {
+export const joinArgs = (args: PassingValue[]) => {
   return join(args, ",");
 };
 

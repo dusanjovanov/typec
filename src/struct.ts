@@ -1,15 +1,15 @@
 import { block } from "./chunk";
-import { Type } from "./type";
 import type {
-  StringLike,
+  PassingValue,
   StructMembers,
   StructMemberValuesFromMembers,
 } from "./types";
 import { joinArgs } from "./utils";
+import { Value, Var } from "./variable";
 
 export class Struct<Members extends StructMembers> {
   constructor(name: string, members: Members) {
-    this.type = Type.struct(name);
+    this.type = `struct ${name}`;
     this.name = name;
     this.members = members;
   }
@@ -32,14 +32,22 @@ export class Struct<Members extends StructMembers> {
   }
 
   /** Returns a struct literal expression. */
-  literalSeq(values: StringLike[]) {
+  literalSeq(values: PassingValue[]) {
     return `{ ${joinArgs(values)} }`;
+  }
+
+  static new<Members extends StructMembers>(name: string, members: Members) {
+    return new Struct(name, members);
   }
 }
 
-export const struct = <Members extends StructMembers>(
-  name: string,
-  members: Members
-) => {
-  return new Struct(name, members);
-};
+export class StructType<Name extends string = any> {
+  constructor(name: Name) {
+    this.specifier = `struct ${name}` as const;
+  }
+  specifier;
+}
+
+const s = Struct.new("Person", { a: Var.type("int") });
+
+s.literal({ a: Value.int(3) });

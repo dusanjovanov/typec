@@ -1,29 +1,24 @@
 import { addressOf, assign } from "./operators";
-import { Address, Pointer, PointerType } from "./pointer";
-import type { TypeSpecifier } from "./types";
-import { Var, VarType } from "./variable";
+import { Address } from "./pointer";
+import type { AutoSimpleSpecifier } from "./types";
 
-export class Arr<const T extends VarType, Length extends number> {
-  constructor(elementType: T, name: string, length: Length) {
+export class Arr<const T extends AutoSimpleSpecifier, Length extends number> {
+  constructor(elementType: T, length: Length, name: string) {
     this.elementType = elementType;
     this.name = name;
     this.length = length;
-    this.type = Arr.type(elementType, length) as VarType<`${T extends VarType<
-      infer S
-    >
-      ? S
-      : any} [${Length}]`>;
+    this.type = Arr.type(elementType, length);
   }
   type;
   elementType;
   name;
   length;
 
-  addr() {
+  address() {
     return new Address(
-      `${this.elementType.specifier} [${this.length}]`,
+      `${this.elementType} [${this.length}]`,
       addressOf(this.name)
-    ) as Address<`${T extends VarType<infer S> ? S : any} [${Length}]`>;
+    );
   }
 
   /** Returns the array declaration. */
@@ -36,23 +31,31 @@ export class Arr<const T extends VarType, Length extends number> {
     return assign(`${this.elementType} ${this.name}[]`, value);
   }
 
-  static type<const T extends VarType | PointerType, Length extends number>(
+  static type<const T extends AutoSimpleSpecifier, Length extends number>(
     elementType: T,
     length: Length
   ) {
-    return new VarType(`${elementType.specifier} [${length}]`);
+    return new ArrType(elementType, length);
   }
 
-  static pointerType<T extends VarType | PointerType, Length extends number>(
+  static pointerType<T extends AutoSimpleSpecifier, Length extends number>(
     elementType: T,
     length: Length
   ) {
-    return new PointerType(`${elementType} [${length}]`);
+    return `${elementType} (*)[${length}]` as const;
   }
 }
 
-new Arr(Var.type("int"), "my_arr", 10).addr;
-
-new Var(Var.type("bool"), "bla").addr();
-
-new Pointer(Arr.pointerType(Var.type("char"), 5), "ptr").addr();
+export class ArrType<
+  T extends AutoSimpleSpecifier = any,
+  Length extends number = any
+> {
+  constructor(elementType: T, length: Length) {
+    this.elementType = elementType;
+    this.length = length;
+    this.specifier = `${this.elementType} [${this.length}]` as const;
+  }
+  elementType;
+  length;
+  specifier;
+}

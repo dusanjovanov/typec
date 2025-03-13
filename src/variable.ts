@@ -1,10 +1,10 @@
 import { addressOf, assign } from "./operators";
 import { Address } from "./pointer";
-import type { AutoSpecifier, StringLike } from "./types";
+import type { AutoSimpleSpecifier, SimpleSpecifier, StringLike } from "./types";
 
 /** Create a variable for a simple type. */
-export class Var<T extends AutoSpecifier> {
-  constructor(type: VarType<T>, name: string) {
+export class Var<T extends SimpleSpecifier> {
+  constructor(type: SimpleType<T>, name: string) {
     this.type = type;
     this.name = name;
   }
@@ -12,7 +12,7 @@ export class Var<T extends AutoSpecifier> {
   name;
 
   /** Returns the address of this variable. */
-  addr() {
+  address() {
     return new Address(this.type.specifier, addressOf(this.name));
   }
 
@@ -43,28 +43,23 @@ export class Var<T extends AutoSpecifier> {
     return assign(this.name, entity.value());
   }
 
-  static type<T extends AutoSpecifier>(type: T) {
-    return new VarType(type);
-  }
-
-  static new<T extends VarType<any>>(type: T, name: string) {
-    return new Var(type, name);
+  static type<T extends AutoSimpleSpecifier>(type: T) {
+    return new SimpleType(type);
   }
 }
 
-export class VarType<const T extends AutoSpecifier = any> {
-  constructor(specifier: T) {
-    this.specifier = specifier;
+export class SimpleType<T extends AutoSimpleSpecifier = any> {
+  constructor(type: T) {
+    this.specifier = type;
   }
-  kind = "type" as const;
   specifier;
 
   wrap(value: StringLike) {
-    return new Value<T>(this.specifier, value);
+    return new Value(this.specifier, value);
   }
 }
 
-export class Value<T extends AutoSpecifier> {
+export class Value<T extends AutoSimpleSpecifier> {
   constructor(type: T, value: StringLike) {
     this.type = type;
     this.value = value;
@@ -75,5 +70,9 @@ export class Value<T extends AutoSpecifier> {
 
   toString() {
     return this.value;
+  }
+
+  static int(value: number) {
+    return new Value("int", value);
   }
 }

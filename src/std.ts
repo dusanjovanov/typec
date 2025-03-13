@@ -2,32 +2,32 @@ import { chunk } from "./chunk";
 import { Func, Param, VarArgsParam } from "./func";
 import { includeSys } from "./include";
 import { Address, Pointer } from "./pointer";
-import { Var, VarType } from "./variable";
+import { SimpleType, Value, Var } from "./variable";
 
 export const std = {
   io: {
     include: () => includeSys("stdio.h"),
     printf: Func.new(Var.type("int"), "printf", [
-      Param.new(Pointer.type("char"), "_Format"),
+      Param.new(Pointer.type(Var.type("char")), "_Format"),
       VarArgsParam.new(),
     ]),
   },
   lib: {
     include: () => includeSys("stdlib.h"),
     includeCpp: () => includeSys("cstdlib.h"),
-    malloc: Func.new(Pointer.type("void"), "malloc", [
+    malloc: Func.new(Pointer.type(Var.type("void")), "malloc", [
       Param.new(Var.type("size_t"), "_Size"),
     ]),
-    calloc: Func.new(Pointer.type("void"), "calloc", [
+    calloc: Func.new(Pointer.type(Var.type("void")), "calloc", [
       Param.new(Var.type("size_t"), "_Count"),
       Param.new(Var.type("size_t"), "_Size"),
     ]),
-    realloc: Func.new(Pointer.type("void"), "realloc", [
-      Param.new(Pointer.type("void"), "_Block"),
+    realloc: Func.new(Pointer.type(Var.type("void")), "realloc", [
+      Param.new(Pointer.type(Var.type("void")), "_Block"),
       Param.new(Var.type("size_t"), "_Size"),
     ]),
     free: Func.new(Var.type("void"), "free", [
-      Param.new(Pointer.type("void"), "_Block"),
+      Param.new(Pointer.type(Var.type("void")), "_Block"),
     ]),
   },
   arg: {
@@ -52,7 +52,7 @@ export const std = {
          *
          * You should assign the returned string to a variable.
          */
-        nextArg(type: VarType) {
+        nextArg(type: SimpleType) {
           return `va_arg(${args}, ${type})`;
         },
         /** Cleanup - this has to be called when you're done reading the var args. */
@@ -66,4 +66,8 @@ export const std = {
 
 std.io.printf.call([new Address("char", "asdasd")]);
 
-Func.new(Var.type("void"), "asd", []).call([]);
+const someParam = Param.new(Pointer.type(Var.type("char")), "blah");
+
+const someFn = Func.new(Var.type("void"), "asd", [someParam]);
+
+someFn.call([Address.string("3")]);

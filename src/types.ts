@@ -1,8 +1,9 @@
-import type { Param, VarArgsParam } from "./func";
+import type { ArrType } from "./array";
+import type { FuncType } from "./func";
 import type { Address, PointerType } from "./pointer";
-import type { Value, VarType } from "./variable";
+import type { SimpleType, Value } from "./variable";
 
-export type TypeSpecifier =
+export type SimpleSpecifier =
   | "bool"
   | "char"
   | "signed char"
@@ -22,41 +23,29 @@ export type TypeSpecifier =
   | "void"
   | "size_t";
 
-export type Qualifier =
-  | "const"
-  | "static const"
-  | "volatile"
-  | "static"
-  | "register"
-  | "auto"
-  | "extern";
+export type Autocomplete<T> = T | (string & {});
 
-export type PointerQualifier = Qualifier | "restricted";
-
-export type Autocomplete<T extends string> = T | (string & {});
-
-export type StringLike = string | number;
-
-export type AutoSpecifier = Autocomplete<TypeSpecifier>;
-
-export type AutoQualifier = Autocomplete<Qualifier>;
-
-export type AutoPointerQualifier = Autocomplete<PointerQualifier>;
+export type AutoSimpleSpecifier = Autocomplete<SimpleSpecifier>;
 
 export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 
-export type StructMembers = { [key: string]: AutoSpecifier };
-
-export type StructMemberValues = { [key: string]: StringLike };
-
-export type StructMemberValuesFromMembers<Members extends StructMembers> = {
-  [key in keyof Members]?: StringLike;
+export type StructMembers = {
+  [Key: string]: SimpleType | ArrType | FuncType | PointerType;
 };
 
-export type TypeValue<T extends VarType | PointerType> = T extends VarType<
-  infer S
->
-  ? Value<S>
-  : T extends PointerType<infer S>
-  ? Address<S>
-  : never;
+export type StructMemberValues = { [key: string]: PassingValue };
+
+export type StructMemberValuesFromMembers<Members extends StructMembers> = {
+  [Key in keyof Members]?: TypeValue<Members[Key]>;
+};
+
+export type TypeValue<T extends SimpleType | PointerType | ArrType | FuncType> =
+  T extends SimpleType<infer S>
+    ? Value<S>
+    : T extends PointerType<infer S>
+    ? Address<S extends SimpleType ? S["specifier"] : S>
+    : never;
+
+export type StringLike = string | number;
+
+export type PassingValue = StringLike | Value<any> | Address<any>;

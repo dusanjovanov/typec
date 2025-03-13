@@ -1,6 +1,6 @@
 import { block } from "./chunk";
-import type { StringLike } from "./types";
+import type { PassingValue } from "./types";
 
-export const whileLoop = (condition: StringLike, body: string[]) => {
+export const whileLoop = (condition: PassingValue, body: string[]) => {
   return `while(${condition})${block(body)}`;
 };

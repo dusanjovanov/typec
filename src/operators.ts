@@ -1,6 +1,4 @@
-import type { Address } from "./pointer";
-import type { AutoSpecifier, StringLike } from "./types";
-import type { Value } from "./variable";
+import type { AutoSimpleSpecifier, PassingValue } from "./types";
 
 const preUn = (op: string) => (name: string) => `${op}${name}`;
 const postUn = (op: string) => (name: string) => `${name}${op}`;
@@ -25,10 +23,9 @@ export const valueOf = (pointerName: string) => `*${pointerName}`;
 
 export const addressOf = preUn("&");
 
-const binOp =
-  (op: string) => (left: string, right: Value<any> | Address<any>) => {
-    return `${left}${op}${right}`;
-  };
+const binOp = (op: string) => (left: string, right: PassingValue) => {
+  return `${left}${op}${right}`;
+};
 
 export const modulo = binOp("%");
 
@@ -88,7 +85,7 @@ export const bitLeftAssign = binOp("<<=");
 
 export const bitRightAssign = binOp(">>=");
 
-export const cast = (type: AutoSpecifier, exp: string) => {
+export const cast = (type: AutoSimpleSpecifier, exp: string) => {
   return `(${type})(${exp})`;
 };
 
@@ -102,8 +99,8 @@ export const byAddress = (structName: string, member: string) => {
 
 export const ternary = (
   condition: string,
-  exp1: StringLike,
-  exp2: StringLike
+  exp1: PassingValue,
+  exp2: PassingValue
 ) => {
   return `${condition}?${exp1}:${exp2}`;
 };
