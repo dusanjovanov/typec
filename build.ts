@@ -1,23 +1,15 @@
-import type { BuildConfig } from "bun";
 import dts from "bun-plugin-dts";
-
-const defaultBuildConfig: BuildConfig = {
-  entrypoints: ["./src/index.ts"],
-  outdir: "./dist",
-  minify: true,
-  sourcemap: "external",
-};
+import fs from "node:fs/promises";
 
 await Promise.all([
+  fs.rm("dist", { recursive: true, force: true }),
   Bun.build({
-    ...defaultBuildConfig,
-    plugins: [dts()],
+    entrypoints: ["./src/index.ts"],
+    outdir: "./dist",
     format: "esm",
+    plugins: [dts()],
+    minify: true,
+    sourcemap: "external",
     naming: "[dir]/[name].js",
-  }),
-  Bun.build({
-    ...defaultBuildConfig,
-    format: "cjs",
-    naming: "[dir]/[name].cjs",
   }),
 ]);
