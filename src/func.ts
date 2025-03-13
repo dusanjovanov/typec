@@ -1,9 +1,10 @@
 import { Address } from "./address";
 import { block } from "./chunk";
 import { Operator } from "./operators";
-import type { PointerType } from "./pointer";
+import { Pointer } from "./pointer";
+import type { PointerType } from "./pointerType";
 import { Simple } from "./simple";
-import { AnyType, type PassingValue, type TypeToValue } from "./types";
+import { AnyType, type PassingValue, type TypeToValueContainer } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
 
 /** Used for creating functions or just declaring them if they come from other C libraries. */
@@ -40,7 +41,7 @@ export class Func<
   varArgsParam;
 
   address() {
-    return new Address(this.type, Operator.addressOf(this.name));
+    return this.type.toAddress(Operator.addressOf(this.name));
   }
 
   /** Returns the declaration ( prototype ) of the function. */
@@ -61,19 +62,19 @@ export class Func<
 
   /** Returns a function call expression. */
   call(args: FuncCallArgs<Params, VarArgs>) {
-    return this.returnType.wrap(
+    return this.returnType.toDefault(
       Func.call(this.name, args as any)
-    ) as TypeToValue<Return>;
+    ) as TypeToValueContainer<Return>;
   }
 
   /** Returns a function call expression with support for var args. */
   callVarArgs(startArgs: FuncArgsFromParams<Params>, varArgs: PassingValue[]) {
-    return this.returnType.wrap(
+    return this.returnType.toDefault(
       Func.callVarArgs(this.name, startArgs as any, varArgs)
-    ) as TypeToValue<Return>;
+    ) as TypeToValueContainer<Return>;
   }
 
-  return(value: TypeToValue<Return>) {
+  return(value: TypeToValueContainer<Return>) {
     return value;
   }
 
@@ -118,6 +119,14 @@ export class Func<
   >(returnType: Return, paramTypes: ParamTypes, varArgsParam?: VarArgs) {
     return new FuncType(returnType, paramTypes, varArgsParam);
   }
+
+  static pointerType<
+    Return extends Simple | PointerType,
+    const ParamTypes extends readonly (Simple | PointerType)[] = any,
+    VarArgs extends VarArgsParam = any
+  >(returnType: Return, paramTypes: ParamTypes, varArgsParam?: VarArgs) {
+    return Pointer.type(Func.type(returnType, paramTypes, varArgsParam));
+  }
 }
 
 export class FuncType<
@@ -134,11 +143,15 @@ export class FuncType<
     this.paramTypes = paramTypes;
     this.specifier = `${this.returnType.specifier} (${joinArgs(
       this.paramTypes.map((p) => p.specifier)
-    )}${emptyFalsy(varArgsParam, (v) => `,${v.type.specifier}`)})` as const;
+    )}${emptyFalsy(varArgsParam, (v) => `,${v.type.specifier}`)})`;
   }
   returnType;
   paramTypes;
   specifier;
+
+  toAddress(value: string) {
+    return new Address(this, value);
+  }
 }
 
 export class Param<T extends Simple | PointerType = any> {
@@ -150,10 +163,7 @@ export class Param<T extends Simple | PointerType = any> {
   name;
 
   address() {
-    return new Address(
-      this.type.specifier,
-      Operator.addressOf(this.name)
-    ) as Address<T["specifier"]>;
+    return this.type.toAddress(Operator.addressOf(this.name)) as Address<T>;
   }
 
   declare() {
@@ -167,11 +177,6 @@ export class Param<T extends Simple | PointerType = any> {
 
 export class VarArgsParam {
   type = new AnyType("...");
-  kind = "varargs" as const;
-
-  declare() {
-    return "...";
-  }
 
   static new() {
     return new VarArgsParam();
@@ -190,7 +195,7 @@ export type FuncArgsFromParams<Params extends readonly Param[]> = {
 };
 
 export type FuncArgFromParam<T extends Param> = T extends Param<infer V>
-  ? TypeToValue<V>
+  ? TypeToValueContainer<V>
   : never;
 
 export type FuncParamTypes<Params extends readonly Param[]> = {

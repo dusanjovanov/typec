@@ -67,3 +67,17 @@ export const removePointerStars = (pointerType: string) => {
 };
 
 const starRegex = /\*+/g;
+
+export const stringSplice = (
+  str: string,
+  offset: number,
+  strToInsert: string,
+  removeCount = 0
+) => {
+  let calculatedOffset = offset < 0 ? str.length + offset : offset;
+  return (
+    str.substring(0, calculatedOffset) +
+    strToInsert +
+    str.substring(calculatedOffset + removeCount)
+  );
+};

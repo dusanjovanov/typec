@@ -24,4 +24,8 @@ export class Value<T extends AutoSimpleSpecifier> {
   static short(value: number) {
     return new Value("short", value);
   }
+
+  static char(value: string) {
+    return new Value("char", value);
+  }
 }

@@ -1,7 +1,7 @@
 import type { Address } from "./address";
 import type { ArrayType } from "./array";
 import type { FuncType } from "./func";
-import type { PointerType } from "./pointer";
+import type { PointerType } from "./pointerType";
 import type { Simple } from "./simple";
 import type { Value } from "./value";
 
@@ -14,7 +14,6 @@ export type SimpleSpecifier =
   | "short"
   | "unsigned short"
   | "int"
-  | "unsigned"
   | "unsigned int"
   | "long"
   | "unsigned long"
@@ -26,32 +25,25 @@ export type SimpleSpecifier =
   | "void"
   | "size_t";
 
-/** Typescript helper for loosely typed string unions. You get suggestions, but accepts any string. */
+export type TypeQualifier = "const" | "volatile";
+
+/** Helper for loosely typed string unions. You get suggestions, but accepts any string. */
 export type Autocomplete<T> = T | (string & {});
 
 export type AutoSimpleSpecifier = Autocomplete<SimpleSpecifier>;
 
 export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 
-export type StructMembers = {
-  [Key: string]: Simple | ArrayType | FuncType | PointerType;
-};
-
-export type StructMemberValues = { [key: string]: PassingValue };
-
-export type StructMemberValuesFromMembers<Members extends StructMembers> = {
-  [Key in keyof Members]?: TypeToValue<Members[Key]>;
-};
-
 /** Extract the Value or Address container type for a data type. */
-export type TypeToValue<T extends Simple | PointerType | ArrayType | FuncType> =
-  T extends Simple<infer S>
-    ? Value<S>
-    : T extends ArrayType | FuncType
-    ? Address<T>
-    : T extends PointerType<infer S>
-    ? Address<S>
-    : never;
+export type TypeToValueContainer<
+  T extends Simple | PointerType | ArrayType | FuncType
+> = T extends Simple<infer S>
+  ? Value<S>
+  : T extends ArrayType | FuncType
+  ? Address<T>
+  : T extends PointerType<infer K>
+  ? Address<K>
+  : never;
 
 export type StringLike = string | number;
 

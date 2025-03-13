@@ -1,7 +1,7 @@
 import { Address } from "./address";
 import { curly } from "./chunk";
 import { Operator } from "./operators";
-import type { PointerType } from "./pointer";
+import type { PointerType } from "./pointerType";
 import type { Simple } from "./simple";
 import type { PassingValue } from "./types";
 import { joinArgs } from "./utils";
@@ -22,7 +22,7 @@ export class ArrayC<
   length;
 
   address() {
-    return new Address(this.type, Operator.addressOf(this.name));
+    return this.type.toAddress(Operator.addressOf(this.name));
   }
 
   /** Returns the array declaration. */
@@ -69,4 +69,8 @@ export class ArrayType<
   elementType;
   length;
   specifier;
+
+  toAddress(value: string) {
+    return new Address(this, value);
+  }
 }

@@ -1,12 +1,10 @@
+import type { ArrayType } from "./array";
 import { block } from "./chunk";
+import type { FuncType } from "./func";
+import type { PointerType } from "./pointerType";
 import { Simple } from "./simple";
-import type {
-  PassingValue,
-  StructMembers,
-  StructMemberValuesFromMembers,
-} from "./types";
+import type { PassingValue, TypeToValueContainer } from "./types";
 import { joinArgs } from "./utils";
-import { Value } from "./value";
 
 export class Struct<Members extends StructMembers> {
   constructor(name: string, members: Members) {
@@ -26,7 +24,7 @@ export class Struct<Members extends StructMembers> {
   }
 
   /** Returns a struct designated initializer expression. */
-  designated(values: StructMemberValuesFromMembers<Members>) {
+  designated(values: StructValuesFromMembers<Members>) {
     return `{ ${joinArgs(
       Object.entries(values).map(([name, value]) => `.${name}=${value}`)
     )} }`;
@@ -44,11 +42,17 @@ export class Struct<Members extends StructMembers> {
 
 export class StructType<Name extends string = any> {
   constructor(name: Name) {
-    this.specifier = `struct ${name}` as const;
+    this.specifier = `struct ${name}`;
   }
   specifier;
 }
 
-const s = Struct.new("Person", { a: Simple.type("int") });
+export type StructMembers = {
+  [Key: string]: Simple | ArrayType | FuncType | PointerType;
+};
 
-s.designated({ a: Value.int(3) });
+export type StructMemberValues = { [key: string]: PassingValue };
+
+export type StructValuesFromMembers<Members extends StructMembers> = {
+  [Key in keyof Members]?: TypeToValueContainer<Members[Key]>;
+};

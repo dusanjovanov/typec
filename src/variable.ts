@@ -1,4 +1,3 @@
-import { Address } from "./address";
 import { Operator } from "./operators";
 import { Simple } from "./simple";
 import type { SimpleSpecifier } from "./types";
@@ -15,12 +14,12 @@ export class Variable<T extends SimpleSpecifier> {
 
   /** Returns the address of this variable's value. */
   address() {
-    return new Address(this.type, Operator.addressOf(this.name));
+    return this.type.toAddress(Operator.addressOf(this.name));
   }
 
   /** Returns the value of this variable ( its name wrapped in a Value ). */
   value() {
-    return new Value(this.type.specifier, this.name);
+    return this.type.toValue(this.name);
   }
 
   declare() {
