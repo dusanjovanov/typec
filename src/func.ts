@@ -60,18 +60,26 @@ export class Func<
     return `${this.declare()}${block(bodyImpl)}`;
   }
 
+  private resolveReturn(value: string) {
+    if (this.returnType instanceof Simple) {
+      return this.returnType.toValue(value) as TypeToValueContainer<Return>;
+    }
+    //
+    else {
+      return this.returnType.toAddress(value) as TypeToValueContainer<Return>;
+    }
+  }
+
   /** Returns a function call expression. */
   call(args: FuncCallArgs<Params, VarArgs>) {
-    return this.returnType.toDefault(
-      Func.call(this.name, args as any)
-    ) as TypeToValueContainer<Return>;
+    return this.resolveReturn(Func.call(this.name, args as any));
   }
 
   /** Returns a function call expression with support for var args. */
   callVarArgs(startArgs: FuncArgsFromParams<Params>, varArgs: PassingValue[]) {
-    return this.returnType.toDefault(
+    return this.resolveReturn(
       Func.callVarArgs(this.name, startArgs as any, varArgs)
-    ) as TypeToValueContainer<Return>;
+    );
   }
 
   return(value: TypeToValueContainer<Return>) {

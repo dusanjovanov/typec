@@ -4,8 +4,7 @@ import { FuncType } from "./func";
 import { Operator } from "./operators";
 import { PointerType } from "./pointerType";
 import { Simple } from "./simple";
-import type { AutoSimpleSpecifier, SimpleSpecifier } from "./types";
-import { Variable } from "./variable";
+import type { AutoSimpleSpecifier, TypeQualifier } from "./types";
 
 /** Create a pointer to any value. */
 export class Pointer<
@@ -32,13 +31,12 @@ export class Pointer<
     return `${this.type.specifier}* ${this.name}`;
   }
 
-  /** Assign an entity to this pointer. */
-  assign(entity: Variable<SimpleSpecifier> | Pointer<T>) {
-    return Operator.assign(this.name, entity.address());
+  init(address: Address<T>) {
+    return Operator.assign(this.declare(), address);
   }
 
   /** Assign an address. */
-  assignAddress(address: Address<T["specifier"]>) {
+  assign(address: Address<T>) {
     return Operator.assign(this.name, address);
   }
 
@@ -46,7 +44,10 @@ export class Pointer<
     return new PointerType(type);
   }
 
-  static simple<T extends AutoSimpleSpecifier>(type: T) {
-    return Pointer.type(new Simple(type));
+  static simple<T extends AutoSimpleSpecifier>(
+    type: T,
+    typeQualifiers?: TypeQualifier[]
+  ) {
+    return Pointer.type(new Simple(type, typeQualifiers));
   }
 }

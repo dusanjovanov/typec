@@ -1,3 +1,4 @@
+import { Address } from "./address";
 import type { ArrayType } from "./array";
 import { block } from "./chunk";
 import type { FuncType } from "./func";
@@ -45,6 +46,10 @@ export class StructType<Name extends string = any> {
     this.specifier = `struct ${name}`;
   }
   specifier;
+
+  toAddress(value: string) {
+    return new Address(this, value);
+  }
 }
 
 export type StructMembers = {

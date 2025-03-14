@@ -43,10 +43,6 @@ export class PointerType<
   type: T;
   specifier;
 
-  toDefault(value: string) {
-    return this.toAddress(value);
-  }
-
   toAddress(value: string) {
     return new Address(this, value);
   }

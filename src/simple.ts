@@ -11,10 +11,6 @@ export class Simple<T extends AutoSimpleSpecifier = any> {
   specifier;
   qualifiers;
 
-  toDefault(value: StringLike) {
-    return this.toValue(value);
-  }
-
   toValue(value: StringLike) {
     return new Value(this.specifier, value);
   }

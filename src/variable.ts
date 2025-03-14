@@ -22,26 +22,19 @@ export class Variable<T extends SimpleSpecifier> {
     return this.type.toValue(this.name);
   }
 
+  /** Returns the variable declaration statement. */
   declare() {
-    return `${this.type} ${this.name}`;
+    return `${this.type.specifier} ${this.name}`;
   }
 
+  /** Initialize with a value. */
   init(value: Value<T>) {
     return Operator.assign(this.declare(), value);
-  }
-
-  initEnt(entity: Variable<T>) {
-    return Operator.assign(this.declare(), entity.value());
   }
 
   /** Assign a value. */
   assign(value: Value<T>) {
     return Operator.assign(this.name, value);
-  }
-
-  /** Assign a variable. */
-  assignVar(variable: Variable<T>) {
-    return Operator.assign(this.name, variable.value());
   }
 
   static new<T extends SimpleSpecifier>(type: Simple<T>, name: string) {
