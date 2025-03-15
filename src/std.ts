@@ -1,11 +1,10 @@
-import { Address } from "./address";
 import { chunk } from "./chunk";
 import { Func, Param, VarArgsParam } from "./func";
 import { Include } from "./include";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
 
-class VarArgsHelper {
+export class VarArgsHelper {
   constructor(argsName = "varargs") {
     this.argsName = argsName;
   }
@@ -41,44 +40,77 @@ class VarArgsHelper {
   }
 }
 
-const printfFn = Func.new(
-  Simple.type("int"),
-  "printf",
-  [Param.new(Pointer.type(Simple.type("char")), "_Format")],
-  undefined,
-  VarArgsParam.new()
-);
+export class Io {
+  static include() {
+    return Include.system("stdio.h");
+  }
 
-/** Functions and helpers for standard C libraries */
-export const std = {
-  printf: (format: string, ...args: any[]) => {
-    return printfFn.callVarArgs([Address.string(format)], args);
-  },
-  io: {
-    include: () => Include.system("stdio.h"),
-    printf: printfFn,
-  },
-  lib: {
-    include: () => Include.system("stdlib.h"),
-    includeCpp: () => Include.system("cstdlib.h"),
-    malloc: Func.new(Pointer.simple("void"), "malloc", [
-      Param.new(Simple.type("size_t"), "_Size"),
-    ]),
-    calloc: Func.new(Pointer.simple("void"), "calloc", [
-      Param.new(Simple.type("size_t"), "_Count"),
-      Param.new(Simple.type("size_t"), "_Size"),
-    ]),
-    realloc: Func.new(Pointer.simple("void"), "realloc", [
-      Param.new(Pointer.simple("void"), "_Block"),
-      Param.new(Simple.type("size_t"), "_Size"),
-    ]),
-    free: Func.new(Simple.type("void"), "free", [
-      Param.new(Pointer.simple("void"), "_Block"),
-    ]),
-  },
-  arg: {
-    include: () => Include.system("stdarg.h"),
-    /** Helper class for implementing a var arg function parameter. */
-    VarArgsHelper,
-  },
-};
+  static printf = Func.new(
+    Simple.int(),
+    "printf",
+    [Param.new(Pointer.string(), "_Format")],
+    undefined,
+    VarArgsParam.new()
+  );
+
+  static puts = Func.new(Simple.int(), "puts", [
+    Param.new(Pointer.string(["const"]), "_Buffer"),
+  ]);
+}
+
+export class Lib {
+  static include() {
+    return Include.system("stdlib.h");
+  }
+
+  static includeCpp() {
+    return Include.system("cstdlib.h");
+  }
+
+  static malloc = Func.new(Pointer.void(), "malloc", [
+    Param.new(Simple.size_t(), "_Size"),
+  ]);
+
+  static calloc = Func.new(Pointer.void(), "calloc", [
+    Param.new(Simple.size_t(), "_Count"),
+    Param.new(Simple.size_t(), "_Size"),
+  ]);
+
+  static realloc = Func.new(Pointer.void(), "realloc", [
+    Param.new(Pointer.void(), "_Block"),
+    Param.new(Simple.size_t(), "_Size"),
+  ]);
+
+  static free = Func.new(Simple.void(), "free", [
+    Param.new(Pointer.void(), "_Block"),
+  ]);
+}
+
+export class StdArg {
+  static include() {
+    return Include.system("stdarg.h");
+  }
+
+  /** Helper class for implementing a var arg function parameter. */
+  static VarArgsHelper = VarArgsHelper;
+}
+
+export class StdString {
+  include() {
+    return Include.system("string.h");
+  }
+
+  static strlen = Func.new(Simple.size_t(), "strlen", [
+    Param.new(Pointer.string(), "str"),
+  ]);
+
+  static strnlen_s = Func.new(Simple.size_t(), "strnlen_s", [
+    Param.new(Pointer.string(), "str"),
+    Param.new(Simple.size_t(), "strsz"),
+  ]);
+
+  static strcat = Func.new(Pointer.string(), "strcat", [
+    Param.new(Pointer.string(), "dest"),
+    Param.new(Pointer.string(["const"]), "src"),
+  ]);
+}

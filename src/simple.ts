@@ -25,4 +25,20 @@ export class Simple<T extends AutoSimpleSpecifier = any> {
   ) {
     return new Simple(type, qualifiers);
   }
+
+  static int(qualifiers?: TypeQualifier[]) {
+    return Simple.type("int", qualifiers);
+  }
+
+  static size_t(qualifiers?: TypeQualifier[]) {
+    return Simple.type("size_t", qualifiers);
+  }
+
+  static void(qualifiers?: TypeQualifier[]) {
+    return Simple.type("void", qualifiers);
+  }
+
+  static char(qualifiers?: TypeQualifier[]) {
+    return Simple.type("char", qualifiers);
+  }
 }

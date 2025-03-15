@@ -1,53 +1,114 @@
 import { Address } from "./address";
 import { ArrayType } from "./array";
 import { FuncType } from "./func";
-import { Operator } from "./operators";
-import { PointerType } from "./pointerType";
 import { Simple } from "./simple";
-import type { AutoSimpleSpecifier, TypeQualifier } from "./types";
+import type {
+  AutoSimpleSpecifier,
+  PointerTypeQualifier,
+  TypeQualifier,
+} from "./types";
+import { stringSplice } from "./utils";
+import { Value } from "./value";
 
-/** Create a pointer to any value. */
+/** A pointer type wrapping another type. */
 export class Pointer<
-  T extends Simple | ArrayType | FuncType | PointerType = any
+  InnerType extends Simple | ArrayType | FuncType | Pointer = any
 > {
-  constructor(type: PointerType<T>, name: string) {
-    this.type = type;
-    this.name = name;
-  }
-  type;
-  name;
+  constructor(innerType: InnerType, qualifiers?: PointerTypeQualifier[]) {
+    this.innerType = innerType;
+    this.qualifiers = qualifiers;
 
-  /** Returns the address of the pointer itself. */
-  address() {
-    return this.type.toAddress(Operator.addressOf(this.name));
+    if (this.innerType instanceof Simple) {
+      this.specifier = `${this.innerType.specifier}*`;
+    }
+    //
+    else if (this.innerType instanceof ArrayType) {
+      this.specifier = stringSplice(
+        this.innerType.specifier,
+        this.innerType.specifier.indexOf("["),
+        "(*)"
+      );
+    }
+    //
+    else if (this.innerType instanceof FuncType) {
+      this.specifier = stringSplice(
+        this.innerType.specifier,
+        this.innerType.specifier.indexOf("("),
+        "(*)"
+      );
+    }
+    //
+    else {
+      this.specifier = stringSplice(
+        this.innerType.specifier,
+        this.innerType.specifier.indexOf("*"),
+        "*"
+      );
+    }
+  }
+  innerType: InnerType;
+  specifier;
+  qualifiers;
+
+  toAddress(value: string) {
+    return new Address(this, value);
   }
 
-  /** Returns the dereferenced value of the pointer. */
-  value() {
-    return this.type.toValue(Operator.addressOf(this.name));
+  toValue(value: string) {
+    return new Value(this.innerType.specifier, value) as Value<
+      InnerType["specifier"]
+    >;
   }
 
-  declare() {
-    return `${this.type.specifier}* ${this.name}`;
+  static new<T extends Simple | ArrayType | FuncType | Pointer = any>(
+    type: T,
+    qualifiers?: PointerTypeQualifier[]
+  ) {
+    return new Pointer(type, qualifiers);
   }
 
-  init(address: Address<T>) {
-    return Operator.assign(this.declare(), address);
-  }
-
-  /** Assign an address. */
-  assign(address: Address<T>) {
-    return Operator.assign(this.name, address);
-  }
-
-  static type<T extends Simple | ArrayType | FuncType = any>(type: T) {
-    return new PointerType(type);
-  }
-
+  /** Create a pointer type for a simple type. */
   static simple<T extends AutoSimpleSpecifier>(
     type: T,
-    typeQualifiers?: TypeQualifier[]
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerTypeQualifier[]
   ) {
-    return Pointer.type(new Simple(type, typeQualifiers));
+    return Pointer.new(Simple.type(type, typeQualifiers), pointerQualifiers);
+  }
+
+  /** Pointer type for a char in a string. */
+  static string(
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerTypeQualifier[]
+  ) {
+    return Pointer.simple("char", typeQualifiers, pointerQualifiers);
+  }
+
+  static void(
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerTypeQualifier[]
+  ) {
+    return Pointer.simple("void", typeQualifiers, pointerQualifiers);
+  }
+
+  static char(
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerTypeQualifier[]
+  ) {
+    return Pointer.simple("char", typeQualifiers, pointerQualifiers);
+  }
+
+  static int(
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerTypeQualifier[]
+  ) {
+    return Pointer.simple("int", typeQualifiers, pointerQualifiers);
+  }
+
+  static bool(
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerTypeQualifier[]
+  ) {
+    return Pointer.simple("bool", typeQualifiers, pointerQualifiers);
   }
 }

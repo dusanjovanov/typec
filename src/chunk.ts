@@ -1,12 +1,14 @@
 import type { PassingValue } from "./types";
 
 /** Takes in an array of statements as strings and adds semicolons and new lines appropriately. */
-export const chunk = (statements: string[]) => {
+export const chunk = (statements: PassingValue[]) => {
   return statements
     .map((b) => {
-      const lastChar = b.at(-1);
+      const str = b.toString();
+
+      const lastChar = str.at(-1);
       if (
-        b[0] !== "#" &&
+        str[0] !== "#" &&
         lastChar !== "}" &&
         lastChar !== ";" &&
         lastChar !== "\n"
@@ -24,6 +26,6 @@ export const curly = (code: PassingValue) => {
 };
 
 /** Chunk of code within curly braces. */
-export const block = (statements: string[]) => {
+export const block = (statements: PassingValue[]) => {
   return `\n${curly(`\n${chunk(statements)}\n`)}`;
 };

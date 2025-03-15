@@ -2,11 +2,12 @@ import { Address } from "./address";
 import type { ArrayType } from "./array";
 import { block } from "./chunk";
 import type { FuncType } from "./func";
-import type { PointerType } from "./pointerType";
+import type { Pointer } from "./pointer";
 import { Simple } from "./simple";
 import type { PassingValue, TypeToValueContainer } from "./types";
 import { joinArgs } from "./utils";
 
+/** Used for Struct declarations. */
 export class Struct<Members extends StructMembers> {
   constructor(name: string, members: Members) {
     this.type = `struct ${name}`;
@@ -31,16 +32,12 @@ export class Struct<Members extends StructMembers> {
     )} }`;
   }
 
-  /** Returns a struct compound literal expression. */
-  compound(values: PassingValue[]) {
-    return `{ ${joinArgs(values)} }`;
-  }
-
   static new<Members extends StructMembers>(name: string, members: Members) {
     return new Struct(name, members);
   }
 }
 
+/** Type of a struct instance. */
 export class StructType<Name extends string = any> {
   constructor(name: Name) {
     this.specifier = `struct ${name}`;
@@ -50,10 +47,14 @@ export class StructType<Name extends string = any> {
   toAddress(value: string) {
     return new Address(this, value);
   }
+
+  static new<Name extends string = any>(name: Name) {
+    return new StructType(name);
+  }
 }
 
 export type StructMembers = {
-  [Key: string]: Simple | ArrayType | FuncType | PointerType;
+  [Key: string]: Simple | ArrayType | FuncType | Pointer;
 };
 
 export type StructMemberValues = { [key: string]: PassingValue };

@@ -2,14 +2,19 @@ import { Address } from "./address";
 import { block } from "./chunk";
 import { Operator } from "./operators";
 import { Pointer } from "./pointer";
-import type { PointerType } from "./pointerType";
 import { Simple } from "./simple";
-import { AnyType, type PassingValue, type TypeToValueContainer } from "./types";
+import {
+  AnyType,
+  type PassingValue,
+  type PointerTypeQualifier,
+  type TypeToValueContainer,
+} from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
+import { Var } from "./variable";
 
 /** Used for creating functions or just declaring them if they come from other C libraries. */
 export class Func<
-  Return extends Simple | PointerType = any,
+  Return extends Simple | Pointer = any,
   const Params extends readonly Param[] = any,
   VarArgs extends VarArgsParam = any
 > {
@@ -24,7 +29,7 @@ export class Func<
     this.name = name;
     this.params = params;
     this.paramTypes = params.map((p) => p.type);
-    this.type = Func.type(
+    this.type = FuncType.new(
       returnType,
       params.map((p) => p.type),
       varArgsParam
@@ -40,6 +45,7 @@ export class Func<
   body;
   varArgsParam;
 
+  /** Returns the address of this function. */
   address() {
     return this.type.toAddress(Operator.addressOf(this.name));
   }
@@ -86,15 +92,22 @@ export class Func<
     return value;
   }
 
+  /** Returns a pointer variable meant to point to this function. */
+  pointer(name: string, pointerQualifiers?: PointerTypeQualifier[]) {
+    return Var.new(this.type.pointer(pointerQualifiers), name);
+  }
+
   /** Returns a return statement expression. */
   static return(value: PassingValue) {
     return `return ${value};`;
   }
 
+  /** Returns a function call expression. */
   static call(fnName: string, args?: PassingValue[]) {
     return `${fnName}(${emptyFalsy(args, joinArgs)})`;
   }
 
+  /** Returns a function call expression with support for varargs. */
   static callVarArgs(
     fnName: string,
     startArgs: PassingValue[],
@@ -108,7 +121,7 @@ export class Func<
   }
 
   static new<
-    Return extends Simple | PointerType,
+    Return extends Simple | Pointer,
     const Params extends readonly Param[]
   >(
     returnType: Return,
@@ -119,27 +132,11 @@ export class Func<
   ) {
     return new Func(returnType, name, params, body, varArgsParam);
   }
-
-  static type<
-    Return extends Simple | PointerType,
-    const ParamTypes extends readonly (Simple | PointerType)[] = any,
-    VarArgs extends VarArgsParam = any
-  >(returnType: Return, paramTypes: ParamTypes, varArgsParam?: VarArgs) {
-    return new FuncType(returnType, paramTypes, varArgsParam);
-  }
-
-  static pointerType<
-    Return extends Simple | PointerType,
-    const ParamTypes extends readonly (Simple | PointerType)[] = any,
-    VarArgs extends VarArgsParam = any
-  >(returnType: Return, paramTypes: ParamTypes, varArgsParam?: VarArgs) {
-    return Pointer.type(Func.type(returnType, paramTypes, varArgsParam));
-  }
 }
 
 export class FuncType<
-  Return extends Simple | PointerType = any,
-  const ParamTypes extends readonly (Simple | PointerType)[] = any,
+  Return extends Simple | Pointer = any,
+  const ParamTypes extends readonly (Simple | Pointer)[] = any,
   VarArgs extends VarArgsParam = any
 > {
   constructor(
@@ -157,12 +154,25 @@ export class FuncType<
   paramTypes;
   specifier;
 
-  toAddress(value: string) {
-    return new Address(this, value);
+  toAddress(name: string) {
+    return new Address(this, name);
+  }
+
+  /** Create a pointer type for this function type. */
+  pointer(pointerQualifiers?: PointerTypeQualifier[]) {
+    return Pointer.new(this, pointerQualifiers);
+  }
+
+  static new<
+    Return extends Simple | Pointer,
+    const ParamTypes extends readonly (Simple | Pointer)[] = any,
+    VarArgs extends VarArgsParam = any
+  >(returnType: Return, paramTypes: ParamTypes, varArgsParam?: VarArgs) {
+    return new FuncType(returnType, paramTypes, varArgsParam);
   }
 }
 
-export class Param<T extends Simple | PointerType = any> {
+export class Param<T extends Simple | Pointer = any> {
   constructor(type: T, name: string) {
     this.type = type;
     this.name = name;
@@ -171,14 +181,14 @@ export class Param<T extends Simple | PointerType = any> {
   name;
 
   address() {
-    return this.type.toAddress(Operator.addressOf(this.name)) as Address<T>;
+    return this.type.toAddress(this.name) as Address<T>;
   }
 
   declare() {
     return `${this.type} ${this.name}`;
   }
 
-  static new<T extends Simple | PointerType>(type: T, name: string) {
+  static new<T extends Simple | Pointer>(type: T, name: string) {
     return new Param(type, name);
   }
 }

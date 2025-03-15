@@ -1,7 +1,7 @@
 import type { AutoSimpleSpecifier, PassingValue } from "./types";
 
-const preUn = (op: string) => (name: string) => `${op}${name}`;
-const postUn = (op: string) => (name: string) => `${name}${op}`;
+const preUn = (op: string) => (exp: PassingValue) => `${op}${exp}`;
+const postUn = (op: string) => (exp: PassingValue) => `${exp}${op}`;
 
 const binOp = (op: string) => (left: string, right: PassingValue) => {
   return `${left}${op}${right}`;
@@ -30,11 +30,12 @@ export class Operator {
     return `alignof(${exp})`;
   }
 
-  /** Dereference operator */
+  /** Dereference operator `*`. */
   static valueOf(pointerName: string) {
     return `*${pointerName}`;
   }
 
+  /** Reference operator `&`. */
   static addressOf = preUn("&");
 
   // Binary operators
