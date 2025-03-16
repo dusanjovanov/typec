@@ -6,7 +6,7 @@ import { Simple } from "./simple";
 import {
   AnyType,
   type PassingValue,
-  type PointerTypeQualifier,
+  type PointerQualifier,
   type TypeToValueContainer,
 } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
@@ -93,7 +93,7 @@ export class Func<
   }
 
   /** Returns a pointer variable meant to point to this function. */
-  pointer(name: string, pointerQualifiers?: PointerTypeQualifier[]) {
+  pointer(name: string, pointerQualifiers?: PointerQualifier[]) {
     return Var.new(this.type.pointer(pointerQualifiers), name);
   }
 
@@ -159,7 +159,7 @@ export class FuncType<
   }
 
   /** Create a pointer type for this function type. */
-  pointer(pointerQualifiers?: PointerTypeQualifier[]) {
+  pointer(pointerQualifiers?: PointerQualifier[]) {
     return Pointer.new(this, pointerQualifiers);
   }
 

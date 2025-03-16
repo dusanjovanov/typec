@@ -4,7 +4,7 @@ import { FuncType } from "./func";
 import { Simple } from "./simple";
 import type {
   AutoSimpleSpecifier,
-  PointerTypeQualifier,
+  PointerQualifier,
   TypeQualifier,
 } from "./types";
 import { stringSplice } from "./utils";
@@ -14,7 +14,7 @@ import { Value } from "./value";
 export class Pointer<
   InnerType extends Simple | ArrayType | FuncType | Pointer = any
 > {
-  constructor(innerType: InnerType, qualifiers?: PointerTypeQualifier[]) {
+  constructor(innerType: InnerType, qualifiers?: PointerQualifier[]) {
     this.innerType = innerType;
     this.qualifiers = qualifiers;
 
@@ -62,7 +62,7 @@ export class Pointer<
 
   static new<T extends Simple | ArrayType | FuncType | Pointer = any>(
     type: T,
-    qualifiers?: PointerTypeQualifier[]
+    qualifiers?: PointerQualifier[]
   ) {
     return new Pointer(type, qualifiers);
   }
@@ -71,7 +71,7 @@ export class Pointer<
   static simple<T extends AutoSimpleSpecifier>(
     type: T,
     typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerTypeQualifier[]
+    pointerQualifiers?: PointerQualifier[]
   ) {
     return Pointer.new(Simple.type(type, typeQualifiers), pointerQualifiers);
   }
@@ -79,35 +79,35 @@ export class Pointer<
   /** Pointer type for a char in a string. */
   static string(
     typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerTypeQualifier[]
+    pointerQualifiers?: PointerQualifier[]
   ) {
     return Pointer.simple("char", typeQualifiers, pointerQualifiers);
   }
 
   static void(
     typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerTypeQualifier[]
+    pointerQualifiers?: PointerQualifier[]
   ) {
     return Pointer.simple("void", typeQualifiers, pointerQualifiers);
   }
 
   static char(
     typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerTypeQualifier[]
+    pointerQualifiers?: PointerQualifier[]
   ) {
     return Pointer.simple("char", typeQualifiers, pointerQualifiers);
   }
 
   static int(
     typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerTypeQualifier[]
+    pointerQualifiers?: PointerQualifier[]
   ) {
     return Pointer.simple("int", typeQualifiers, pointerQualifiers);
   }
 
   static bool(
     typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerTypeQualifier[]
+    pointerQualifiers?: PointerQualifier[]
   ) {
     return Pointer.simple("bool", typeQualifiers, pointerQualifiers);
   }

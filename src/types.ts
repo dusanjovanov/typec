@@ -8,24 +8,11 @@ import type { Value } from "./value";
 
 /** Type union for all simple C types. */
 export type SimpleSpecifier =
-  | "bool"
-  | "char"
-  | "signed char"
-  | "unsigned char"
-  | "short"
-  | "unsigned short"
-  | "int"
-  | "unsigned int"
-  | "long"
-  | "unsigned long"
-  | "long long"
-  | "unsigned long long"
+  | IntegerTypeSpecifier
   | "float"
   | "double"
   | "long double"
   | "void"
-  | "size_t"
-  | "ptrdiff_t"
   | "wchar_t";
 
 export type IntegerTypeSpecifier =
@@ -45,7 +32,7 @@ export type IntegerTypeSpecifier =
 
 export type TypeQualifier = "const" | "volatile";
 
-export type PointerTypeQualifier = TypeQualifier | "restrict";
+export type PointerQualifier = TypeQualifier | "restrict";
 
 /** Helper for loosely typed string unions. You get suggestions, but accepts any string. */
 export type Autocomplete<T> = T | (string & {});

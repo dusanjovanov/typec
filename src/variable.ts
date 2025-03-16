@@ -2,7 +2,7 @@ import { Operator } from "./operators";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
 import type {
-  PointerTypeQualifier,
+  PointerQualifier,
   TypeQualifier,
   TypeToValueContainer,
 } from "./types";
@@ -64,7 +64,7 @@ export class Var<T extends Simple | Pointer = any> {
   static pointerString(
     name: string,
     typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerTypeQualifier[]
+    pointerQualifiers?: PointerQualifier[]
   ) {
     return Var.new(Pointer.string(typeQualifiers, pointerQualifiers), name);
   }
@@ -72,7 +72,7 @@ export class Var<T extends Simple | Pointer = any> {
   static pointerVoid(
     name: string,
     typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerTypeQualifier[]
+    pointerQualifiers?: PointerQualifier[]
   ) {
     return Var.new(Pointer.void(typeQualifiers, pointerQualifiers), name);
   }
@@ -80,7 +80,7 @@ export class Var<T extends Simple | Pointer = any> {
   static pointerChar(
     name: string,
     typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerTypeQualifier[]
+    pointerQualifiers?: PointerQualifier[]
   ) {
     return Var.new(Pointer.char(typeQualifiers, pointerQualifiers), name);
   }
@@ -88,7 +88,7 @@ export class Var<T extends Simple | Pointer = any> {
   static pointerInt(
     name: string,
     typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerTypeQualifier[]
+    pointerQualifiers?: PointerQualifier[]
   ) {
     return Var.new(Pointer.int(typeQualifiers, pointerQualifiers), name);
   }
