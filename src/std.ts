@@ -40,7 +40,7 @@ export class VarArgsHelper {
   }
 }
 
-export class Io {
+export class StdIo {
   static include() {
     return Include.system("stdio.h");
   }
@@ -58,7 +58,7 @@ export class Io {
   ]);
 }
 
-export class Lib {
+export class StdLib {
   static include() {
     return Include.system("stdlib.h");
   }
@@ -112,5 +112,10 @@ export class StdString {
   static strcat = Func.new(Pointer.string(), "strcat", [
     Param.new(Pointer.string(), "dest"),
     Param.new(Pointer.string(["const"]), "src"),
+  ]);
+
+  static strstr = Func.new(Pointer.string(), "strstr", [
+    Param.new(Pointer.string(["const"]), "str"),
+    Param.new(Pointer.string(["const"]), "substr"),
   ]);
 }

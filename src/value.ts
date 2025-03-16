@@ -15,23 +15,27 @@ export class Value<T extends AutoSimpleSpecifier> {
   }
 
   static int(value: StringLike) {
-    return new Value("int", value);
+    return Value.new("int", value);
   }
 
   static unsignedInt(value: StringLike) {
-    return new Value("unsigned int", value);
+    return Value.new("unsigned int", value);
   }
 
   static short(value: StringLike) {
-    return new Value("short", value);
+    return Value.new("short", value);
   }
 
   static char(value: string) {
-    return new Value("char", value);
+    return Value.new("char", value);
   }
 
   static wchar(value: string) {
-    return new Value("wchar_t", value);
+    return Value.new("wchar_t", value);
+  }
+
+  static bool(value: string) {
+    return Value.new("bool", value);
   }
 
   static new<T extends AutoSimpleSpecifier>(type: T, value: StringLike) {

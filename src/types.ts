@@ -25,7 +25,23 @@ export type SimpleSpecifier =
   | "long double"
   | "void"
   | "size_t"
+  | "ptrdiff_t"
   | "wchar_t";
+
+export type IntegerTypeSpecifier =
+  | "char"
+  | "signed char"
+  | "unsigned char"
+  | "short"
+  | "unsigned short"
+  | "int"
+  | "unsigned int"
+  | "long"
+  | "unsigned long"
+  | "long long"
+  | "unsigned long long"
+  | "size_t"
+  | "ptrdiff_t";
 
 export type TypeQualifier = "const" | "volatile";
 
@@ -59,3 +75,8 @@ export class AnyType<S extends string = any> {
   }
   specifier;
 }
+
+/** Shortcut type */
+export type StringAddress = Address<Simple<"char">>;
+
+export type ArrayIndex = Value<IntegerTypeSpecifier>;

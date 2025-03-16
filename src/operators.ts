@@ -1,11 +1,17 @@
 import type { AutoSimpleSpecifier, PassingValue } from "./types";
+import { Value } from "./value";
 
 const preUn = (op: string) => (exp: PassingValue) => `${op}${exp}`;
 const postUn = (op: string) => (exp: PassingValue) => `${exp}${op}`;
 
-const binOp = (op: string) => (left: string, right: PassingValue) => {
+const binOp = (op: string) => (left: PassingValue, right: PassingValue) => {
   return `${left}${op}${right}`;
 };
+
+const logicalBinOp =
+  (op: string) => (left: PassingValue, right: PassingValue) => {
+    return Value.bool(binOp(op)(left, right));
+  };
 
 export class Operator {
   // Unary operators
@@ -23,15 +29,15 @@ export class Operator {
 
   static bitNot = preUn("~");
 
-  static sizeOf(exp: string) {
+  static sizeOf(exp: PassingValue) {
     return `sizeof(${exp})`;
   }
-  static alignOf(exp: string) {
+  static alignOf(exp: PassingValue) {
     return `alignof(${exp})`;
   }
 
   /** Dereference operator `*`. */
-  static valueOf(pointerName: string) {
+  static valueOf(pointerName: PassingValue) {
     return `*${pointerName}`;
   }
 
@@ -45,14 +51,18 @@ export class Operator {
   /** Division */
   static div = binOp("/");
   static mult = binOp("*");
-  static eq = binOp("==");
-  static neq = binOp("!=");
-  static gt = binOp(">");
-  static lt = binOp("<");
-  static gte = binOp(">=");
-  static lte = binOp("<=");
-  static and = binOp("&&");
-  static or = binOp("||");
+
+  // Logical
+  static equal = logicalBinOp("==");
+  static notEqual = logicalBinOp("!=");
+  static gt = logicalBinOp(">");
+  static lt = logicalBinOp("<");
+  static gte = logicalBinOp(">=");
+  static lte = logicalBinOp("<=");
+  static and = logicalBinOp("&&");
+  static or = logicalBinOp("||");
+
+  // Bitwise
   static bitAnd = binOp("&");
   static bitOr = binOp("|");
   static bitXor = binOp("^");
@@ -77,28 +87,37 @@ export class Operator {
   /**
    * Returns a type cast expression.
    */
-  static cast(type: AutoSimpleSpecifier, exp: string) {
+  static cast(type: AutoSimpleSpecifier, exp: PassingValue) {
     return `(${type})(${exp})`;
   }
 
   /**
    * Accesses a struct member by value (e.g., structName.member).
    */
-  static byValue(structName: string, member: string) {
+  static byValue(structName: PassingValue, member: PassingValue) {
     return `${structName}.${member}`;
   }
 
   /**
    * Accesses a struct member by pointer (e.g., structName->member).
    */
-  static byAddress(structName: string, member: string) {
+  static byAddress(structName: PassingValue, member: PassingValue) {
     return `${structName}->${member}`;
+  }
+
+  /** Access an array element by index. (e.g. `arr[2]`) */
+  static subscript(arrExp: PassingValue, index: PassingValue) {
+    return `${arrExp}[${index}]`;
   }
 
   /**
    * Creates a ternary expression (e.g., condition ? exp1 : exp2).
    */
-  static ternary(condition: string, exp1: PassingValue, exp2: PassingValue) {
+  static ternary(
+    condition: PassingValue,
+    exp1: PassingValue,
+    exp2: PassingValue
+  ) {
     return `${condition}?${exp1}:${exp2}`;
   }
 }
