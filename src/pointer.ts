@@ -5,19 +5,20 @@ import { Simple } from "./simple";
 import type {
   AutoSimpleSpecifier,
   PointerQualifier,
+  StringLike,
   TypeQualifier,
 } from "./types";
-import { stringSplice } from "./utils";
+import { emptyFalsy, join, stringSplice } from "./utils";
 import { Value } from "./value";
 
 /** A pointer type wrapping another type. */
 export class Pointer<T extends Simple | ArrayType | FuncType | Pointer = any> {
-  constructor(type: T, qualifiers?: PointerQualifier[]) {
+  constructor(type: T, qualifiers: PointerQualifier[] = []) {
     this.type = type;
     this.qualifiers = qualifiers;
 
     if (this.type instanceof Simple) {
-      this.specifier = `${this.type.specifier}*`;
+      this.specifier = `${this.type.full}*`;
     }
     //
     else if (this.type instanceof ArrayType) {
@@ -43,20 +44,28 @@ export class Pointer<T extends Simple | ArrayType | FuncType | Pointer = any> {
         "*"
       );
     }
+
+    this.full = `${this.specifier}${emptyFalsy(
+      qualifiers,
+      (q) => ` ${join(q)}`
+    )}`;
   }
   type: T;
   specifier;
   qualifiers;
+  full;
 
   toAddress(value: string) {
     return new Address(this, value);
   }
 
-  toValue(value: string) {
-    return new Value(this.type.specifier, value) as Value<T["specifier"]>;
+  toValue(value: StringLike) {
+    return new Value(this.type.specifier, value) as T extends Simple
+      ? Value<T>
+      : Value<never>;
   }
 
-  static new<T extends Simple | ArrayType | FuncType | Pointer = any>(
+  static type<T extends Simple | ArrayType | FuncType | Pointer = any>(
     type: T,
     qualifiers?: PointerQualifier[]
   ) {
@@ -69,7 +78,7 @@ export class Pointer<T extends Simple | ArrayType | FuncType | Pointer = any> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Pointer.new(Simple.type(type, typeQualifiers), pointerQualifiers);
+    return Pointer.type(Simple.type(type, typeQualifiers), pointerQualifiers);
   }
 
   /** Pointer type for a char in a string. */

@@ -1,20 +1,23 @@
 import { Operator } from "./operators";
-import type { ComparisonOperatorValue, PassingValue } from "./types";
+import type { PassingValue } from "./types";
 
 /**
- * Returns an empty string when the value is falsy.
+ * Returns an empty string when the value is falsy or an empty array.
  * You can pass a format function to transform the truthy value.
  * If the format function is not passed the truthy value itself is returned.
  */
 export const emptyFalsy = <T>(
-  text: T | null | undefined | boolean,
+  value: T | null | undefined | boolean,
   format?: (str: T) => string
 ) => {
-  return text != null && text !== false
-    ? format
-      ? format(text as T)
-      : String(text)
-    : "";
+  const isEmpty =
+    value == null ||
+    value === false ||
+    (Array.isArray(value) && value.length === 0);
+
+  if (isEmpty) return "";
+
+  return format ? format(value as T) : String(value);
 };
 
 export const join = (arr: PassingValue[], sep = " ") => {
@@ -84,18 +87,18 @@ export const stringSplice = (
 };
 
 export class Utils {
-  static min(left: ComparisonOperatorValue, right: ComparisonOperatorValue) {
+  static min(left: PassingValue, right: PassingValue) {
     return Operator.ternary(Operator.lessThan(left, right), left, right);
   }
 
-  static max(left: ComparisonOperatorValue, right: ComparisonOperatorValue) {
+  static max(left: PassingValue, right: PassingValue) {
     return Operator.ternary(Operator.greaterThan(left, right), left, right);
   }
 
   static clamp(
-    value: ComparisonOperatorValue,
-    minVal: ComparisonOperatorValue,
-    maxVal: ComparisonOperatorValue
+    value: PassingValue,
+    minVal: PassingValue,
+    maxVal: PassingValue
   ) {
     return Operator.ternary(
       Operator.lessThan(value, minVal),

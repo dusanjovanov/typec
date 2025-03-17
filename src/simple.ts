@@ -9,10 +9,9 @@ export class Simple<T extends AutoSimpleSpecifier = any> {
     this.specifier = specifier;
     this.qualifiers = qualifiers;
 
-    this.full = `${emptyFalsy(
-      qualifiers.length > 0,
-      () => `${join(qualifiers)} `
-    )}${this.specifier}`;
+    this.full = `${emptyFalsy(qualifiers, (q) => `${join(q)} `)}${
+      this.specifier
+    }`;
   }
   specifier;
   qualifiers;

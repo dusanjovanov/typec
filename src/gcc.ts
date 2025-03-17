@@ -31,7 +31,7 @@ export const gcc = ({
     }),
     emptyFalsy(optimizationLevel, (s) => `-O${s}`),
     emptyFalsy(linkerOptions, (arr) =>
-      emptyFalsy(arr.length > 0, () => `-Wl,${join(arr, ",")}`)
+      emptyFalsy(arr, () => `-Wl,${join(arr, ",")}`)
     ),
     emptyFalsy(saveTempFiles, () => `-save-temps`),
     emptyFalsy(allWarnings, () => `-Wall`),

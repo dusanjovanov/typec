@@ -1,9 +1,4 @@
-import type {
-  AutoSimpleSpecifier,
-  ComparisonOperatorValue,
-  PassingValue,
-} from "./types";
-import { Value } from "./value";
+import type { AutoSimpleSpecifier, PassingValue } from "./types";
 
 const preUn = (op: string) => (exp: PassingValue) => `${op}${exp}`;
 const postUn = (op: string) => (exp: PassingValue) => `${exp}${op}`;
@@ -11,17 +6,6 @@ const postUn = (op: string) => (exp: PassingValue) => `${exp}${op}`;
 const binOp = (op: string) => (left: PassingValue, right: PassingValue) => {
   return `${left}${op}${right}`;
 };
-
-const logicalBinOp =
-  (op: string) => (left: PassingValue, right: PassingValue) => {
-    return Value.bool(binOp(op)(left, right));
-  };
-
-const comparisonBinOp =
-  (op: string) =>
-  (left: ComparisonOperatorValue, right: ComparisonOperatorValue) => {
-    return Value.bool(binOp(op)(left, right));
-  };
 
 export class Operator {
   // Unary operators
@@ -39,18 +23,17 @@ export class Operator {
 
   static bitNot = preUn("~");
 
+  // memory
   static sizeOf(exp: PassingValue) {
     return `sizeof(${exp})`;
   }
   static alignOf(exp: PassingValue) {
     return `alignof(${exp})`;
   }
-
   /** Dereference operator `*`. */
   static valueOf(pointerName: PassingValue) {
     return `*${pointerName}`;
   }
-
   /** Reference operator `&`. */
   static addressOf = preUn("&");
 
@@ -65,15 +48,15 @@ export class Operator {
   // Logical
 
   // comparison
-  static equal = comparisonBinOp("==");
-  static notEqual = comparisonBinOp("!=");
-  static greaterThan = comparisonBinOp(">");
-  static lessThan = comparisonBinOp("<");
-  static gte = comparisonBinOp(">=");
-  static lte = comparisonBinOp("<=");
+  static equal = binOp("==");
+  static notEqual = binOp("!=");
+  static greaterThan = binOp(">");
+  static lessThan = binOp("<");
+  static gte = binOp(">=");
+  static lte = binOp("<=");
 
-  static and = logicalBinOp("&&");
-  static or = logicalBinOp("||");
+  static and = binOp("&&");
+  static or = binOp("||");
 
   // Bitwise
   static bitAnd = binOp("&");
@@ -101,7 +84,7 @@ export class Operator {
    * Returns a type cast expression.
    */
   static cast(type: AutoSimpleSpecifier, exp: PassingValue) {
-    return `(${type})(${exp})`;
+    return `(${type})${exp}`;
   }
 
   /**

@@ -168,7 +168,7 @@ export class FuncType<
 
   /** Create a pointer type for this function type. */
   pointer(pointerQualifiers?: PointerQualifier[]) {
-    return Pointer.new(this, pointerQualifiers);
+    return Pointer.type(this, pointerQualifiers);
   }
 
   static new<

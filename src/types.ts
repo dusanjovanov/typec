@@ -69,10 +69,6 @@ export type StringAddress = Address<Simple<"char">>;
 
 export type ArrayIndex = Value<Simple<IntegerTypeSpecifier>>;
 
-export type ComparisonOperatorValue =
-  | Value<Simple<NumberTypeSpecifier>>
-  | Address<any>;
-
 export type TypeToAddress<T extends Simple | Pointer> = T extends Simple
   ? Address<T>
   : T extends Pointer
