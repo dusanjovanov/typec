@@ -30,7 +30,7 @@ slice.add([
   slice.byName.end.assign(
     Value.size_t(Utils.min(slice.byName.end.value(), lenVar.value()))
   ),
-  Condition.if_only(
+  Condition.if(
     Operator.greaterThan(slice.byName.start.value(), slice.byName.end.value()),
     [Func.return(3)]
   ),

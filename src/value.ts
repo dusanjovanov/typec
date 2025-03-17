@@ -1,10 +1,10 @@
 import { Simple } from "./simple";
-import type { AutoSimpleSpecifier, StringLike } from "./types";
+import type { StringLike } from "./types";
 
 /** A value container containing an rvalue expression which resolves to a data type value. */
-export class Value<T extends AutoSimpleSpecifier> {
+export class Value<T extends Simple> {
   constructor(type: T, valueExp: StringLike) {
-    this.type = Simple.type(type);
+    this.type = type;
     this.value = valueExp;
   }
   kind = "value" as const;
@@ -16,34 +16,34 @@ export class Value<T extends AutoSimpleSpecifier> {
   }
 
   static int(intExp: StringLike) {
-    return Value.new("int", intExp);
+    return Value.new(Simple.int(), intExp);
   }
 
-  static unsignedInt(unsignedIntExp: StringLike) {
-    return Value.new("unsigned int", unsignedIntExp);
+  static unsigned_int(unsignedIntExp: StringLike) {
+    return Value.new(Simple.type("unsigned int"), unsignedIntExp);
   }
 
   static short(shortExp: StringLike) {
-    return Value.new("short", shortExp);
+    return Value.new(Simple.type("short"), shortExp);
   }
 
   static char(charExp: string) {
-    return Value.new("char", charExp);
+    return Value.new(Simple.char(), charExp);
   }
 
-  static wchar(wcharExp: string) {
-    return Value.new("wchar_t", wcharExp);
+  static wchar_t(wcharExp: string) {
+    return Value.new(Simple.type("wchar_t"), wcharExp);
   }
 
   static bool(boolExp: string) {
-    return Value.new("bool", boolExp);
+    return Value.new(Simple.type("bool"), boolExp);
   }
 
   static size_t(sizetExp: string) {
-    return Value.new("size_t", sizetExp);
+    return Value.new(Simple.size_t(), sizetExp);
   }
 
-  static new<T extends AutoSimpleSpecifier>(type: T, valueExp: StringLike) {
+  static new<T extends Simple>(type: T, valueExp: StringLike) {
     return new Value(type, valueExp);
   }
 }

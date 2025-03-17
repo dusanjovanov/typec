@@ -7,10 +7,9 @@ import type { Simple } from "./simple";
 import type { Value } from "./value";
 
 /** Type union for all simple C types. */
-export type SimpleSpecifier = NumberTypeSpecifier | "void";
+export type SimpleSpecifier = NumberTypeSpecifier | "bool" | "void";
 
 export type NumberTypeSpecifier =
-  | IntegerTypeSpecifier
   | IntegerTypeSpecifier
   | "float"
   | "double"
@@ -46,8 +45,8 @@ export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 /** Extract the Value or Address container type for a data type. */
 export type TypeToValueContainer<
   T extends Simple | Pointer | ArrayType | FuncType
-> = T extends Simple<infer S>
-  ? Value<S>
+> = T extends Simple
+  ? Value<T>
   : T extends ArrayType | FuncType
   ? Address<T>
   : T extends Pointer<infer K>
@@ -68,9 +67,11 @@ export class AnyType<S extends string = any> {
 /** Shortcut type */
 export type StringAddress = Address<Simple<"char">>;
 
-export type ArrayIndex = Value<IntegerTypeSpecifier>;
+export type ArrayIndex = Value<Simple<IntegerTypeSpecifier>>;
 
-export type ComparisonOperatorValue = Value<NumberTypeSpecifier> | Address<any>;
+export type ComparisonOperatorValue =
+  | Value<Simple<NumberTypeSpecifier>>
+  | Address<any>;
 
 export type TypeToAddress<T extends Simple | Pointer> = T extends Simple
   ? Address<T>

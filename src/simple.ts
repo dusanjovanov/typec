@@ -1,18 +1,25 @@
 import { Address } from "./address";
 import type { AutoSimpleSpecifier, StringLike, TypeQualifier } from "./types";
+import { emptyFalsy, join } from "./utils";
 import { Value } from "./value";
 
 /** Simple type */
 export class Simple<T extends AutoSimpleSpecifier = any> {
-  constructor(specifier: T, qualifiers?: TypeQualifier[]) {
+  constructor(specifier: T, qualifiers: TypeQualifier[] = []) {
     this.specifier = specifier;
     this.qualifiers = qualifiers;
+
+    this.full = `${emptyFalsy(
+      qualifiers.length > 0,
+      () => `${join(qualifiers)} `
+    )}${this.specifier}`;
   }
   specifier;
   qualifiers;
+  full;
 
   toValue(value: StringLike) {
-    return new Value(this.specifier, value);
+    return new Value(this, value);
   }
 
   toAddress(value: string) {

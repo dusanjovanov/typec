@@ -25,12 +25,12 @@ export class Address<
   }
 
   /** Pointer arithmetic  */
-  plus(value: Value<IntegerTypeSpecifier>) {
+  plus(value: Value<Simple<IntegerTypeSpecifier>>) {
     return Address.new(this.type, Operator.plus(this.value, value));
   }
 
   /** Pointer arithmetic  */
-  minus(value: Value<IntegerTypeSpecifier>) {
+  minus(value: Value<Simple<IntegerTypeSpecifier>>) {
     return Address.new(this.type, Operator.minus(this.value, value));
   }
 

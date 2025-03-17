@@ -29,11 +29,6 @@ export class Condition {
   static if(cond: PassingValue, body: PassingValue[]) {
     return new Condition(cond, body);
   }
-
-  /** When you need just one if statement. Returns a string. */
-  static if_only = (cond: PassingValue, body: PassingValue[]) => {
-    return condBlock("if", cond, body);
-  };
 }
 
 const condBlock = (

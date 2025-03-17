@@ -19,6 +19,8 @@
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "build": "bun build.ts"
+    "build": "bun build.ts",
+    "test": "bun test",
+    "test-dev": "bun test --watch"
   }
 }
