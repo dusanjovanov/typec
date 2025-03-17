@@ -1,9 +1,9 @@
-import type { AutoSimpleSpecifier, PassingValue } from "./types";
+import type { AutoSimpleType, CodeLike } from "./types";
 
-const preUn = (op: string) => (exp: PassingValue) => `${op}${exp}`;
-const postUn = (op: string) => (exp: PassingValue) => `${exp}${op}`;
+const preUn = (op: string) => (exp: CodeLike) => `${op}${exp}`;
+const postUn = (op: string) => (exp: CodeLike) => `${exp}${op}`;
 
-const binOp = (op: string) => (left: PassingValue, right: PassingValue) => {
+const binOp = (op: string) => (left: CodeLike, right: CodeLike) => {
   return `${left}${op}${right}`;
 };
 
@@ -24,18 +24,18 @@ export class Operator {
   static bitNot = preUn("~");
 
   // memory
-  static sizeOf(exp: PassingValue) {
+  static sizeOf(exp: CodeLike) {
     return `sizeof(${exp})`;
   }
-  static alignOf(exp: PassingValue) {
+  static alignOf(exp: CodeLike) {
     return `alignof(${exp})`;
   }
   /** Dereference operator `*`. */
-  static valueOf(pointerName: PassingValue) {
+  static deRef(pointerName: CodeLike) {
     return `*${pointerName}`;
   }
   /** Reference operator `&`. */
-  static addressOf = preUn("&");
+  static ref = preUn("&");
 
   // Binary operators
   static modulo = binOp("%");
@@ -83,26 +83,26 @@ export class Operator {
   /**
    * Returns a type cast expression.
    */
-  static cast(type: AutoSimpleSpecifier, exp: PassingValue) {
+  static cast(type: AutoSimpleType, exp: CodeLike) {
     return `(${type})${exp}`;
   }
 
   /**
    * Accesses a struct member by value (e.g., structName.member).
    */
-  static byValue(structName: PassingValue, member: PassingValue) {
+  static byValue(structName: CodeLike, member: CodeLike) {
     return `${structName}.${member}`;
   }
 
   /**
    * Accesses a struct member by pointer (e.g., structName->member).
    */
-  static byAddress(structName: PassingValue, member: PassingValue) {
+  static byAddress(structName: CodeLike, member: CodeLike) {
     return `${structName}->${member}`;
   }
 
   /** Access an array element by index. (e.g. `arr[2]`) */
-  static subscript(arrExp: PassingValue, index: PassingValue) {
+  static subscript(arrExp: CodeLike, index: CodeLike) {
     return `${arrExp}[${index}]`;
   }
 
@@ -110,9 +110,9 @@ export class Operator {
    * Creates a ternary expression (e.g., condition ? exp1 : exp2).
    */
   static ternary(
-    condition: PassingValue,
-    exp1: PassingValue,
-    exp2: PassingValue
+    condition: CodeLike,
+    exp1: CodeLike,
+    exp2: CodeLike
   ) {
     return `${condition}?${exp1}:${exp2}`;
   }

@@ -1,11 +1,10 @@
-import { Address } from "./address";
 import { ArrayType } from "./array";
 import { FuncType } from "./func";
 import { Simple } from "./simple";
 import type {
-  AutoSimpleSpecifier,
+  AutoSimpleType,
   PointerQualifier,
-  StringLike,
+  TextLike,
   TypeQualifier,
 } from "./types";
 import { emptyFalsy, join, stringSplice } from "./utils";
@@ -17,52 +16,61 @@ export class Pointer<T extends Simple | ArrayType | FuncType | Pointer = any> {
     this.type = type;
     this.qualifiers = qualifiers;
 
-    if (this.type instanceof Simple) {
-      this.specifier = `${this.type.full}*`;
+    switch (this.type.kind) {
+      case "simple": {
+        this.full = `${this.type.full}*${emptyFalsy(
+          qualifiers,
+          (q) => ` ${join(q)}`
+        )}`;
+        break;
+      }
+      case "array": {
+        this.full = stringSplice(
+          this.type.full,
+          this.type.full.indexOf("["),
+          `(*${emptyFalsy(qualifiers, (q) => `${join(q)}`)})`
+        );
+        break;
+      }
+      case "func": {
+        this.full = stringSplice(
+          this.type.full,
+          this.type.full.indexOf("("),
+          "(*)"
+        );
+        break;
+      }
+      case "pointer": {
+        this.full = stringSplice(
+          this.type.full,
+          this.type.full.indexOf("*"),
+          "*"
+        );
+        break;
+      }
     }
-    //
-    else if (this.type instanceof ArrayType) {
-      this.specifier = stringSplice(
-        this.type.specifier,
-        this.type.specifier.indexOf("["),
-        "(*)"
-      );
-    }
-    //
-    else if (this.type instanceof FuncType) {
-      this.specifier = stringSplice(
-        this.type.specifier,
-        this.type.specifier.indexOf("("),
-        "(*)"
-      );
-    }
-    //
-    else {
-      this.specifier = stringSplice(
-        this.type.specifier,
-        this.type.specifier.indexOf("*"),
-        "*"
-      );
-    }
-
-    this.full = `${this.specifier}${emptyFalsy(
-      qualifiers,
-      (q) => ` ${join(q)}`
-    )}`;
   }
+  kind = "pointer" as const;
   type: T;
-  specifier;
   qualifiers;
   full;
 
-  toAddress(value: string) {
-    return new Address(this, value);
+  ref(value: string) {
+    return Value.new(this, value);
   }
 
-  toValue(value: StringLike) {
-    return new Value(this.type.specifier, value) as T extends Simple
-      ? Value<T>
-      : Value<never>;
+  toValue(value: TextLike) {
+    return new Value(this, value);
+  }
+
+  /** Get the pointer type to this pointer. */
+  pointer(pointerQualifiers?: PointerQualifier[]) {
+    return Pointer.type(this, pointerQualifiers);
+  }
+
+  /** Get the type this pointer points to. */
+  inner() {
+    return this.type;
   }
 
   static type<T extends Simple | ArrayType | FuncType | Pointer = any>(
@@ -73,7 +81,7 @@ export class Pointer<T extends Simple | ArrayType | FuncType | Pointer = any> {
   }
 
   /** Create a pointer type for a simple type. */
-  static simple<T extends AutoSimpleSpecifier>(
+  static simple<T extends AutoSimpleType>(
     type: T,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]

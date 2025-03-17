@@ -1,10 +1,20 @@
-import { Address } from "./address";
-import type { AutoSimpleSpecifier, StringLike, TypeQualifier } from "./types";
-import { emptyFalsy, join } from "./utils";
+import { Pointer } from "./pointer";
+import {
+  INTEGER_TYPES,
+  NUMBER_TYPES,
+  type AutoSimpleType,
+  type IntegerType,
+  type NumberType,
+  type PointerQualifier,
+  type TextLike,
+  type TypecType,
+  type TypeQualifier,
+} from "./types";
+import { emptyFalsy, join, Utils } from "./utils";
 import { Value } from "./value";
 
 /** Simple type */
-export class Simple<T extends AutoSimpleSpecifier = any> {
+export class Simple<T extends AutoSimpleType = any> {
   constructor(specifier: T, qualifiers: TypeQualifier[] = []) {
     this.specifier = specifier;
     this.qualifiers = qualifiers;
@@ -13,22 +23,35 @@ export class Simple<T extends AutoSimpleSpecifier = any> {
       this.specifier
     }`;
   }
+  kind = "simple" as const;
   specifier;
   qualifiers;
   full;
 
-  toValue(value: StringLike) {
-    return new Value(this, value);
+  toValue(value: TextLike) {
+    return Value.new(this, value);
   }
 
-  toAddress(value: string) {
-    return new Address(this, value);
+  pointer(pointerQualifiers?: PointerQualifier[]) {
+    return Pointer.type(this, pointerQualifiers);
   }
 
-  static type<T extends AutoSimpleSpecifier>(
-    type: T,
-    qualifiers?: TypeQualifier[]
-  ) {
+  /** Compare this type to any other type. */
+  isEqual(type: TypecType) {
+    return Utils.areTypesEqual(this, type);
+  }
+
+  /** Is this type any integer type ( int, char, long ...etc) */
+  isInteger() {
+    return INTEGER_TYPES.includes(this.specifier as IntegerType);
+  }
+
+  /** Is this type any number type ( int, double, float ...etc ) */
+  isNumber() {
+    return NUMBER_TYPES.includes(this.specifier as NumberType);
+  }
+
+  static type<T extends AutoSimpleType>(type: T, qualifiers?: TypeQualifier[]) {
     return new Simple(type, qualifiers);
   }
 
@@ -46,5 +69,9 @@ export class Simple<T extends AutoSimpleSpecifier = any> {
 
   static char(qualifiers?: TypeQualifier[]) {
     return Simple.type("char", qualifiers);
+  }
+
+  static ptrDiff(qualifiers?: TypeQualifier[]) {
+    return Simple.type("ptrdiff_t", qualifiers);
   }
 }

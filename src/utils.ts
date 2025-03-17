@@ -1,5 +1,5 @@
 import { Operator } from "./operators";
-import type { PassingValue } from "./types";
+import type { CodeLike, TypecType } from "./types";
 
 /**
  * Returns an empty string when the value is falsy or an empty array.
@@ -20,12 +20,12 @@ export const emptyFalsy = <T>(
   return format ? format(value as T) : String(value);
 };
 
-export const join = (arr: PassingValue[], sep = " ") => {
+export const join = (arr: CodeLike[], sep = " ") => {
   return arr.filter((v) => v != null).join(sep);
 };
 
 export const joinWithPrefix = (
-  arr: PassingValue[],
+  arr: CodeLike[],
   prefix: string,
   sep = " "
 ) => {
@@ -46,7 +46,7 @@ export const pointerStars = (level = 1) => {
   return join(fillArray(level, () => "*"));
 };
 
-export const joinArgs = (args: PassingValue[]) => {
+export const joinArgs = (args: CodeLike[]) => {
   return join(args, ",");
 };
 
@@ -87,23 +87,27 @@ export const stringSplice = (
 };
 
 export class Utils {
-  static min(left: PassingValue, right: PassingValue) {
+  static min(left: CodeLike, right: CodeLike) {
     return Operator.ternary(Operator.lessThan(left, right), left, right);
   }
 
-  static max(left: PassingValue, right: PassingValue) {
+  static max(left: CodeLike, right: CodeLike) {
     return Operator.ternary(Operator.greaterThan(left, right), left, right);
   }
 
   static clamp(
-    value: PassingValue,
-    minVal: PassingValue,
-    maxVal: PassingValue
+    value: CodeLike,
+    minVal: CodeLike,
+    maxVal: CodeLike
   ) {
     return Operator.ternary(
       Operator.lessThan(value, minVal),
       minVal,
       Operator.ternary(Operator.greaterThan(value, maxVal), maxVal, value)
     );
+  }
+
+  static areTypesEqual(typeA: TypecType, typeB: TypecType) {
+    return typeA.full === typeB.full;
   }
 }

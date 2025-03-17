@@ -1,42 +1,44 @@
-import { Address } from "./address";
 import { Condition } from "./conditional";
 import { Func } from "./func";
 import { Operator } from "./operators";
 import { Param } from "./param";
 import { Pointer } from "./pointer";
-import { Simple } from "./simple";
-import { StdString } from "./std";
-import { type ArrayIndex, type StringAddress } from "./types";
-import { Utils } from "./utils";
+import { StdLib, StdString } from "./std";
+import { type ArrayIndexValue, type StringValue } from "./types";
 import { Value } from "./value";
 import { Variable } from "./variable";
 
-export const slice = Func.new(Pointer.string(), "tc_str_slice", [
-  Param.new(Pointer.string(["const"]), "str"),
-  Param.new(Pointer.string(), "result"),
-  Param.new(Simple.size_t(), "start"),
-  Param.new(Simple.size_t(), "end"),
-]);
+export const slice = (() => {
+  const slice = Func.new(Pointer.string(), "tc_str_slice", [
+    Param.string("str", ["const"]),
+    Param.size_t("start"),
+    Param.size_t("end"),
+  ]);
 
-const lenVar = Variable.size_t("len");
-const copyLenVar = Variable.size_t("copyLen");
+  const lenVar = Variable.size_t("len");
+  const copyLenVar = Variable.size_t("copyLen");
+  const resultVar = Variable.string("result");
 
-slice.add([
-  lenVar.init(StdString.strlen.call([slice.byName.str.address()])),
-  // clamp indices
-  slice.byName.start.assign(
-    Value.size_t(Utils.min(slice.byName.start.value(), lenVar.value()))
-  ),
-  slice.byName.end.assign(
-    Value.size_t(Utils.min(slice.byName.end.value(), lenVar.value()))
-  ),
-  Condition.if(
-    Operator.greaterThan(slice.byName.start.value(), slice.byName.end.value()),
-    [Func.return(3)]
-  ),
-  // calculate length to copy
-  copyLenVar.init(slice.byName.end.minus(slice.byName.start.value())),
-]);
+  slice.add([
+    lenVar.init(StdString.strlen.call([slice.params.str])),
+    // clamp indices
+    slice.params.start.assign(slice.params.start.min(lenVar)),
+    slice.params.end.assign(slice.params.end.min(lenVar)),
+    Condition.if(slice.params.start.greaterThan(slice.params.end), [
+      Func.return(3),
+    ]),
+    // calculate length to copy
+    copyLenVar.init(slice.params.end.minus(slice.params.start.name())),
+    // Allocate memory for the sliced string (+1 for null terminator)
+    resultVar.init(
+      StdLib.malloc.call([lenVar.plus(Value.int(1))]).cast(Pointer.string())
+    ),
+    Condition.if(resultVar.equal(Value.null()), [Func.return(Value.null())]),
+    // Copy the substring
+  ]);
+
+  return slice;
+})();
 
 /**
  * Helper class for working with strings that mimics the JS String class.
@@ -46,7 +48,7 @@ slice.add([
  * Uses `stdlib` str functions and binds their first char* argument to the passed address expression.
  */
 export class String {
-  constructor(charAddress: StringAddress) {
+  constructor(charAddress: StringValue) {
     this.addr = charAddress;
   }
   addr;
@@ -57,7 +59,8 @@ export class String {
   }
 
   /** Returns a string that contains the concatenation of two or more strings. */
-  concat(...strings: StringAddress[]) {
+  // TODO
+  concat(...strings: StringValue[]) {
     let result = this.addr;
     for (const str of strings) {
       result = StdString.strcat.call([result, str]);
@@ -68,15 +71,18 @@ export class String {
   /**
    * Returns true if this string contains the passed string starting from position ( default 0 ), otherwise false.
    */
-  includes(searchString: StringAddress, position: ArrayIndex = Value.int(0)) {
+  includes(
+    searchString: StringValue,
+    position: ArrayIndexValue = Value.int(0)
+  ) {
     return Operator.notEqual(
       StdString.strstr.call([this.addr.plus(position), searchString]),
-      Address.null()
+      Value.null()
     );
   }
 
   /** Returns the character at the specified index. */
-  charAt(pos: ArrayIndex) {
+  charAt(pos: ArrayIndexValue) {
     return Value.char(Operator.subscript(this.addr, pos));
   }
 
@@ -87,14 +93,14 @@ export class String {
    *
    * @param position — The index at which to begin searching the String object. If omitted, search starts at the beginning of the string.
    */
-  indexOf(searchString: StringAddress, position: ArrayIndex = Value.int(0)) {
+  indexOf(searchString: StringValue, position: ArrayIndexValue = Value.int(0)) {
     const result = StdString.strstr.call([
       this.addr.plus(position),
       searchString,
     ]);
     return Value.int(
       Operator.ternary(
-        Operator.equal(result, Address.null()),
+        Operator.equal(result, Value.null()),
         Value.int(-1),
         Operator.minus(result, this.addr)
       )
@@ -104,16 +110,16 @@ export class String {
   /**
    * Extracts a section of a string from start to end (exclusive) and returns a new string.
    */
-  slice(start: ArrayIndex, end?: ArrayIndex) {
+  slice(start: ArrayIndexValue, end?: ArrayIndexValue) {
     //
   }
 
   /** Alias for `Address.stringLiteral` */
   static literal(str: string) {
-    return Address.stringLiteral(str);
+    return Value.stringLiteral(str);
   }
 
-  static new(charAddress: StringAddress) {
+  static new(charAddress: StringValue) {
     return new String(charAddress);
   }
 

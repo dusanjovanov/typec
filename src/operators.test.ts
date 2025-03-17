@@ -20,8 +20,8 @@ describe("operators", () => {
   describe("memory", () => {
     testUnaryOp("sizeOf", "sizeof(a)");
     testUnaryOp("alignOf", "alignof(a)");
-    testUnaryOp("valueOf", "*a");
-    testUnaryOp("addressOf", "&a");
+    testUnaryOp("deRef", "*a");
+    testUnaryOp("ref", "&a");
   });
 
   describe("bitwise", () => {

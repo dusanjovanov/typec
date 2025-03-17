@@ -1,5 +1,5 @@
 import { curly } from "./chunk";
-import type { PassingValue } from "./types";
+import type { CodeLike } from "./types";
 import { joinArgs } from "./utils";
 
 export class Literal {
@@ -98,7 +98,7 @@ export class Literal {
    *
    * `{ "abc", 123, &var }`
    */
-  static compound(values: PassingValue[]) {
+  static compound(values: CodeLike[]) {
     return curly(joinArgs(values));
   }
 }

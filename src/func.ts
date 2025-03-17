@@ -1,15 +1,15 @@
-import { Address } from "./address";
 import { block } from "./chunk";
 import { Operator } from "./operators";
 import type { Param, VarArgsParam } from "./param";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
 import {
-  type PassingValue,
+  type CodeLike,
   type PointerQualifier,
-  type TypeToValueContainer,
+  type TypeToAssignValue,
 } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
+import { Value } from "./value";
 import { Variable } from "./variable";
 
 /** Used for creating functions or just declaring them if they come from other C libraries. */
@@ -26,7 +26,7 @@ export class Func<
   ) {
     this.returnType = returnType;
     this.name = name;
-    this.params = params;
+    this.paramsArray = params;
     this.paramTypes = params.map((p) => p.type);
     this.type = FuncType.new(
       returnType,
@@ -37,35 +37,35 @@ export class Func<
 
     const paramsByName: Record<string, any> = {};
     params.forEach((p) => {
-      paramsByName[p.name] = p;
+      paramsByName[p._name] = p;
     });
-    this.byName = paramsByName as FuncParamsByName<Params>;
+    this.params = paramsByName as FuncParamsByName<Params>;
   }
   type;
   returnType;
   name;
-  params;
+  paramsArray;
   /** Params by name */
-  byName;
+  params;
   paramTypes;
-  body: PassingValue[] = [];
+  body: CodeLike[] = [];
   varArgsParam;
 
   /** Add statements to the functions body. */
-  add(statements: PassingValue[]) {
+  add(statements: CodeLike[]) {
     this.body.push(...statements);
   }
 
   /** Returns the address of this function. */
-  address() {
-    return this.type.toAddress(Operator.addressOf(this.name));
+  ref() {
+    return Value.new(this.type.pointer(), Operator.ref(this.name));
   }
 
   /** Returns the declaration ( prototype ) of the function. */
   declare() {
-    return `${this.returnType.specifier} ${this.name}(${
-      this.params.length > 0
-        ? joinArgs(this.params.map((param) => `${param.declare()}`))
+    return `${this.returnType.full} ${this.name}(${
+      this.paramsArray.length > 0
+        ? joinArgs(this.paramsArray.map((param) => `${param.declare()}`))
         : "void"
     })`;
   }
@@ -75,29 +75,21 @@ export class Func<
     return `${this.declare()}${block(this.body)}`;
   }
 
-  private resolveReturn(value: string) {
-    if (this.returnType instanceof Simple) {
-      return this.returnType.toValue(value) as TypeToValueContainer<Return>;
-    }
-    //
-    else {
-      return this.returnType.toAddress(value) as TypeToValueContainer<Return>;
-    }
-  }
-
   /** Returns a function call expression. */
   call(args: FuncCallArgs<Params, VarArgs>) {
-    return this.resolveReturn(Func.call(this.name, args as any));
+    return this.returnType.toValue(
+      Func.call(this.name, args as any)
+    ) as Value<Return>;
   }
 
   /** Returns a function call expression with support for var args. */
-  callVarArgs(startArgs: FuncArgsFromParams<Params>, varArgs: PassingValue[]) {
-    return this.resolveReturn(
+  callVarArgs(startArgs: FuncArgsFromParams<Params>, varArgs: CodeLike[]) {
+    return this.returnType.toValue(
       Func.callVarArgs(this.name, startArgs as any, varArgs)
-    );
+    ) as Value<Return>;
   }
 
-  return(value: TypeToValueContainer<Return>) {
+  return(value: TypeToAssignValue<Return>) {
     return value;
   }
 
@@ -107,20 +99,20 @@ export class Func<
   }
 
   /** Returns a return statement expression. */
-  static return(value: PassingValue) {
+  static return(value: CodeLike) {
     return `return ${value};`;
   }
 
   /** Returns a function call expression. */
-  static call(fnName: string, args?: PassingValue[]) {
+  static call(fnName: string, args?: CodeLike[]) {
     return `${fnName}(${emptyFalsy(args, joinArgs)})`;
   }
 
   /** Returns a function call expression with support for varargs. */
   static callVarArgs(
     fnName: string,
-    startArgs: PassingValue[],
-    varArgs: PassingValue[]
+    startArgs: CodeLike[],
+    varArgs: CodeLike[]
   ) {
     const args = [...startArgs];
     if (varArgs.length > 0) {
@@ -154,17 +146,14 @@ export class FuncType<
   ) {
     this.returnType = returnType;
     this.paramTypes = paramTypes;
-    this.specifier = `${this.returnType.specifier} (${joinArgs(
-      this.paramTypes.map((p) => p.specifier)
+    this.full = `${this.returnType.full} (${joinArgs(
+      this.paramTypes.map((p) => p.full)
     )}${emptyFalsy(varArgsParam, (v) => `,${v.type.specifier}`)})`;
   }
+  kind = "func" as const;
   returnType;
   paramTypes;
-  specifier;
-
-  toAddress(name: string) {
-    return new Address(this, name);
-  }
+  full;
 
   /** Create a pointer type for this function type. */
   pointer(pointerQualifiers?: PointerQualifier[]) {
@@ -185,14 +174,14 @@ export type FuncCallArgs<
   VarArgs extends VarArgsParam
 > = VarArgs extends void
   ? FuncArgsFromParams<Params>
-  : [...FuncArgsFromParams<Params>, ...PassingValue[]];
+  : [...FuncArgsFromParams<Params>, ...CodeLike[]];
 
 export type FuncArgsFromParams<Params extends readonly Param[]> = {
   [index in keyof Params]: FuncArgFromParam<Params[index]>;
 };
 
 export type FuncArgFromParam<T extends Param> = T extends Param<infer V>
-  ? TypeToValueContainer<V>
+  ? TypeToAssignValue<V>
   : never;
 
 export type FuncParamTypes<Params extends readonly Param[]> = {
@@ -207,6 +196,6 @@ export type FuncParamsByName<Params extends readonly Param[]> =
         ...infer Rest extends Param[]
       ]
     ? Rest extends readonly Param[]
-      ? Record<First["name"], First> & FuncParamsByName<Rest>
-      : Record<First["name"], First>
+      ? Record<First["_name"], First> & FuncParamsByName<Rest>
+      : Record<First["_name"], First>
     : "test";

@@ -1,35 +1,43 @@
-import type { Address } from "./address";
 import type { ArrayType } from "./array";
 import type { Condition } from "./conditional";
 import type { FuncType } from "./func";
+import type { Param } from "./param";
 import type { Pointer } from "./pointer";
 import type { Simple } from "./simple";
+import type { StructType } from "./struct";
 import type { Value } from "./value";
+import type { Variable } from "./variable";
+
+export const INTEGER_TYPES = [
+  "char",
+  "signed char",
+  "unsigned char",
+  "short",
+  "unsigned short",
+  "int",
+  "unsigned int",
+  "long",
+  "unsigned long",
+  "long long",
+  "unsigned long long",
+  "size_t",
+  "ptrdiff_t",
+] as const;
+
+export const NUMBER_TYPES = [
+  ...INTEGER_TYPES,
+  "float",
+  "double",
+  "long double",
+  "wchar_t",
+] as const;
 
 /** Type union for all simple C types. */
-export type SimpleSpecifier = NumberTypeSpecifier | "bool" | "void";
+export type SimpleType = NumberType | "bool" | "void";
 
-export type NumberTypeSpecifier =
-  | IntegerTypeSpecifier
-  | "float"
-  | "double"
-  | "long double"
-  | "wchar_t";
+export type NumberType = (typeof NUMBER_TYPES)[number];
 
-export type IntegerTypeSpecifier =
-  | "char"
-  | "signed char"
-  | "unsigned char"
-  | "short"
-  | "unsigned short"
-  | "int"
-  | "unsigned int"
-  | "long"
-  | "unsigned long"
-  | "long long"
-  | "unsigned long long"
-  | "size_t"
-  | "ptrdiff_t";
+export type IntegerType = (typeof INTEGER_TYPES)[number];
 
 export type TypeQualifier = "const" | "volatile";
 
@@ -38,24 +46,14 @@ export type PointerQualifier = TypeQualifier | "restrict";
 /** Helper for loosely typed string unions. You get suggestions, but accepts any string. */
 export type Autocomplete<T> = T | (string & {});
 
-export type AutoSimpleSpecifier = Autocomplete<SimpleSpecifier>;
+export type AutoSimpleType = Autocomplete<SimpleType>;
 
 export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 
-/** Extract the Value or Address container type for a data type. */
-export type TypeToValueContainer<
-  T extends Simple | Pointer | ArrayType | FuncType
-> = T extends Simple
-  ? Value<T>
-  : T extends ArrayType | FuncType
-  ? Address<T>
-  : T extends Pointer<infer K>
-  ? Address<K>
-  : never;
+export type TextLike = string | number;
 
-export type StringLike = string | number;
-
-export type PassingValue = StringLike | Value<any> | Address<any> | Condition;
+/** `string`, `number` or a typec object with `toString()` implemented. */
+export type CodeLike = TextLike | Value | Condition | Variable;
 
 export class AnyType<S extends string = any> {
   constructor(specifier: S) {
@@ -64,17 +62,28 @@ export class AnyType<S extends string = any> {
   specifier;
 }
 
-/** Shortcut type */
-export type StringAddress = Address<Simple<"char">>;
+export type NumberValue = Value<Simple<NumberType>>;
 
-export type ArrayIndex = Value<Simple<IntegerTypeSpecifier>>;
+export type IntegerValue = Value<Simple<IntegerType>>;
 
-export type TypeToAddress<T extends Simple | Pointer> = T extends Simple
-  ? Address<T>
+export type PointerDiffValue = Value<Simple<"ptrdiff_t">>;
+
+export type NullValue = Value<Pointer<Simple<"void">>>;
+
+export type StringValue = Value<Pointer<Simple<"char">>>;
+
+export type ArrayIndexValue = Value<Simple<IntegerType>>;
+
+export type InvalidValue = Value<never>;
+
+export type TypecType = Simple | Pointer | ArrayType | FuncType | StructType;
+
+export type TypeToAssignValue<T extends TypecType> = T extends Simple<infer ST>
+  ? ST extends NumberType
+    ? NumberValue | Variable<Simple<NumberType>>
+    : Value<T> | Variable<T>
   : T extends Pointer
-  ? PointerToAddress<T>
-  : never;
-
-export type PointerToAddress<T extends Pointer> = T extends Pointer<infer K>
-  ? Address<K>
-  : never;
+  ? Value<T> | Variable<T> | NullValue
+  : T extends StructType
+  ? Value<T>
+  : InvalidValue;

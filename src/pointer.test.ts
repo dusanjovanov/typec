@@ -1,10 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { ArrayType } from "./array";
+import { Array } from "./array";
+import { FuncType } from "./func";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
-import type { SimpleSpecifier } from "./types";
+import type { SimpleType } from "./types";
 
-const types: SimpleSpecifier[] = [
+const types: SimpleType[] = [
   "char",
   "signed char",
   "unsigned char",
@@ -39,21 +40,18 @@ describe("Pointer", () => {
         const dataType = Simple.type(type);
         const _t = Pointer.type(dataType);
         expect(_t.type).toEqual(dataType);
-        expect(_t.specifier).toBe(`${type}*`);
         expect(_t.qualifiers).toEqual([]);
         expect(_t.full).toBe(`${type}*`);
       });
       test(`const ${type}`, () => {
         const dataType = Simple.type(type, ["const"]);
         const _t = Pointer.type(dataType);
-        expect(_t.specifier).toBe(`const ${type}*`);
         expect(_t.qualifiers).toEqual([]);
         expect(_t.full).toBe(`const ${type}*`);
       });
       test(`const volatile ${type}`, () => {
         const dataType = Simple.type(type, ["const", "volatile"]);
         const _t = Pointer.type(dataType);
-        expect(_t.specifier).toBe(`const volatile ${type}*`);
         expect(_t.qualifiers).toEqual([]);
         expect(_t.full).toBe(`const volatile ${type}*`);
       });
@@ -61,7 +59,6 @@ describe("Pointer", () => {
         const dataType = Simple.type(type);
         const _t = Pointer.type(dataType, ["const"]);
         expect(_t.type).toEqual(dataType);
-        expect(_t.specifier).toBe(`${type}*`);
         expect(_t.qualifiers).toEqual(["const"]);
         expect(_t.full).toBe(`${type}* const`);
       });
@@ -69,7 +66,6 @@ describe("Pointer", () => {
         const dataType = Simple.type(type, ["const"]);
         const _t = Pointer.type(dataType, ["const"]);
         expect(_t.type).toEqual(dataType);
-        expect(_t.specifier).toBe(`const ${type}*`);
         expect(_t.qualifiers).toEqual(["const"]);
         expect(_t.full).toBe(`const ${type}* const`);
       });
@@ -78,20 +74,44 @@ describe("Pointer", () => {
 
   describe("ArrayType", () => {
     test("Simple", () => {
-      const dataType = ArrayType.new(Simple.type("int"), 3);
+      const dataType = Array.type(Simple.type("int"), 3);
       const _t = Pointer.type(dataType);
       expect(_t.type).toEqual(dataType);
-      expect(_t.specifier).toBe(`int (*)[3]`);
       expect(_t.qualifiers).toEqual([]);
       expect(_t.full).toBe(`int (*)[3]`);
     });
-    test("Pointer->Simple", () => {
-      const dataType = ArrayType.new(Pointer.type(Simple.type("int")), 3);
+    describe("Pointer", () => {
+      test("Simple", () => {
+        const dataType = Array.type(Pointer.type(Simple.type("int")), 3);
+        const _t = Pointer.type(dataType);
+        expect(_t.type).toEqual(dataType);
+        expect(_t.qualifiers).toEqual([]);
+        expect(_t.full).toBe(`int* (*)[3]`);
+      });
+
+      test("const Simple* const", () => {
+        const dataType = Array.type(
+          Pointer.type(Simple.type("int", ["const"]), ["const"]),
+          3
+        );
+        const _t = Pointer.type(dataType);
+        expect(_t.type).toEqual(dataType);
+        expect(_t.qualifiers).toEqual([]);
+        expect(_t.full).toBe(`const int* const (*)[3]`);
+      });
+    });
+  });
+
+  describe("FuncType", () => {
+    test("Simple", () => {
+      const dataType = FuncType.new(Simple.type("void"), [
+        Simple.char(),
+        Simple.int(),
+      ]);
       const _t = Pointer.type(dataType);
       expect(_t.type).toEqual(dataType);
-      expect(_t.specifier).toBe(`int* (*)[3]`);
       expect(_t.qualifiers).toEqual([]);
-      expect(_t.full).toBe(`int* (*)[3]`);
+      expect(_t.full).toBe(`void (*)(char,int)`);
     });
   });
 
@@ -100,18 +120,41 @@ describe("Pointer", () => {
       const dataType = Pointer.type(Simple.type("int"));
       const _t = Pointer.type(dataType);
       expect(_t.type).toEqual(dataType);
-      expect(_t.specifier).toBe(`int**`);
       expect(_t.qualifiers).toEqual([]);
       expect(_t.full).toBe(`int**`);
     });
 
-    test("ArrayType->Simple", () => {
-      const dataType = Pointer.type(ArrayType.new(Simple.type("int"), 3));
-      const _t = Pointer.type(dataType);
-      expect(_t.type).toEqual(dataType);
-      expect(_t.specifier).toBe(`int (**)[3]`);
-      expect(_t.qualifiers).toEqual([]);
-      expect(_t.full).toBe(`int (**)[3]`);
+    describe("ArrayType", () => {
+      test("Simple", () => {
+        const dataType = Pointer.type(Array.type(Simple.type("int"), 3));
+        const _t = Pointer.type(dataType);
+        expect(_t.type).toEqual(dataType);
+        expect(_t.qualifiers).toEqual([]);
+        expect(_t.full).toBe(`int (**)[3]`);
+      });
+
+      test("const Simple* const", () => {
+        const dataType = Pointer.type(
+          Array.type(Simple.type("int", ["const"]), 3),
+          ["const"]
+        );
+        const _t = Pointer.type(dataType);
+        expect(_t.type).toEqual(dataType);
+        expect(_t.qualifiers).toEqual([]);
+        expect(_t.full).toBe(`const int (**const)[3]`);
+      });
+    });
+
+    describe("FuncType", () => {
+      test("Simple", () => {
+        const dataType = Pointer.type(
+          FuncType.new(Simple.type("void"), [Simple.char(), Simple.int()])
+        );
+        const _t = Pointer.type(dataType);
+        expect(_t.type).toEqual(dataType);
+        expect(_t.qualifiers).toEqual([]);
+        expect(_t.full).toBe(`void (**)(char,int)`);
+      });
     });
   });
 });

@@ -1,7 +1,7 @@
-import type { PassingValue } from "./types";
+import type { CodeLike } from "./types";
 
 /** Takes in an array of statements as strings and adds semicolons and new lines appropriately. */
-export const chunk = (statements: PassingValue[]) => {
+export const chunk = (statements: CodeLike[]) => {
   return statements
     .map((b) => {
       const str = b.toString();
@@ -21,11 +21,11 @@ export const chunk = (statements: PassingValue[]) => {
 };
 
 /** Code between curly braces */
-export const curly = (code: PassingValue) => {
+export const curly = (code: CodeLike) => {
   return `{${code}}`;
 };
 
 /** Chunk of code within curly braces. */
-export const block = (statements: PassingValue[]) => {
+export const block = (statements: CodeLike[]) => {
   return `\n${curly(`\n${chunk(statements)}\n`)}`;
 };

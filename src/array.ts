@@ -1,11 +1,11 @@
-import { Address } from "./address";
 import { curly } from "./chunk";
 import { Literal } from "./literal";
 import { Operator } from "./operators";
-import type { Pointer } from "./pointer";
+import { Pointer } from "./pointer";
 import { Simple } from "./simple";
-import type { PassingValue, TypeToValueContainer } from "./types";
+import type { CodeLike, PointerQualifier, TypeToAssignValue } from "./types";
 import { joinArgs } from "./utils";
+import { Value } from "./value";
 
 /** Used for creating array variables. */
 export class Array<
@@ -23,14 +23,14 @@ export class Array<
   name;
   length;
 
-  /** Returns the address expression for the first element of the array. */
-  address() {
-    return this.elementType.toAddress(this.name) as Address<ElementType>;
+  /** Returns the ref expression for the first element of the array. */
+  ref() {
+    return Value.new(this.type.pointer(), this.name);
   }
 
   /** Returns the address expression for the entire array. */
-  addressArray() {
-    return this.type.toAddress(Operator.addressOf(this.name));
+  refArray() {
+    return Value.new(this.type.pointerArray(), Operator.ref(this.name));
   }
 
   /** Returns the array declaration. */
@@ -39,17 +39,17 @@ export class Array<
   }
 
   /** Returns the array initialization with a compound literal. */
-  init(values: TypeToValueContainer<ElementType>[]) {
+  init(values: TypeToAssignValue<ElementType>[]) {
     return Operator.assign(this.declare(), Literal.compound(values));
   }
 
   /** Returns an array initialization with a designated initializer. */
-  initDesignated(values: Record<number, TypeToValueContainer<ElementType>>) {
+  initDesignated(values: Record<number, TypeToAssignValue<ElementType>>) {
     return Array.designated(values);
   }
 
   /** Returns an array designated initializer. */
-  static designated(values: Record<number, PassingValue>) {
+  static designated(values: Record<number, CodeLike>) {
     return curly(
       joinArgs(
         Object.entries(values).map(([index, value]) => `[${index}] = ${value}`)
@@ -64,10 +64,11 @@ export class Array<
     return new ArrayType(elementType, length);
   }
 
-  static new<
-    const ElementType extends Simple | Pointer,
-    Length extends number
-  >(elementType: ElementType, length: Length, name: string) {
+  static new<const ElementType extends Simple | Pointer, Length extends number>(
+    elementType: ElementType,
+    length: Length,
+    name: string
+  ) {
     return new Array(elementType, length, name);
   }
 
@@ -83,14 +84,21 @@ export class ArrayType<
   constructor(elementType: ElementType, length: Length) {
     this.elementType = elementType;
     this.length = length;
-    this.specifier = `${this.elementType.specifier} [${this.length}]`;
+    this.full = `${this.elementType.full} [${this.length}]`;
   }
+  kind = "array" as const;
   elementType;
   length;
-  specifier;
+  full;
 
-  toAddress(value: string) {
-    return new Address(this, value);
+  /** Create a pointer type for this arrays element type. */
+  pointer(pointerQualifiers?: PointerQualifier[]) {
+    return Pointer.type(this.elementType, pointerQualifiers);
+  }
+
+  /** Create a pointer type for this array. */
+  pointerArray(pointerQualifiers?: PointerQualifier[]) {
+    return Pointer.type(this, pointerQualifiers);
   }
 
   static new<

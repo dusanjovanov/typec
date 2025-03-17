@@ -1,6 +1,6 @@
 import { Pointer } from "./pointer";
-import type { Simple } from "./simple";
-import { AnyType } from "./types";
+import { Simple } from "./simple";
+import { AnyType, type PointerQualifier, type TypeQualifier } from "./types";
 import { Variable } from "./variable";
 
 export class Param<
@@ -9,6 +9,24 @@ export class Param<
 > extends Variable<T> {
   constructor(type: T, name: Name) {
     super(type, name);
+    this._name = name;
+  }
+  _name;
+
+  static size_t<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[]
+  ) {
+    return Param.new(Simple.size_t(typeQualifiers), name);
+  }
+
+  /** Pointer variable for char*. */
+  static string<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Param.new(Pointer.string(typeQualifiers, pointerQualifiers), name);
   }
 
   static new<T extends Simple | Pointer, Name extends string = any>(

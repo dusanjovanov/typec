@@ -1,11 +1,11 @@
-import { Address } from "./address";
 import type { ArrayType } from "./array";
 import { block } from "./chunk";
 import type { FuncType } from "./func";
-import type { Pointer } from "./pointer";
+import { Pointer } from "./pointer";
 import { Simple } from "./simple";
-import type { PassingValue, TypeToValueContainer } from "./types";
+import type { CodeLike, PointerQualifier } from "./types";
 import { joinArgs } from "./utils";
+import type { Value } from "./value";
 
 /** Used for Struct declarations. */
 export class Struct<Members extends StructMembers> {
@@ -32,6 +32,10 @@ export class Struct<Members extends StructMembers> {
     )} }`;
   }
 
+  static type<Name extends string = any>(name: Name) {
+    return new StructType(name);
+  }
+
   static new<Members extends StructMembers>(name: string, members: Members) {
     return new Struct(name, members);
   }
@@ -40,12 +44,13 @@ export class Struct<Members extends StructMembers> {
 /** Type of a struct instance. */
 export class StructType<Name extends string = any> {
   constructor(name: Name) {
-    this.specifier = `struct ${name}`;
+    this.full = `struct ${name}`;
   }
-  specifier;
+  full;
 
-  toAddress(value: string) {
-    return new Address(this, value);
+  /** Create a pointer type for this function type. */
+  pointer(pointerQualifiers?: PointerQualifier[]) {
+    return Pointer.type(this, pointerQualifiers);
   }
 
   static new<Name extends string = any>(name: Name) {
@@ -54,11 +59,11 @@ export class StructType<Name extends string = any> {
 }
 
 export type StructMembers = {
-  [Key: string]: Simple | ArrayType | FuncType | Pointer;
+  [Key: string]: Simple | ArrayType | FuncType | StructType | Pointer;
 };
 
-export type StructMemberValues = { [key: string]: PassingValue };
+export type StructMemberValues = { [key: string]: CodeLike };
 
 export type StructValuesFromMembers<Members extends StructMembers> = {
-  [Key in keyof Members]?: TypeToValueContainer<Members[Key]>;
+  [Key in keyof Members]?: Value<Members[Key]>;
 };

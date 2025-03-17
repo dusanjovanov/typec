@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { Simple } from "./simple";
-import type { SimpleSpecifier } from "./types";
+import type { SimpleType } from "./types";
 
-const types: SimpleSpecifier[] = [
+const types: SimpleType[] = [
   "char",
   "signed char",
   "unsigned char",
@@ -28,7 +28,7 @@ const typesWithShortcuts = [
   "size_t",
   "void",
   "char",
-] as const satisfies SimpleSpecifier[];
+] as const satisfies SimpleType[];
 
 describe("Simple.type", () => {
   types.forEach((type) => {
