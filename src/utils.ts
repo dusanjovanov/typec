@@ -1,4 +1,5 @@
-import type { PassingValue } from "./types";
+import { Operator } from "./operators";
+import type { ComparisonOperatorValue, PassingValue } from "./types";
 
 /**
  * Returns an empty string when the value is falsy.
@@ -81,3 +82,25 @@ export const stringSplice = (
     str.substring(calculatedOffset + removeCount)
   );
 };
+
+export class Utils {
+  static min(left: ComparisonOperatorValue, right: ComparisonOperatorValue) {
+    return Operator.ternary(Operator.lessThan(left, right), left, right);
+  }
+
+  static max(left: ComparisonOperatorValue, right: ComparisonOperatorValue) {
+    return Operator.ternary(Operator.greaterThan(left, right), left, right);
+  }
+
+  static clamp(
+    value: ComparisonOperatorValue,
+    minVal: ComparisonOperatorValue,
+    maxVal: ComparisonOperatorValue
+  ) {
+    return Operator.ternary(
+      Operator.lessThan(value, minVal),
+      minVal,
+      Operator.ternary(Operator.greaterThan(value, maxVal), maxVal, value)
+    );
+  }
+}

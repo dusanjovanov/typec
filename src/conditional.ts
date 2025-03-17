@@ -1,13 +1,13 @@
 import { block, chunk } from "./chunk";
-import type { PassingValue, StringLike } from "./types";
+import type { PassingValue } from "./types";
 
 export class Condition {
-  constructor(cond: StringLike, body: PassingValue[]) {
+  constructor(cond: PassingValue, body: PassingValue[]) {
     this.str.push(condBlock("if", cond, body));
   }
   str: PassingValue[] = [];
 
-  elseif(cond: StringLike, body: PassingValue[]) {
+  elseif(cond: PassingValue, body: PassingValue[]) {
     this.str.push(condBlock("else if", cond, body));
     return this;
   }
@@ -26,19 +26,19 @@ export class Condition {
    *
    * The class has a `.toString()` so you can just pass the object to a string evaluated expression like a template string.
    */
-  static if(cond: StringLike, body: PassingValue[]) {
+  static if(cond: PassingValue, body: PassingValue[]) {
     return new Condition(cond, body);
   }
 
   /** When you need just one if statement. Returns a string. */
-  static if_only = (cond: StringLike, body: PassingValue[]) => {
+  static if_only = (cond: PassingValue, body: PassingValue[]) => {
     return condBlock("if", cond, body);
   };
 }
 
 const condBlock = (
   type: CondBlockType,
-  cond: StringLike,
+  cond: PassingValue,
   body: PassingValue[]
 ) => {
   return `${type}(${cond})${block(body)}`;

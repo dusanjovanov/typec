@@ -1,6 +1,7 @@
 import { chunk } from "./chunk";
-import { Func, Param, VarArgsParam } from "./func";
+import { Func } from "./func";
 import { Include } from "./include";
+import { Param, VarArgsParam } from "./param";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
 
@@ -49,7 +50,6 @@ export class StdIo {
     Simple.int(),
     "printf",
     [Param.new(Pointer.string(), "_Format")],
-    undefined,
     VarArgsParam.new()
   );
 

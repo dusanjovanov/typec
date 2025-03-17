@@ -1,10 +1,42 @@
 import { Address } from "./address";
+import { Condition } from "./conditional";
+import { Func } from "./func";
 import { Operator } from "./operators";
+import { Param } from "./param";
 import { Pointer } from "./pointer";
-import { StdLib, StdString } from "./std";
+import { Simple } from "./simple";
+import { StdString } from "./std";
 import { type ArrayIndex, type StringAddress } from "./types";
+import { Utils } from "./utils";
 import { Value } from "./value";
-import { Var } from "./variable";
+import { Variable } from "./variable";
+
+export const slice = Func.new(Pointer.string(), "tc_str_slice", [
+  Param.new(Pointer.string(["const"]), "str"),
+  Param.new(Pointer.string(), "result"),
+  Param.new(Simple.size_t(), "start"),
+  Param.new(Simple.size_t(), "end"),
+]);
+
+const lenVar = Variable.size_t("len");
+const copyLenVar = Variable.size_t("copyLen");
+
+slice.add([
+  lenVar.init(StdString.strlen.call([slice.byName.str.address()])),
+  // clamp indices
+  slice.byName.start.assign(
+    Value.size_t(Utils.min(slice.byName.start.value(), lenVar.value()))
+  ),
+  slice.byName.end.assign(
+    Value.size_t(Utils.min(slice.byName.end.value(), lenVar.value()))
+  ),
+  Condition.if_only(
+    Operator.greaterThan(slice.byName.start.value(), slice.byName.end.value()),
+    [Func.return(3)]
+  ),
+  // calculate length to copy
+  copyLenVar.init(slice.byName.end.minus(slice.byName.start.value())),
+]);
 
 /**
  * Helper class for working with strings that mimics the JS String class.
@@ -73,24 +105,7 @@ export class String {
    * Extracts a section of a string from start to end (exclusive) and returns a new string.
    */
   slice(start: ArrayIndex, end?: ArrayIndex) {
-    // const len = this.length;
-    // const safeStart = Operator.max(Value.int(0), start); // Clamp start to 0
-    // const safeEnd = end ? Operator.min(len, Operator.max(safeStart, end)) : len; // Default to length
-    // const newLen = Operator.minus(safeEnd, safeStart); // Length of slice
-    // const newAddr = Var.new(Pointer.string(), "sliceStr");
-    // const alloc = `${newAddr.declare()} = ${StdLib.malloc.call([
-    //   Operator.add(newLen, Value.int(1)),
-    // ])}`;
-    // const copy = StdString.strncpy.call([
-    //   newAddr,
-    //   this.addr.plus(safeStart),
-    //   newLen,
-    // ]);
-    // const terminate = Operator.assign(
-    //   Operator.subscript(newAddr, newLen),
-    //   Value.char(0)
-    // );
-    // return Address.from(`${alloc}; ${copy}; ${terminate}`, newAddr);
+    //
   }
 
   /** Alias for `Address.stringLiteral` */
@@ -101,6 +116,6 @@ export class String {
   static new(charAddress: StringAddress) {
     return new String(charAddress);
   }
-}
 
-String.new(String.literal("abc")).charAt(Value.int(10));
+  static slice = slice;
+}

@@ -1,4 +1,8 @@
-import type { AutoSimpleSpecifier, PassingValue } from "./types";
+import type {
+  AutoSimpleSpecifier,
+  ComparisonOperatorValue,
+  PassingValue,
+} from "./types";
 import { Value } from "./value";
 
 const preUn = (op: string) => (exp: PassingValue) => `${op}${exp}`;
@@ -10,6 +14,12 @@ const binOp = (op: string) => (left: PassingValue, right: PassingValue) => {
 
 const logicalBinOp =
   (op: string) => (left: PassingValue, right: PassingValue) => {
+    return Value.bool(binOp(op)(left, right));
+  };
+
+const comparisonBinOp =
+  (op: string) =>
+  (left: ComparisonOperatorValue, right: ComparisonOperatorValue) => {
     return Value.bool(binOp(op)(left, right));
   };
 
@@ -53,12 +63,15 @@ export class Operator {
   static mult = binOp("*");
 
   // Logical
-  static equal = logicalBinOp("==");
-  static notEqual = logicalBinOp("!=");
-  static gt = logicalBinOp(">");
-  static lt = logicalBinOp("<");
-  static gte = logicalBinOp(">=");
-  static lte = logicalBinOp("<=");
+
+  // comparison
+  static equal = comparisonBinOp("==");
+  static notEqual = comparisonBinOp("!=");
+  static greaterThan = comparisonBinOp(">");
+  static lessThan = comparisonBinOp("<");
+  static gte = comparisonBinOp(">=");
+  static lte = comparisonBinOp("<=");
+
   static and = logicalBinOp("&&");
   static or = logicalBinOp("||");
 

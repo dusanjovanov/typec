@@ -4,11 +4,12 @@ import { Simple } from "./simple";
 import type {
   PointerQualifier,
   TypeQualifier,
+  TypeToAddress,
   TypeToValueContainer,
 } from "./types";
 
 /** Used for declaring and initializing simple type and pointer variables. */
-export class Var<T extends Simple | Pointer = any> {
+export class Variable<T extends Simple | Pointer = any> {
   constructor(type: T, name: string) {
     this.type = type;
     this.name = name;
@@ -16,12 +17,17 @@ export class Var<T extends Simple | Pointer = any> {
   type;
   name;
 
-  /** Returns the address of this variable's value. */
+  /** Returns the address of this variable. If the type is a pointer - it's just its name wrapped in an Address. */
   address() {
-    return this.type.toAddress(Operator.addressOf(this.name));
+    if (this.type instanceof Pointer) {
+      return this.type.toAddress(this.name) as TypeToAddress<T>;
+    }
+    return this.type.toAddress(
+      Operator.addressOf(this.name)
+    ) as TypeToAddress<T>;
   }
 
-  /** Returns the value of this variable. Dereferences if the type is a pointer. */
+  /** Returns the value of this variable. If the type is a pointer - it's dereferenced. */
   value() {
     if (this.type instanceof Pointer) {
       return this.type.toValue(Operator.valueOf(this.name));
@@ -44,20 +50,38 @@ export class Var<T extends Simple | Pointer = any> {
     return Operator.assign(this.name, value);
   }
 
+  minus(value: TypeToValueContainer<T>) {
+    if (this.type instanceof Pointer) {
+      return this.type.toAddress(
+        Operator.minus(this.value(), value)
+      ) as TypeToValueContainer<T>;
+    }
+    //
+    else {
+      return this.type.toValue(
+        Operator.minus(this.value(), value)
+      ) as TypeToValueContainer<T>;
+    }
+  }
+
   static new<T extends Simple | Pointer>(type: T, name: string) {
-    return new Var(type, name);
+    return new Variable(type, name);
   }
 
   static void(name: string, typeQualifiers?: TypeQualifier[]) {
-    return Var.new(Simple.void(typeQualifiers), name);
+    return Variable.new(Simple.void(typeQualifiers), name);
   }
 
   static char(name: string, typeQualifiers?: TypeQualifier[]) {
-    return Var.new(Simple.char(typeQualifiers), name);
+    return Variable.new(Simple.char(typeQualifiers), name);
   }
 
   static int(name: string, typeQualifiers?: TypeQualifier[]) {
-    return Var.new(Simple.int(typeQualifiers), name);
+    return Variable.new(Simple.int(typeQualifiers), name);
+  }
+
+  static size_t(name: string, typeQualifiers?: TypeQualifier[]) {
+    return Variable.new(Simple.size_t(typeQualifiers), name);
   }
 
   /** Pointer variable for a char in a string. */
@@ -66,7 +90,10 @@ export class Var<T extends Simple | Pointer = any> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(Pointer.string(typeQualifiers, pointerQualifiers), name);
+    return Variable.new(
+      Pointer.string(typeQualifiers, pointerQualifiers),
+      name
+    );
   }
 
   static pointerVoid(
@@ -74,7 +101,7 @@ export class Var<T extends Simple | Pointer = any> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(Pointer.void(typeQualifiers, pointerQualifiers), name);
+    return Variable.new(Pointer.void(typeQualifiers, pointerQualifiers), name);
   }
 
   static pointerChar(
@@ -82,7 +109,7 @@ export class Var<T extends Simple | Pointer = any> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(Pointer.char(typeQualifiers, pointerQualifiers), name);
+    return Variable.new(Pointer.char(typeQualifiers, pointerQualifiers), name);
   }
 
   static pointerInt(
@@ -90,6 +117,6 @@ export class Var<T extends Simple | Pointer = any> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(Pointer.int(typeQualifiers, pointerQualifiers), name);
+    return Variable.new(Pointer.int(typeQualifiers, pointerQualifiers), name);
   }
 }

@@ -11,42 +11,40 @@ import { stringSplice } from "./utils";
 import { Value } from "./value";
 
 /** A pointer type wrapping another type. */
-export class Pointer<
-  InnerType extends Simple | ArrayType | FuncType | Pointer = any
-> {
-  constructor(innerType: InnerType, qualifiers?: PointerQualifier[]) {
-    this.innerType = innerType;
+export class Pointer<T extends Simple | ArrayType | FuncType | Pointer = any> {
+  constructor(type: T, qualifiers?: PointerQualifier[]) {
+    this.type = type;
     this.qualifiers = qualifiers;
 
-    if (this.innerType instanceof Simple) {
-      this.specifier = `${this.innerType.specifier}*`;
+    if (this.type instanceof Simple) {
+      this.specifier = `${this.type.specifier}*`;
     }
     //
-    else if (this.innerType instanceof ArrayType) {
+    else if (this.type instanceof ArrayType) {
       this.specifier = stringSplice(
-        this.innerType.specifier,
-        this.innerType.specifier.indexOf("["),
+        this.type.specifier,
+        this.type.specifier.indexOf("["),
         "(*)"
       );
     }
     //
-    else if (this.innerType instanceof FuncType) {
+    else if (this.type instanceof FuncType) {
       this.specifier = stringSplice(
-        this.innerType.specifier,
-        this.innerType.specifier.indexOf("("),
+        this.type.specifier,
+        this.type.specifier.indexOf("("),
         "(*)"
       );
     }
     //
     else {
       this.specifier = stringSplice(
-        this.innerType.specifier,
-        this.innerType.specifier.indexOf("*"),
+        this.type.specifier,
+        this.type.specifier.indexOf("*"),
         "*"
       );
     }
   }
-  innerType: InnerType;
+  type: T;
   specifier;
   qualifiers;
 
@@ -55,9 +53,7 @@ export class Pointer<
   }
 
   toValue(value: string) {
-    return new Value(this.innerType.specifier, value) as Value<
-      InnerType["specifier"]
-    >;
+    return new Value(this.type.specifier, value) as Value<T["specifier"]>;
   }
 
   static new<T extends Simple | ArrayType | FuncType | Pointer = any>(

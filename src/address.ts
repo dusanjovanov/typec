@@ -12,9 +12,9 @@ import type { Value } from "./value";
 export class Address<
   T extends Simple | ArrayType | FuncType | Pointer | StructType
 > {
-  constructor(type: T, value: string) {
+  constructor(type: T, addressExp: string) {
     this.type = type;
-    this.value = value;
+    this.value = addressExp;
   }
   kind = "address" as const;
   type;
@@ -34,18 +34,16 @@ export class Address<
     return Address.new(this.type, Operator.minus(this.value, value));
   }
 
-  /** Address to a char in the string. */
-  static string(value: string, typeQualifiers?: TypeQualifier[]) {
-    return Address.new(Simple.type("char", typeQualifiers), value);
+  /** Returns a char* address. */
+  static string(strExp: string, typeQualifiers?: TypeQualifier[]) {
+    return Address.new(Simple.type("char", typeQualifiers), strExp);
   }
 
   /**
-   * Address to a char in the string, but the value passed is treated as a string literal.
-   *
-   * Also adds `const` to the type ( C++ warns about this `-Wwrite-strings` )
+   * Returns a char* address, but the value passed is treated as a string literal ( wrapped in double quotes...etc ).
    */
-  static stringLiteral(value: string) {
-    return Address.string(Literal.string(value), ["const"]);
+  static stringLiteral(str: string) {
+    return Address.string(Literal.string(str));
   }
 
   /** NULL macro */
@@ -55,8 +53,8 @@ export class Address<
 
   static new<T extends Simple | ArrayType | FuncType | Pointer | StructType>(
     type: T,
-    value: string
+    addressExp: string
   ) {
-    return new Address(type, value);
+    return new Address(type, addressExp);
   }
 }

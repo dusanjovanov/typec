@@ -7,12 +7,14 @@ import type { Simple } from "./simple";
 import type { Value } from "./value";
 
 /** Type union for all simple C types. */
-export type SimpleSpecifier =
+export type SimpleSpecifier = NumberTypeSpecifier | "void";
+
+export type NumberTypeSpecifier =
+  | IntegerTypeSpecifier
   | IntegerTypeSpecifier
   | "float"
   | "double"
   | "long double"
-  | "void"
   | "wchar_t";
 
 export type IntegerTypeSpecifier =
@@ -67,3 +69,15 @@ export class AnyType<S extends string = any> {
 export type StringAddress = Address<Simple<"char">>;
 
 export type ArrayIndex = Value<IntegerTypeSpecifier>;
+
+export type ComparisonOperatorValue = Value<NumberTypeSpecifier> | Address<any>;
+
+export type TypeToAddress<T extends Simple | Pointer> = T extends Simple
+  ? Address<T>
+  : T extends Pointer
+  ? PointerToAddress<T>
+  : never;
+
+export type PointerToAddress<T extends Pointer> = T extends Pointer<infer K>
+  ? Address<K>
+  : never;

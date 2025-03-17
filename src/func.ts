@@ -1,16 +1,16 @@
 import { Address } from "./address";
 import { block } from "./chunk";
 import { Operator } from "./operators";
+import type { Param, VarArgsParam } from "./param";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
 import {
-  AnyType,
   type PassingValue,
   type PointerQualifier,
   type TypeToValueContainer,
 } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
-import { Var } from "./variable";
+import { Variable } from "./variable";
 
 /** Used for creating functions or just declaring them if they come from other C libraries. */
 export class Func<
@@ -22,7 +22,6 @@ export class Func<
     returnType: Return,
     name: string,
     params: Params,
-    body?: (fn: Func<Return, Params>) => string[],
     varArgsParam?: VarArgs
   ) {
     this.returnType = returnType;
@@ -34,16 +33,28 @@ export class Func<
       params.map((p) => p.type),
       varArgsParam
     ) as FuncType<Return, FuncParamTypes<Params>, VarArgs>;
-    this.body = body;
     this.varArgsParam = varArgsParam;
+
+    const paramsByName: Record<string, any> = {};
+    params.forEach((p) => {
+      paramsByName[p.name] = p;
+    });
+    this.byName = paramsByName as FuncParamsByName<Params>;
   }
   type;
   returnType;
   name;
   params;
+  /** Params by name */
+  byName;
   paramTypes;
-  body;
+  body: PassingValue[] = [];
   varArgsParam;
+
+  /** Add statements to the functions body. */
+  add(statements: PassingValue[]) {
+    this.body.push(...statements);
+  }
 
   /** Returns the address of this function. */
   address() {
@@ -61,9 +72,7 @@ export class Func<
 
   /** Returns the definition ( implementation ) of the function. */
   define() {
-    const bodyImpl = this.body?.(this) ?? [];
-
-    return `${this.declare()}${block(bodyImpl)}`;
+    return `${this.declare()}${block(this.body)}`;
   }
 
   private resolveReturn(value: string) {
@@ -94,7 +103,7 @@ export class Func<
 
   /** Returns a pointer variable meant to point to this function. */
   pointer(name: string, pointerQualifiers?: PointerQualifier[]) {
-    return Var.new(this.type.pointer(pointerQualifiers), name);
+    return Variable.new(this.type.pointer(pointerQualifiers), name);
   }
 
   /** Returns a return statement expression. */
@@ -127,10 +136,9 @@ export class Func<
     returnType: Return,
     name: string,
     params: Params,
-    body?: (fn: any) => string[],
     varArgsParam?: VarArgsParam
   ) {
-    return new Func(returnType, name, params, body, varArgsParam);
+    return new Func(returnType, name, params, varArgsParam);
   }
 }
 
@@ -172,35 +180,6 @@ export class FuncType<
   }
 }
 
-export class Param<T extends Simple | Pointer = any> {
-  constructor(type: T, name: string) {
-    this.type = type;
-    this.name = name;
-  }
-  type;
-  name;
-
-  address() {
-    return this.type.toAddress(this.name) as Address<T>;
-  }
-
-  declare() {
-    return `${this.type} ${this.name}`;
-  }
-
-  static new<T extends Simple | Pointer>(type: T, name: string) {
-    return new Param(type, name);
-  }
-}
-
-export class VarArgsParam {
-  type = new AnyType("...");
-
-  static new() {
-    return new VarArgsParam();
-  }
-}
-
 export type FuncCallArgs<
   Params extends readonly Param[],
   VarArgs extends VarArgsParam
@@ -219,3 +198,15 @@ export type FuncArgFromParam<T extends Param> = T extends Param<infer V>
 export type FuncParamTypes<Params extends readonly Param[]> = {
   [index in keyof Params]: Params[index]["type"];
 };
+
+export type FuncParamsByName<Params extends readonly Param[]> =
+  Params extends []
+    ? {}
+    : Params extends readonly [
+        infer First extends Param,
+        ...infer Rest extends Param[]
+      ]
+    ? Rest extends readonly Param[]
+      ? Record<First["name"], First> & FuncParamsByName<Rest>
+      : Record<First["name"], First>
+    : "test";
