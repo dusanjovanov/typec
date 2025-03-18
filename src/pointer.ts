@@ -1,14 +1,8 @@
 import { ArrayType } from "./array";
 import { FuncType } from "./func";
 import { Simple } from "./simple";
-import type {
-  AutoSimpleType,
-  PointerQualifier,
-  TextLike,
-  TypeQualifier,
-} from "./types";
+import type { AutoSimpleType, PointerQualifier, TypeQualifier } from "./types";
 import { emptyFalsy, join, stringSplice } from "./utils";
-import { Value } from "./value";
 
 /** A pointer type wrapping another type. */
 export class Pointer<T extends Simple | ArrayType | FuncType | Pointer = any> {
@@ -54,14 +48,6 @@ export class Pointer<T extends Simple | ArrayType | FuncType | Pointer = any> {
   type: T;
   qualifiers;
   full;
-
-  ref(value: string) {
-    return Value.new(this, value);
-  }
-
-  toValue(value: TextLike) {
-    return new Value(this, value);
-  }
 
   /** Get the pointer type to this pointer. */
   pointer(pointerQualifiers?: PointerQualifier[]) {
@@ -123,5 +109,12 @@ export class Pointer<T extends Simple | ArrayType | FuncType | Pointer = any> {
     pointerQualifiers?: PointerQualifier[]
   ) {
     return Pointer.simple("bool", typeQualifiers, pointerQualifiers);
+  }
+
+  static size_t(
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Pointer.simple("size_t", typeQualifiers, pointerQualifiers);
   }
 }

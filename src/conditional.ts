@@ -2,13 +2,13 @@ import { block, chunk } from "./chunk";
 import type { CodeLike } from "./types";
 
 export class Condition {
-  constructor(cond: CodeLike, body: CodeLike[]) {
-    this.str.push(condBlock("if", cond, body));
+  constructor(condition: CodeLike, body: CodeLike[]) {
+    this.str.push(condBlock("if", condition, body));
   }
   str: CodeLike[] = [];
 
-  elseif(cond: CodeLike, body: CodeLike[]) {
-    this.str.push(condBlock("else if", cond, body));
+  elseif(condition: CodeLike, body: CodeLike[]) {
+    this.str.push(condBlock("else if", condition, body));
     return this;
   }
 
@@ -26,17 +26,17 @@ export class Condition {
    *
    * The class has a `.toString()` so you can just pass the object to a string evaluated expression like a template string.
    */
-  static if(cond: CodeLike, body: CodeLike[]) {
-    return new Condition(cond, body);
+  static if(condition: CodeLike, body: CodeLike[]) {
+    return new Condition(condition, body);
   }
 }
 
 const condBlock = (
   type: CondBlockType,
-  cond: CodeLike,
+  condition: CodeLike,
   body: CodeLike[]
 ) => {
-  return `${type}(${cond})${block(body)}`;
+  return `${type}(${condition})${block(body)}`;
 };
 
 type CondBlockType = "if" | "else if";

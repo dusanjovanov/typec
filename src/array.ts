@@ -3,7 +3,7 @@ import { Literal } from "./literal";
 import { Operator } from "./operators";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
-import type { CodeLike, PointerQualifier, TypeToAssignValue } from "./types";
+import type { CodeLike, PointerQualifier } from "./types";
 import { joinArgs } from "./utils";
 import { Value } from "./value";
 
@@ -39,12 +39,12 @@ export class Array<
   }
 
   /** Returns the array initialization with a compound literal. */
-  init(values: TypeToAssignValue<ElementType>[]) {
+  init(values: CodeLike[]) {
     return Operator.assign(this.declare(), Literal.compound(values));
   }
 
   /** Returns an array initialization with a designated initializer. */
-  initDesignated(values: Record<number, TypeToAssignValue<ElementType>>) {
+  initDesignated(values: Record<number, CodeLike>) {
     return Array.designated(values);
   }
 

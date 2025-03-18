@@ -6,12 +6,10 @@ import {
   type IntegerType,
   type NumberType,
   type PointerQualifier,
-  type TextLike,
   type TypecType,
   type TypeQualifier,
 } from "./types";
 import { emptyFalsy, join, Utils } from "./utils";
-import { Value } from "./value";
 
 /** Simple type */
 export class Simple<T extends AutoSimpleType = any> {
@@ -27,10 +25,6 @@ export class Simple<T extends AutoSimpleType = any> {
   specifier;
   qualifiers;
   full;
-
-  toValue(value: TextLike) {
-    return Value.new(this, value);
-  }
 
   pointer(pointerQualifiers?: PointerQualifier[]) {
     return Pointer.type(this, pointerQualifiers);

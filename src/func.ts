@@ -3,11 +3,7 @@ import { Operator } from "./operators";
 import type { Param, VarArgsParam } from "./param";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
-import {
-  type CodeLike,
-  type PointerQualifier,
-  type TypeToAssignValue,
-} from "./types";
+import { type CodeLike, type PointerQualifier } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
 import { Value } from "./value";
 import { Variable } from "./variable";
@@ -26,8 +22,8 @@ export class Func<
   ) {
     this.returnType = returnType;
     this.name = name;
-    this.paramsArray = params;
-    this.paramTypes = params.map((p) => p.type);
+    this._params = params;
+    this._paramTypes = params.map((p) => p.type);
     this.type = FuncType.new(
       returnType,
       params.map((p) => p.type),
@@ -37,22 +33,22 @@ export class Func<
 
     const paramsByName: Record<string, any> = {};
     params.forEach((p) => {
-      paramsByName[p._name] = p;
+      paramsByName[p.name] = p;
     });
     this.params = paramsByName as FuncParamsByName<Params>;
   }
   type;
   returnType;
   name;
-  paramsArray;
   /** Params by name */
   params;
-  paramTypes;
   body: CodeLike[] = [];
   varArgsParam;
+  _params;
+  _paramTypes;
 
   /** Add statements to the functions body. */
-  add(statements: CodeLike[]) {
+  add(...statements: CodeLike[]) {
     this.body.push(...statements);
   }
 
@@ -64,8 +60,8 @@ export class Func<
   /** Returns the declaration ( prototype ) of the function. */
   declare() {
     return `${this.returnType.full} ${this.name}(${
-      this.paramsArray.length > 0
-        ? joinArgs(this.paramsArray.map((param) => `${param.declare()}`))
+      this._params.length > 0
+        ? joinArgs(this._params.map((param) => `${param.declare()}`))
         : "void"
     })`;
   }
@@ -76,20 +72,19 @@ export class Func<
   }
 
   /** Returns a function call expression. */
-  call(args: FuncCallArgs<Params, VarArgs>) {
-    return this.returnType.toValue(
-      Func.call(this.name, args as any)
-    ) as Value<Return>;
+  call(args: FuncArgs<Params>) {
+    return Value.new(this.returnType, Func.call(this.name, args as any));
   }
 
   /** Returns a function call expression with support for var args. */
-  callVarArgs(startArgs: FuncArgsFromParams<Params>, varArgs: CodeLike[]) {
-    return this.returnType.toValue(
+  callVarArgs(startArgs: FuncArgs<Params>, varArgs: CodeLike[]) {
+    return Value.new(
+      this.returnType,
       Func.callVarArgs(this.name, startArgs as any, varArgs)
-    ) as Value<Return>;
+    );
   }
 
-  return(value: TypeToAssignValue<Return>) {
+  return(value: CodeLike) {
     return value;
   }
 
@@ -104,7 +99,7 @@ export class Func<
   }
 
   /** Returns a function call expression. */
-  static call(fnName: string, args?: CodeLike[]) {
+  static call(fnName: string, args: CodeLike[]) {
     return `${fnName}(${emptyFalsy(args, joinArgs)})`;
   }
 
@@ -169,20 +164,9 @@ export class FuncType<
   }
 }
 
-export type FuncCallArgs<
-  Params extends readonly Param[],
-  VarArgs extends VarArgsParam
-> = VarArgs extends void
-  ? FuncArgsFromParams<Params>
-  : [...FuncArgsFromParams<Params>, ...CodeLike[]];
-
-export type FuncArgsFromParams<Params extends readonly Param[]> = {
-  [index in keyof Params]: FuncArgFromParam<Params[index]>;
+export type FuncArgs<Params extends readonly Param[]> = {
+  [index in keyof Params]: CodeLike;
 };
-
-export type FuncArgFromParam<T extends Param> = T extends Param<infer V>
-  ? TypeToAssignValue<V>
-  : never;
 
 export type FuncParamTypes<Params extends readonly Param[]> = {
   [index in keyof Params]: Params[index]["type"];
@@ -196,6 +180,6 @@ export type FuncParamsByName<Params extends readonly Param[]> =
         ...infer Rest extends Param[]
       ]
     ? Rest extends readonly Param[]
-      ? Record<First["_name"], First> & FuncParamsByName<Rest>
-      : Record<First["_name"], First>
+      ? Record<First["name"], First> & FuncParamsByName<Rest>
+      : Record<First["name"], First>
     : "test";

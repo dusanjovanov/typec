@@ -50,7 +50,7 @@ export class StructType<Name extends string = any> {
 
   /** Create a pointer type for this function type. */
   pointer(pointerQualifiers?: PointerQualifier[]) {
-    return Pointer.type(this, pointerQualifiers);
+    // return Pointer.type(this, pointerQualifiers);
   }
 
   static new<Name extends string = any>(name: Name) {
@@ -65,5 +65,5 @@ export type StructMembers = {
 export type StructMemberValues = { [key: string]: CodeLike };
 
 export type StructValuesFromMembers<Members extends StructMembers> = {
-  [Key in keyof Members]?: Value<Members[Key]>;
+  // [Key in keyof Members]?: Value<Members[Key]>;
 };

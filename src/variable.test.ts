@@ -12,7 +12,7 @@ describe("Variable", () => {
 
     // constructor
     const v = Variable.new(varType, varName);
-    expect(v._name).toBe(varName);
+    expect(v.name).toBe(varName);
     expect(v.type).toBe(varType);
     expect(v.declare()).toBe(`int ${varName}`);
 
@@ -20,11 +20,6 @@ describe("Variable", () => {
     const refVal = v.ref();
     expect(refVal.type).toEqual(varType.pointer());
     expect(refVal.value).toEqual(`&${varName}`);
-
-    // name
-    const nameVal = v.name();
-    expect(nameVal.value).toEqual(varName);
-    expect(nameVal.type).toEqual(varType);
 
     // assignment
     const varValue = Value.int(3);
@@ -39,14 +34,9 @@ describe("Variable", () => {
 
     // constructor
     const v = Variable.new(varType, varName);
-    expect(v._name).toBe(varName);
+    expect(v.name).toBe(varName);
     expect(v.type).toBe(varType);
     expect(v.declare()).toBe(`${varType.full} ${varName}`);
-
-    // name
-    const nameVal = v.name();
-    expect(nameVal.type).toEqual(varType);
-    expect(nameVal.value).toBe(varName);
 
     // ref
     const refVal = v.ref();
@@ -60,23 +50,21 @@ describe("Variable", () => {
 
     // assignment
     const pointerVar = Variable.pointerInt("var");
-    expect(v.assign(pointerVar.name())).toBe(`${varName}=${pointerVar.name()}`);
-    expect(v.init(pointerVar.name())).toBe(
-      `int* ${varName}=${pointerVar.name()}`
-    );
+    expect(v.assign(pointerVar)).toBe(`${varName}=${pointerVar}`);
+    expect(v.init(pointerVar)).toBe(`int* ${varName}=${pointerVar}`);
 
     // arithmetic
 
     // pointer - int
     const varMinus = Variable.int("var");
-    const minusVal = v.minus(varMinus.name());
+    const minusVal = v.minus(varMinus);
     expect(minusVal.type.full).toBe(varType.full);
-    expect(minusVal.value).toBe(`${varName}-${varMinus.name()}`);
+    expect(minusVal.value).toBe(`${varName}-${varMinus}`);
 
     // pointer - pointer
     const varMinusPointer = Variable.pointerInt("var");
-    const minusPointerVal = v.minus(varMinusPointer.name());
+    const minusPointerVal = v.minus(varMinusPointer);
     expect(minusPointerVal.type.full).toBe("ptrdiff_t");
-    expect(minusPointerVal.value).toBe(`${varName}-${varMinusPointer.name()}`);
+    expect(minusPointerVal.value).toBe(`${varName}-${varMinusPointer}`);
   });
 });

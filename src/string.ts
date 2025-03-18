@@ -1,43 +1,101 @@
 import { Condition } from "./conditional";
 import { Func } from "./func";
+import { Loop } from "./loops";
 import { Operator } from "./operators";
-import { Param } from "./param";
+import { Param, VarArgsParam } from "./param";
 import { Pointer } from "./pointer";
-import { StdLib, StdString } from "./std";
-import { type ArrayIndexValue, type StringValue } from "./types";
+import type { Simple } from "./simple";
+import { StdArg, StdLib, StdString } from "./std";
+import {
+  type ArrayIndexValue,
+  type AssignArrayIndexValue,
+  type IntegerType,
+  type StringValue,
+} from "./types";
 import { Value } from "./value";
 import { Variable } from "./variable";
 
+/**
+ * ```c
+ * char* slice(const char* str, size_t start, size_t end)
+ * ```
+ */
 export const slice = (() => {
   const slice = Func.new(Pointer.string(), "tc_str_slice", [
     Param.string("str", ["const"]),
     Param.size_t("start"),
-    Param.size_t("end"),
+    Param.new(Pointer.size_t(), "end"),
   ]);
 
-  const lenVar = Variable.size_t("len");
-  const copyLenVar = Variable.size_t("copyLen");
-  const resultVar = Variable.string("result");
+  const len = Variable.size_t("len");
+  const sliceLen = Variable.size_t("copyLen");
+  const result = Variable.string("result");
+  const endIdx = Variable.int("end_idx");
 
-  slice.add([
-    lenVar.init(StdString.strlen.call([slice.params.str])),
-    // clamp indices
-    slice.params.start.assign(slice.params.start.min(lenVar)),
-    slice.params.end.assign(slice.params.end.min(lenVar)),
-    Condition.if(slice.params.start.greaterThan(slice.params.end), [
-      Func.return(3),
+  const { str, start, end } = slice.params;
+
+  slice.add(
+    // Return NULL if input string is NULL
+    Condition.if(str.equal(Value.null()), [Func.return(Value.null())]),
+    // Get the length of the input string
+    len.init(StdString.strlen.call([str])),
+    // Clamp start index: ensure it's within [0, len]
+    start.clamp(Value.int(0), len),
+    // Determine end index: use string length if end is NULL, otherwise clamp
+    endIdx.declare(),
+    Condition.if(end.equal(Value.null()), [endIdx.assign(len)]).else([
+      endIdx.assign(end.deRef()),
+      endIdx.clamp(start, len),
     ]),
     // calculate length to copy
-    copyLenVar.init(slice.params.end.minus(slice.params.start.name())),
+    sliceLen.init(end.minus(start)),
     // Allocate memory for the sliced string (+1 for null terminator)
-    resultVar.init(
-      StdLib.malloc.call([lenVar.plus(Value.int(1))]).cast(Pointer.string())
+    result.init(
+      StdLib.malloc.call([len.plus(Value.int(1))]).cast(Pointer.string())
     ),
-    Condition.if(resultVar.equal(Value.null()), [Func.return(Value.null())]),
+    Condition.if(result.equal(Value.null()), [Func.return(Value.null())]),
     // Copy the substring
-  ]);
+    StdString.strncpy.call([result, str.plus(start), sliceLen]),
+    // Ensure null termination
+    result.subAssign(sliceLen, Value.nullTerm()),
+    slice.return(result)
+  );
 
   return slice;
+})();
+
+const concat = (() => {
+  const concat = Func.new(
+    Pointer.string(),
+    "tc_str_concat",
+    [Param.string("str", ["const"])],
+    VarArgsParam.new()
+  );
+
+  const totalLen = Variable.size_t("total_len");
+  const varArgs = StdArg.VarArgs.new();
+  const nextStr = Variable.string("next_str", ["const"]);
+
+  const { str } = concat.params;
+
+  concat.add(
+    // Return NULL if the initial string is NULL
+    Condition.if(str.equal(Value.null()), [Func.return(Value.null())]),
+    // Start with the length of the first string
+    totalLen.init(StdString.strlen.call([str])),
+    varArgs.init(str.name),
+    nextStr.declare(),
+    Loop.while(
+      nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(Value.null()),
+      [
+        Condition.if(nextStr.notEqual(Value.null()), [
+          totalLen.plusAssign(StdString.strlen.call([nextStr])),
+        ]),
+      ]
+    )
+  );
+
+  return concat;
 })();
 
 /**
@@ -110,8 +168,11 @@ export class String {
   /**
    * Extracts a section of a string from start to end (exclusive) and returns a new string.
    */
-  slice(start: ArrayIndexValue, end?: ArrayIndexValue) {
-    //
+  slice(
+    start: AssignArrayIndexValue,
+    end: Value<Pointer<Simple<IntegerType>>>
+  ) {
+    return slice.call([this.addr, start, end]);
   }
 
   /** Alias for `Address.stringLiteral` */

@@ -9,9 +9,9 @@ export class Param<
 > extends Variable<T> {
   constructor(type: T, name: Name) {
     super(type, name);
-    this._name = name;
+    this.name = name;
   }
-  _name;
+  name;
 
   static size_t<Name extends string>(
     name: Name,

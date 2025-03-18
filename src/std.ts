@@ -4,9 +4,10 @@ import { Include } from "./include";
 import { Param, VarArgsParam } from "./param";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
+import { Value } from "./value";
 
-export class VarArgsHelper {
-  constructor(argsName = "varargs") {
+export class VarArgs {
+  constructor(argsName = "args") {
     this.argsName = argsName;
   }
   argsName;
@@ -16,10 +17,10 @@ export class VarArgsHelper {
    *
    * You have to pass the number of fixed params of the function ( i.e params before the var arg param )
    */
-  init(fixedParamCount: number) {
+  init(nameOfLastFixedParam: string) {
     return chunk([
       `va_list ${this.argsName}`,
-      `va_start(${this.argsName}, ${fixedParamCount})`,
+      `va_start(${this.argsName}, ${nameOfLastFixedParam})`,
     ]);
   }
 
@@ -27,8 +28,8 @@ export class VarArgsHelper {
    *
    * You should assign the returned string to a variable.
    */
-  nextArg(type: Simple) {
-    return `va_arg(${this.argsName}, ${type.specifier})`;
+  nextArg<T extends Simple | Pointer>(type: T) {
+    return Value.new(type, `va_arg(${this.argsName}, ${type.full})`);
   }
 
   /** Cleanup - this has to be called when you're done reading the var args. */
@@ -37,7 +38,7 @@ export class VarArgsHelper {
   }
 
   static new(argsName?: string) {
-    return new VarArgsHelper(argsName);
+    return new VarArgs(argsName);
   }
 }
 
@@ -90,7 +91,7 @@ export class StdArg {
   }
 
   /** Helper class for implementing a var arg function parameter. */
-  static VarArgsHelper = VarArgsHelper;
+  static VarArgs = VarArgs;
 }
 
 export class StdString {

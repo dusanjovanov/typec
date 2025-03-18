@@ -1,12 +1,15 @@
+import { BaseValue } from "./baseValue";
 import { Literal } from "./literal";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
-import type { StructType } from "./struct";
 import type { InvalidValue, NullValue, TextLike, TypeQualifier } from "./types";
 
 /** A value container containing an rvalue expression which resolves to a data type value. */
-export class Value<T extends Simple | Pointer | StructType = any> {
+export class Value<
+  T extends Simple | Pointer | Value = any
+> extends BaseValue<T> {
   constructor(type: T, valueExp: TextLike) {
+    super(type);
     this.type = type;
     this.value = valueExp;
   }
@@ -18,7 +21,7 @@ export class Value<T extends Simple | Pointer | StructType = any> {
     return String(this.value);
   }
 
-  cast<T extends Simple | Pointer | StructType>(type: T) {
+  cast<T extends Simple | Pointer>(type: T) {
     return Value.new(type, this.value);
   }
 
@@ -81,15 +84,17 @@ export class Value<T extends Simple | Pointer | StructType = any> {
     return Value.new(Pointer.void(), "NULL");
   }
 
+  /** Null terminator character. `'\0'` */
+  static nullTerm() {
+    return Value.char(Literal.char("\0"));
+  }
+
   /** Invalid or impossible value typed as `Value<never>` */
   static invalid() {
     return Value.new(Simple.void(), "") as InvalidValue;
   }
 
-  static new<T extends Simple | Pointer | StructType>(
-    type: T,
-    valueExp: TextLike
-  ) {
+  static new<T extends Simple | Pointer | Value>(type: T, valueExp: TextLike) {
     return new Value(type, valueExp);
   }
 }
