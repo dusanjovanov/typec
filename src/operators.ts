@@ -1,4 +1,5 @@
-import type { AutoSimpleType, CodeLike } from "./types";
+import type { Type } from "./type";
+import type { CodeLike } from "./types";
 
 const preUn = (op: string) => (exp: CodeLike) => `${op}${exp}`;
 const postUn = (op: string) => (exp: CodeLike) => `${exp}${op}`;
@@ -83,7 +84,7 @@ export class Operator {
   /**
    * Returns a type cast expression.
    */
-  static cast(type: AutoSimpleType, exp: CodeLike) {
+  static cast(type: Type, exp: CodeLike) {
     return `(${type})${exp}`;
   }
 
@@ -109,11 +110,7 @@ export class Operator {
   /**
    * Creates a ternary expression (e.g., condition ? exp1 : exp2).
    */
-  static ternary(
-    condition: CodeLike,
-    exp1: CodeLike,
-    exp2: CodeLike
-  ) {
+  static ternary(condition: CodeLike, exp1: CodeLike, exp2: CodeLike) {
     return `${condition}?${exp1}:${exp2}`;
   }
 }

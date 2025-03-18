@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Simple } from "./simple";
+import { Type } from "./type";
 import type { SimpleType } from "./types";
 import { Value } from "./value";
 
@@ -37,10 +37,8 @@ const typesWithShortcuts = [
 describe("Value.new", () => {
   types.forEach((type) => {
     test(type, () => {
-      const valueType = Simple.type(type);
-      const _t = Value.new(valueType, "test");
+      const _t = Value.new("test");
       expect(_t.kind).toBe("value");
-      expect(_t.type).toEqual(valueType);
       expect(_t.value).toBe("test");
       expect(_t.toString()).toBe("test");
     });
@@ -50,10 +48,8 @@ describe("Value.new", () => {
 typesWithShortcuts.forEach((type) => {
   describe(`Value.${type}`, () => {
     test(type, () => {
-      const valueType = Simple.type(type);
       const _t = (Value as any)[type.replaceAll(/\s/g, "_")]("test");
       expect(_t.kind).toBe("value");
-      expect(_t.type).toEqual(valueType);
       expect(_t.value).toBe("test");
       expect(_t.toString()).toBe("test");
     });

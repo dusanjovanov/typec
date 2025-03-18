@@ -1,22 +1,18 @@
 import { curly } from "./chunk";
 import { Literal } from "./literal";
 import { Operator } from "./operators";
-import { Pointer } from "./pointer";
-import { Simple } from "./simple";
-import type { CodeLike, PointerQualifier } from "./types";
+import { Type } from "./type";
+import type { CodeLike } from "./types";
 import { joinArgs } from "./utils";
 import { Value } from "./value";
 
 /** Used for creating array variables. */
-export class Array<
-  const ElementType extends Simple | Pointer,
-  Length extends number
-> {
-  constructor(elementType: ElementType, length: Length, name: string) {
+export class Array {
+  constructor(elementType: Type, length: number, name: string) {
     this.elementType = elementType;
     this.name = name;
     this.length = length;
-    this.type = Array.type(elementType, length);
+    this.type = Type.array(elementType, length);
   }
   type;
   elementType;
@@ -25,12 +21,12 @@ export class Array<
 
   /** Returns the ref expression for the first element of the array. */
   ref() {
-    return Value.new(this.type.pointer(), this.name);
+    return Value.new(this.name);
   }
 
   /** Returns the address expression for the entire array. */
   refArray() {
-    return Value.new(this.type.pointerArray(), Operator.ref(this.name));
+    return Value.new(Operator.ref(this.name));
   }
 
   /** Returns the array declaration. */
@@ -57,58 +53,11 @@ export class Array<
     );
   }
 
-  static type<const T extends Simple | Pointer, Length extends number>(
-    elementType: T,
-    length: Length
-  ) {
-    return new ArrayType(elementType, length);
-  }
-
-  static new<const ElementType extends Simple | Pointer, Length extends number>(
-    elementType: ElementType,
-    length: Length,
-    name: string
-  ) {
+  static new(elementType: Type, length: number, name: string) {
     return new Array(elementType, length, name);
   }
 
   static int<Length extends number>(length: Length, name: string) {
-    return Array.new(Simple.int(), length, name);
-  }
-}
-
-export class ArrayType<
-  ElementType extends Simple | Pointer = any,
-  Length extends number = any
-> {
-  constructor(elementType: ElementType, length: Length) {
-    this.elementType = elementType;
-    this.length = length;
-    this.full = `${this.elementType.full} [${this.length}]`;
-  }
-  kind = "array" as const;
-  elementType;
-  length;
-  full;
-
-  /** Create a pointer type for this arrays element type. */
-  pointer(pointerQualifiers?: PointerQualifier[]) {
-    return Pointer.type(this.elementType, pointerQualifiers);
-  }
-
-  /** Create a pointer type for this array. */
-  pointerArray(pointerQualifiers?: PointerQualifier[]) {
-    return Pointer.type(this, pointerQualifiers);
-  }
-
-  static new<
-    ElementType extends Simple | Pointer = any,
-    Length extends number = any
-  >(elementType: ElementType, length: Length) {
-    return new ArrayType(elementType, length);
-  }
-
-  static int<Length extends number>(length: Length) {
-    return ArrayType.new(Simple.int(), length);
+    return Array.new(Type.int(), length, name);
   }
 }

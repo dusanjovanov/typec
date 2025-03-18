@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Operator } from "./operators";
+import { Type } from "./type";
 
 const testUnaryOp = (op: string, expected: string) =>
   test(op, () => {
@@ -68,7 +69,7 @@ describe("operators", () => {
   });
 
   test("cast", () => {
-    expect(Operator.cast("char", "abc")).toBe(`(char)abc`);
+    expect(Operator.cast(Type.char(), "abc")).toBe(`(char)abc`);
   });
 
   testBinaryOp("byValue", "a.b");

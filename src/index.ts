@@ -1,6 +1,6 @@
 export * from "./array";
 export * from "./chunk";
-export * from "./conditional";
+export * from "./condition";
 export * from "./func";
 export * from "./gcc";
 export * from "./include";

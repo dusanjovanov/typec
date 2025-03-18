@@ -1,10 +1,3 @@
-import type { ArrayType } from "./array";
-import type { FuncType } from "./func";
-import type { Pointer } from "./pointer";
-import type { Simple } from "./simple";
-import type { StructType } from "./struct";
-import type { Value } from "./value";
-
 export const INTEGER_TYPES = [
   "char",
   "signed char",
@@ -59,15 +52,9 @@ export class AnyType<S extends string = any> {
   specifier;
 }
 
-export type NullValue = Value<Pointer<Simple<"void">>>;
-
 /** `char*` */
 export type StringValue = CodeLike;
 
 export type ArrayIndex = CodeLike;
 
 export type ArrayIndexPointer = CodeLike;
-
-export type InvalidValue = Value<never>;
-
-export type TypecType = Simple | Pointer | ArrayType | FuncType | StructType;

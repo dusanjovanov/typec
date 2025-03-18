@@ -1,9 +1,8 @@
 import { chunk } from "./chunk";
 import { Func } from "./func";
 import { Include } from "./include";
-import { Param, VarArgsParam } from "./param";
-import { Pointer } from "./pointer";
-import { Simple } from "./simple";
+import { Param } from "./param";
+import { Type } from "./type";
 import type { CodeLike } from "./types";
 import { Value } from "./value";
 
@@ -40,8 +39,8 @@ export class VarArgs {
    *
    * You should assign the returned string to a variable.
    */
-  nextArg<T extends Simple | Pointer>(type: T) {
-    return Value.new(type, `va_arg(${this.argsName}, ${type.full})`);
+  nextArg(type: Type) {
+    return Value.new(`va_arg(${this.argsName}, ${type.full})`);
   }
 
   /** Cleanup - this has to be called when you're done reading the var args. */
@@ -60,13 +59,13 @@ export class StdIo {
   }
 
   static printf = Func.new(
-    Simple.int(),
+    Type.int(),
     "printf",
     [Param.string("_Format")],
-    VarArgsParam.new()
+    true
   );
 
-  static puts = Func.new(Simple.int(), "puts", [
+  static puts = Func.new(Type.int(), "puts", [
     Param.string("_Buffer", ["const"]),
   ]);
 }
@@ -80,20 +79,20 @@ export class StdLib {
     return Include.system("cstdlib.h");
   }
 
-  static malloc = Func.new(Pointer.void(), "malloc", [Param.size_t("_Size")]);
+  static malloc = Func.new(Type.ptrVoid(), "malloc", [Param.size_t("_Size")]);
 
-  static calloc = Func.new(Pointer.void(), "calloc", [
+  static calloc = Func.new(Type.ptrVoid(), "calloc", [
     Param.size_t("_Count"),
     Param.size_t("_Size"),
   ]);
 
-  static realloc = Func.new(Pointer.void(), "realloc", [
-    Param.new(Pointer.void(), "_Block"),
+  static realloc = Func.new(Type.ptrVoid(), "realloc", [
+    Param.new(Type.ptrVoid(), "_Block"),
     Param.size_t("_Size"),
   ]);
 
-  static free = Func.new(Simple.void(), "free", [
-    Param.new(Pointer.void(), "_Block"),
+  static free = Func.new(Type.void(), "free", [
+    Param.new(Type.ptrVoid(), "_Block"),
   ]);
 }
 
@@ -111,29 +110,29 @@ export class StdString {
     return Include.system("string.h");
   }
 
-  static strlen = Func.new(Simple.size_t(), "strlen", [Param.string("str")]);
+  static strlen = Func.new(Type.size_t(), "strlen", [Param.string("str")]);
 
-  static strnlen_s = Func.new(Simple.size_t(), "strnlen_s", [
+  static strnlen_s = Func.new(Type.size_t(), "strnlen_s", [
     Param.string("str"),
     Param.size_t("strsz"),
   ]);
 
-  static strcat = Func.new(Pointer.string(), "strcat", [
+  static strcat = Func.new(Type.string(), "strcat", [
     Param.string("dest"),
     Param.string("src", ["const"]),
   ]);
 
-  static strstr = Func.new(Pointer.string(), "strstr", [
+  static strstr = Func.new(Type.string(), "strstr", [
     Param.string("str", ["const"]),
     Param.string("substr", ["const"]),
   ]);
 
-  static strcpy = Func.new(Pointer.string(), "strcpy", [
+  static strcpy = Func.new(Type.string(), "strcpy", [
     Param.string("dest", [], ["restrict"]),
     Param.string("src", [], ["restrict"]),
   ]);
 
-  static strncpy = Func.new(Pointer.string(), "strncpy", [
+  static strncpy = Func.new(Type.string(), "strncpy", [
     Param.string("dest", [], ["restrict"]),
     Param.string("src", [], ["restrict"]),
     Param.size_t("count"),

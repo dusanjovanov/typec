@@ -1,5 +1,5 @@
 import { Operator } from "./operators";
-import type { CodeLike, TypecType } from "./types";
+import type { CodeLike } from "./types";
 
 /**
  * Returns an empty string when the value is falsy or an empty array.
@@ -24,11 +24,7 @@ export const join = (arr: CodeLike[], sep = " ") => {
   return arr.filter((v) => v != null).join(sep);
 };
 
-export const joinWithPrefix = (
-  arr: CodeLike[],
-  prefix: string,
-  sep = " "
-) => {
+export const joinWithPrefix = (arr: CodeLike[], prefix: string, sep = " ") => {
   return join(
     arr.map((e) => `${prefix}${e}`),
     sep
@@ -95,19 +91,11 @@ export class Utils {
     return Operator.ternary(Operator.greaterThan(left, right), left, right);
   }
 
-  static clamp(
-    value: CodeLike,
-    minVal: CodeLike,
-    maxVal: CodeLike
-  ) {
+  static clamp(value: CodeLike, minVal: CodeLike, maxVal: CodeLike) {
     return Operator.ternary(
       Operator.lessThan(value, minVal),
       minVal,
       Operator.ternary(Operator.greaterThan(value, maxVal), maxVal, value)
     );
-  }
-
-  static areTypesEqual(typeA: TypecType, typeB: TypecType) {
-    return typeA.full === typeB.full;
   }
 }

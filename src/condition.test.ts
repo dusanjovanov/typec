@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Condition } from "./conditional";
+import { Condition } from "./condition";
 
 describe("conditional", () => {
   test("if", () => {

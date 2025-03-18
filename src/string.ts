@@ -1,10 +1,12 @@
-import { Condition } from "./conditional";
+import { Condition } from "./condition";
+import { NULL, NULL_TERM } from "./constants";
 import { Func } from "./func";
+import { Literal } from "./literal";
 import { Loop } from "./loops";
 import { Operator } from "./operators";
-import { Param, VarArgsParam } from "./param";
-import { Pointer } from "./pointer";
+import { Param } from "./param";
 import { StdArg, StdLib, StdString } from "./std";
+import { Type } from "./type";
 import {
   type ArrayIndex,
   type ArrayIndexPointer,
@@ -15,10 +17,10 @@ import { Value } from "./value";
 import { Variable } from "./variable";
 
 export const slice = (() => {
-  const slice = Func.new(Pointer.string(), "tc_str_slice", [
+  const slice = Func.new(Type.string(), "tc_str_slice", [
     Param.string("str", ["const"]),
     Param.size_t("start"),
-    Param.new(Pointer.size_t(), "end"),
+    Param.new(Type.size_t(), "end"),
   ]);
 
   const len = Variable.size_t("len");
@@ -30,27 +32,27 @@ export const slice = (() => {
 
   slice.add(
     // Return NULL if input string is NULL
-    str.equalReturn(Value.null()),
+    str.equalReturn(NULL),
     // Get the length of the input string
     len.init(StdString.strlen.call([str])),
     // Clamp start index: ensure it's within [0, len]
     start.clamp(0, len),
     // Determine end index: use string length if end is NULL, otherwise clamp
     endIdx.declare(),
-    Condition.if(end.equal(Value.null()), [endIdx.assign(len)]).else([
+    Condition.if(end.equal(NULL), [endIdx.assign(len)]).else([
       endIdx.assign(end.deRef()),
       endIdx.clamp(start, len),
     ]),
     // calculate length to copy
     sliceLen.init(end.minus(start)),
     // Allocate memory for the sliced string (+1 for null terminator)
-    result.init(StdLib.malloc.call([len.plus(1)]).cast(Pointer.string())),
+    result.init(StdLib.malloc.call([len.plus(1)]).cast(Type.string())),
     // Return NULL if allocation fails
-    result.equalReturn(Value.null()),
+    result.equalReturn(NULL),
     // Copy the substring
     StdString.strncpy.call([result, str.plus(start), sliceLen]),
     // Ensure null termination
-    result.subAssign(sliceLen, Value.nullTerm()),
+    result.subAssign(sliceLen, NULL_TERM),
     slice.return(result)
   );
 
@@ -59,10 +61,10 @@ export const slice = (() => {
 
 const concat = (() => {
   const concat = Func.new(
-    Pointer.string(),
+    Type.string(),
     "tc_str_concat",
     [Param.string("str", ["const"])],
-    VarArgsParam.new()
+    true
   );
 
   const totalLen = Variable.size_t("total_len");
@@ -74,37 +76,31 @@ const concat = (() => {
 
   concat.add(
     // Return NULL if the initial string is NULL
-    str.equalReturn(Value.null()),
+    str.equalReturn(NULL),
     // Start with the length of the first string
     totalLen.init(StdString.strlen.call([str])),
     varArgs.declare(),
     varArgs.start(str),
     nextStr.declare(),
-    Loop.while(
-      nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(Value.null()),
-      [
-        // Double-check to avoid issues with NULL in list
-        Condition.if(nextStr.notEqual(Value.null()), [
-          totalLen.plusAssign(StdString.strlen.call([nextStr])),
-        ]),
-      ]
-    ),
+    Loop.while(nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(NULL), [
+      // Double-check to avoid issues with NULL in list
+      Condition.if(nextStr.notEqual(NULL), [
+        totalLen.plusAssign(StdString.strlen.call([nextStr])),
+      ]),
+    ]),
     varArgs.end(),
     // Allocate memory for the result (+1 for null terminator)
     result.init(StdLib.malloc.call([totalLen.plus(1)])),
-    result.equalReturn(Value.null()),
+    result.equalReturn(NULL),
     // Copy the first string
     StdString.strcpy.call([result, str]),
     // Second pass: Concatenate all additional strings
     varArgs.start(str),
-    Loop.while(
-      nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(Value.null()),
-      [
-        Condition.if(nextStr.notEqual(Value.null()), [
-          StdString.strcat.call([result, nextStr]),
-        ]),
-      ]
-    ),
+    Loop.while(nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(NULL), [
+      Condition.if(nextStr.notEqual(NULL), [
+        StdString.strcat.call([result, nextStr]),
+      ]),
+    ]),
     varArgs.end(),
     concat.return(result)
   );
@@ -113,7 +109,7 @@ const concat = (() => {
 })();
 
 const indexOf = (() => {
-  // const indexOf = Func.new()
+  // const indexOf = Func.new();
   // const result = StdString.strstr.call([
   //   this.addr.plus(position),
   //   searchString,
@@ -136,7 +132,7 @@ const indexOf = (() => {
  */
 export class String {
   constructor(charAddress: StringValue) {
-    this.addr = Value.string(charAddress);
+    this.addr = Value.new(charAddress);
   }
   addr;
 
@@ -156,13 +152,13 @@ export class String {
   includes(searchString: StringValue, position: CodeLike = 0) {
     return Operator.notEqual(
       StdString.strstr.call([this.addr.plus(position), searchString]),
-      Value.null()
+      NULL
     );
   }
 
   /** Returns the character at the specified index. */
   charAt(pos: CodeLike) {
-    return Value.char(Operator.subscript(this.addr, pos));
+    return Value.new(Operator.subscript(this.addr, pos));
   }
 
   /**
@@ -183,9 +179,9 @@ export class String {
     return String.slice.call([this.addr, start, end]);
   }
 
-  /** Alias for `Value.stringLiteral` */
+  /** Creates a new Value with Literal.string */
   static literal(str: string) {
-    return Value.stringLiteral(str);
+    return Value.new(Literal.string(str));
   }
 
   static new(charAddress: StringValue) {

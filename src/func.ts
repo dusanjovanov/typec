@@ -1,8 +1,7 @@
 import { block } from "./chunk";
 import { Operator } from "./operators";
-import type { Param, VarArgsParam } from "./param";
-import { Pointer } from "./pointer";
-import { Simple } from "./simple";
+import type { Param } from "./param";
+import { Type } from "./type";
 import { type CodeLike, type PointerQualifier } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
 import { Value } from "./value";
@@ -10,26 +9,21 @@ import { Variable } from "./variable";
 
 /** Used for creating functions or just declaring them if they come from other C libraries. */
 export class Func<
-  Return extends Simple | Pointer = any,
   const Params extends readonly Param[] = any,
-  VarArgs extends VarArgsParam | void = void
+  VarArgs extends boolean = false
 > {
   constructor(
-    returnType: Return,
+    returnType: Type,
     name: string,
     params: Params,
-    varArgsParam?: VarArgs
+    hasVarArgs?: VarArgs
   ) {
     this.returnType = returnType;
     this.name = name;
     this._params = params;
     this._paramTypes = params.map((p) => p.type);
-    this.type = FuncType.new(
-      returnType,
-      params.map((p) => p.type),
-      varArgsParam
-    ) as FuncType<Return, FuncParamTypes<Params>, VarArgs>;
-    this.varArgsParam = varArgsParam;
+    this.type = Type.func(returnType, this._paramTypes);
+    this.hasVarArgs = hasVarArgs;
 
     const paramsByName: Record<string, any> = {};
     params.forEach((p) => {
@@ -43,7 +37,7 @@ export class Func<
   /** Params by name */
   params;
   body: CodeLike[] = [];
-  varArgsParam;
+  hasVarArgs;
   _params;
   _paramTypes;
 
@@ -54,7 +48,7 @@ export class Func<
 
   /** Returns the address of this function. */
   ref() {
-    return Value.new(this.type.pointer(), Operator.ref(this.name));
+    return Value.new(Operator.ref(this.name));
   }
 
   /** Returns the declaration ( prototype ) of the function. */
@@ -74,10 +68,10 @@ export class Func<
   /** Returns a function call expression. */
   call(args: FuncArgs<Params, VarArgs>) {
     const _args = args.slice(0, this._params.length);
-    if (this.varArgsParam) {
+    if (this.hasVarArgs) {
       _args.push(...args.slice(this._params.length));
     }
-    return Value.new(this.returnType, Func.call(this.name, _args as any));
+    return Value.new(Func.call(this.name, _args as any));
   }
 
   return(value: CodeLike) {
@@ -113,62 +107,23 @@ export class Func<
   }
 
   static new<
-    Return extends Simple | Pointer,
+    Return extends Type,
     const Params extends readonly Param[],
-    VarArgs extends VarArgsParam | void = void
+    VarArgs extends boolean = false
   >(returnType: Return, name: string, params: Params, varArgsParam?: VarArgs) {
     return new Func(returnType, name, params, varArgsParam);
   }
 }
 
-export class FuncType<
-  Return extends Simple | Pointer = any,
-  const ParamTypes extends readonly (Simple | Pointer)[] = any,
-  VarArgs extends VarArgsParam | void = void
-> {
-  constructor(
-    returnType: Return,
-    paramTypes: ParamTypes,
-    varArgsParam?: VarArgs
-  ) {
-    this.returnType = returnType;
-    this.paramTypes = paramTypes;
-    this.full = `${this.returnType.full} (${joinArgs(
-      this.paramTypes.map((p) => p.full)
-    )}${emptyFalsy(varArgsParam, (v) => `,${(v as any).type.specifier}`)})`;
-  }
-  kind = "func" as const;
-  returnType;
-  paramTypes;
-  full;
-
-  /** Create a pointer type for this function type. */
-  pointer(pointerQualifiers?: PointerQualifier[]) {
-    return Pointer.type(this, pointerQualifiers);
-  }
-
-  static new<
-    Return extends Simple | Pointer,
-    const ParamTypes extends readonly (Simple | Pointer)[] = any,
-    VarArgs extends VarArgsParam | void = void
-  >(returnType: Return, paramTypes: ParamTypes, varArgsParam?: VarArgs) {
-    return new FuncType(returnType, paramTypes, varArgsParam);
-  }
-}
-
 export type FuncArgs<
   Params extends readonly Param[],
-  VarArgs extends VarArgsParam | void
-> = VarArgs extends void
+  VarArgs extends boolean
+> = VarArgs extends false
   ? FuncArgsFromParams<Params>
   : [...FuncArgsFromParams<Params>, ...CodeLike[]];
 
 type FuncArgsFromParams<Params extends readonly Param[]> = {
   [index in keyof Params]: CodeLike;
-};
-
-export type FuncParamTypes<Params extends readonly Param[]> = {
-  [index in keyof Params]: Params[index]["type"];
 };
 
 export type FuncParamsByName<Params extends readonly Param[]> =
