@@ -5,6 +5,7 @@ export class Condition {
   constructor(condition: CodeLike, body: CodeLike[]) {
     this.str.push(condBlock("if", condition, body));
   }
+  kind = "condition" as const;
   str: CodeLike[] = [];
 
   elseif(condition: CodeLike, body: CodeLike[]) {

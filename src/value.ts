@@ -34,7 +34,7 @@ export class Value<
   }
 
   static short(shortExp: TextLike) {
-    return Value.new(Simple.type("short"), shortExp);
+    return Value.new(Simple.short(), shortExp);
   }
 
   static char(charExp: string) {

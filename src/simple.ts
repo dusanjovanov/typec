@@ -68,4 +68,8 @@ export class Simple<T extends AutoSimpleType = any> {
   static ptrDiff(qualifiers?: TypeQualifier[]) {
     return Simple.type("ptrdiff_t", qualifiers);
   }
+
+  static short(qualifiers?: TypeQualifier[]) {
+    return Simple.type("short", qualifiers);
+  }
 }

@@ -13,6 +13,7 @@ export class Variable<T extends Simple | Pointer = any> extends BaseValue<T> {
     this.type = type;
     this.name = name;
   }
+  kind = "variable" as const;
   type;
   name;
 
@@ -66,6 +67,25 @@ export class Variable<T extends Simple | Pointer = any> extends BaseValue<T> {
 
   plusAssign(value: CodeLike) {
     return Value.new(this.type, Operator.plusAssign(this, value));
+  }
+
+  minusAssign(value: CodeLike) {
+    return Value.new(this.type, Operator.minusAssign(this, value));
+  }
+
+  /** `*=` */
+  multAssign(value: CodeLike) {
+    return Value.new(this.type, Operator.multAssign(this, value));
+  }
+
+  /** `/=` */
+  divAssign(value: CodeLike) {
+    return Value.new(this.type, Operator.divAssign(this, value));
+  }
+
+  /** `%=` */
+  moduloAssign(value: CodeLike) {
+    return Value.new(this.type, Operator.moduloAssign(this, value));
   }
 
   toString() {
