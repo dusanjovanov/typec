@@ -4,22 +4,16 @@ import { Loop } from "./loops";
 import { Operator } from "./operators";
 import { Param, VarArgsParam } from "./param";
 import { Pointer } from "./pointer";
-import type { Simple } from "./simple";
 import { StdArg, StdLib, StdString } from "./std";
 import {
-  type ArrayIndexValue,
-  type AssignArrayIndexValue,
-  type IntegerType,
+  type ArrayIndex,
+  type ArrayIndexPointer,
+  type CodeLike,
   type StringValue,
 } from "./types";
 import { Value } from "./value";
 import { Variable } from "./variable";
 
-/**
- * ```c
- * char* slice(const char* str, size_t start, size_t end)
- * ```
- */
 export const slice = (() => {
   const slice = Func.new(Pointer.string(), "tc_str_slice", [
     Param.string("str", ["const"]),
@@ -36,11 +30,11 @@ export const slice = (() => {
 
   slice.add(
     // Return NULL if input string is NULL
-    Condition.if(str.equal(Value.null()), [Func.return(Value.null())]),
+    str.equalReturn(Value.null()),
     // Get the length of the input string
     len.init(StdString.strlen.call([str])),
     // Clamp start index: ensure it's within [0, len]
-    start.clamp(Value.int(0), len),
+    start.clamp(0, len),
     // Determine end index: use string length if end is NULL, otherwise clamp
     endIdx.declare(),
     Condition.if(end.equal(Value.null()), [endIdx.assign(len)]).else([
@@ -50,10 +44,9 @@ export const slice = (() => {
     // calculate length to copy
     sliceLen.init(end.minus(start)),
     // Allocate memory for the sliced string (+1 for null terminator)
-    result.init(
-      StdLib.malloc.call([len.plus(Value.int(1))]).cast(Pointer.string())
-    ),
-    Condition.if(result.equal(Value.null()), [Func.return(Value.null())]),
+    result.init(StdLib.malloc.call([len.plus(1)]).cast(Pointer.string())),
+    // Return NULL if allocation fails
+    result.equalReturn(Value.null()),
     // Copy the substring
     StdString.strncpy.call([result, str.plus(start), sliceLen]),
     // Ensure null termination
@@ -75,27 +68,63 @@ const concat = (() => {
   const totalLen = Variable.size_t("total_len");
   const varArgs = StdArg.VarArgs.new();
   const nextStr = Variable.string("next_str", ["const"]);
+  const result = Variable.string("result");
 
   const { str } = concat.params;
 
   concat.add(
     // Return NULL if the initial string is NULL
-    Condition.if(str.equal(Value.null()), [Func.return(Value.null())]),
+    str.equalReturn(Value.null()),
     // Start with the length of the first string
     totalLen.init(StdString.strlen.call([str])),
-    varArgs.init(str.name),
+    varArgs.declare(),
+    varArgs.start(str),
     nextStr.declare(),
     Loop.while(
       nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(Value.null()),
       [
+        // Double-check to avoid issues with NULL in list
         Condition.if(nextStr.notEqual(Value.null()), [
           totalLen.plusAssign(StdString.strlen.call([nextStr])),
         ]),
       ]
-    )
+    ),
+    varArgs.end(),
+    // Allocate memory for the result (+1 for null terminator)
+    result.init(StdLib.malloc.call([totalLen.plus(1)])),
+    result.equalReturn(Value.null()),
+    // Copy the first string
+    StdString.strcpy.call([result, str]),
+    // Second pass: Concatenate all additional strings
+    varArgs.start(str),
+    Loop.while(
+      nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(Value.null()),
+      [
+        Condition.if(nextStr.notEqual(Value.null()), [
+          StdString.strcat.call([result, nextStr]),
+        ]),
+      ]
+    ),
+    varArgs.end(),
+    concat.return(result)
   );
 
   return concat;
+})();
+
+const indexOf = (() => {
+  // const indexOf = Func.new()
+  // const result = StdString.strstr.call([
+  //   this.addr.plus(position),
+  //   searchString,
+  // ]);
+  // return Value.int(
+  //   Operator.ternary(
+  //     Operator.equal(result, Value.null()),
+  //     -1,
+  //     Operator.minus(result, this.addr)
+  //   )
+  // );
 })();
 
 /**
@@ -107,7 +136,7 @@ const concat = (() => {
  */
 export class String {
   constructor(charAddress: StringValue) {
-    this.addr = charAddress;
+    this.addr = Value.string(charAddress);
   }
   addr;
 
@@ -117,22 +146,14 @@ export class String {
   }
 
   /** Returns a string that contains the concatenation of two or more strings. */
-  // TODO
   concat(...strings: StringValue[]) {
-    let result = this.addr;
-    for (const str of strings) {
-      result = StdString.strcat.call([result, str]);
-    }
-    return result;
+    return concat.call([this.addr, ...strings]);
   }
 
   /**
    * Returns true if this string contains the passed string starting from position ( default 0 ), otherwise false.
    */
-  includes(
-    searchString: StringValue,
-    position: ArrayIndexValue = Value.int(0)
-  ) {
+  includes(searchString: StringValue, position: CodeLike = 0) {
     return Operator.notEqual(
       StdString.strstr.call([this.addr.plus(position), searchString]),
       Value.null()
@@ -140,7 +161,7 @@ export class String {
   }
 
   /** Returns the character at the specified index. */
-  charAt(pos: ArrayIndexValue) {
+  charAt(pos: CodeLike) {
     return Value.char(Operator.subscript(this.addr, pos));
   }
 
@@ -151,31 +172,18 @@ export class String {
    *
    * @param position — The index at which to begin searching the String object. If omitted, search starts at the beginning of the string.
    */
-  indexOf(searchString: StringValue, position: ArrayIndexValue = Value.int(0)) {
-    const result = StdString.strstr.call([
-      this.addr.plus(position),
-      searchString,
-    ]);
-    return Value.int(
-      Operator.ternary(
-        Operator.equal(result, Value.null()),
-        Value.int(-1),
-        Operator.minus(result, this.addr)
-      )
-    );
+  indexOf(searchString: StringValue, position: CodeLike = 0) {
+    //
   }
 
   /**
    * Extracts a section of a string from start to end (exclusive) and returns a new string.
    */
-  slice(
-    start: AssignArrayIndexValue,
-    end: Value<Pointer<Simple<IntegerType>>>
-  ) {
-    return slice.call([this.addr, start, end]);
+  slice(start: ArrayIndex, end: ArrayIndexPointer) {
+    return String.slice.call([this.addr, start, end]);
   }
 
-  /** Alias for `Address.stringLiteral` */
+  /** Alias for `Value.stringLiteral` */
   static literal(str: string) {
     return Value.stringLiteral(str);
   }
@@ -185,4 +193,5 @@ export class String {
   }
 
   static slice = slice;
+  static concat = concat;
 }

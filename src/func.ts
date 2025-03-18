@@ -12,7 +12,7 @@ import { Variable } from "./variable";
 export class Func<
   Return extends Simple | Pointer = any,
   const Params extends readonly Param[] = any,
-  VarArgs extends VarArgsParam = any
+  VarArgs extends VarArgsParam | void = void
 > {
   constructor(
     returnType: Return,
@@ -72,16 +72,12 @@ export class Func<
   }
 
   /** Returns a function call expression. */
-  call(args: FuncArgs<Params>) {
-    return Value.new(this.returnType, Func.call(this.name, args as any));
-  }
-
-  /** Returns a function call expression with support for var args. */
-  callVarArgs(startArgs: FuncArgs<Params>, varArgs: CodeLike[]) {
-    return Value.new(
-      this.returnType,
-      Func.callVarArgs(this.name, startArgs as any, varArgs)
-    );
+  call(args: FuncArgs<Params, VarArgs>) {
+    const _args = args.slice(0, this._params.length);
+    if (this.varArgsParam) {
+      _args.push(...args.slice(this._params.length));
+    }
+    return Value.new(this.returnType, Func.call(this.name, _args as any));
   }
 
   return(value: CodeLike) {
@@ -118,13 +114,9 @@ export class Func<
 
   static new<
     Return extends Simple | Pointer,
-    const Params extends readonly Param[]
-  >(
-    returnType: Return,
-    name: string,
-    params: Params,
-    varArgsParam?: VarArgsParam
-  ) {
+    const Params extends readonly Param[],
+    VarArgs extends VarArgsParam | void = void
+  >(returnType: Return, name: string, params: Params, varArgsParam?: VarArgs) {
     return new Func(returnType, name, params, varArgsParam);
   }
 }
@@ -132,7 +124,7 @@ export class Func<
 export class FuncType<
   Return extends Simple | Pointer = any,
   const ParamTypes extends readonly (Simple | Pointer)[] = any,
-  VarArgs extends VarArgsParam = any
+  VarArgs extends VarArgsParam | void = void
 > {
   constructor(
     returnType: Return,
@@ -143,7 +135,7 @@ export class FuncType<
     this.paramTypes = paramTypes;
     this.full = `${this.returnType.full} (${joinArgs(
       this.paramTypes.map((p) => p.full)
-    )}${emptyFalsy(varArgsParam, (v) => `,${v.type.specifier}`)})`;
+    )}${emptyFalsy(varArgsParam, (v) => `,${(v as any).type.specifier}`)})`;
   }
   kind = "func" as const;
   returnType;
@@ -158,13 +150,20 @@ export class FuncType<
   static new<
     Return extends Simple | Pointer,
     const ParamTypes extends readonly (Simple | Pointer)[] = any,
-    VarArgs extends VarArgsParam = any
+    VarArgs extends VarArgsParam | void = void
   >(returnType: Return, paramTypes: ParamTypes, varArgsParam?: VarArgs) {
     return new FuncType(returnType, paramTypes, varArgsParam);
   }
 }
 
-export type FuncArgs<Params extends readonly Param[]> = {
+export type FuncArgs<
+  Params extends readonly Param[],
+  VarArgs extends VarArgsParam | void
+> = VarArgs extends void
+  ? FuncArgsFromParams<Params>
+  : [...FuncArgsFromParams<Params>, ...CodeLike[]];
+
+type FuncArgsFromParams<Params extends readonly Param[]> = {
   [index in keyof Params]: CodeLike;
 };
 

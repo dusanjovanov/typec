@@ -4,6 +4,7 @@ import { Include } from "./include";
 import { Param, VarArgsParam } from "./param";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
+import type { CodeLike } from "./types";
 import { Value } from "./value";
 
 export class VarArgs {
@@ -12,16 +13,27 @@ export class VarArgs {
   }
   argsName;
 
+  /** `va_list` */
+  declare() {
+    return `va_list ${this.argsName}`;
+  }
+
   /**
-   * Initialize the var args stack.
+   * `va_start`
    *
-   * You have to pass the number of fixed params of the function ( i.e params before the var arg param )
+   * You have to pass the name of the last fixed param of the function.
    */
-  init(nameOfLastFixedParam: string) {
-    return chunk([
-      `va_list ${this.argsName}`,
-      `va_start(${this.argsName}, ${nameOfLastFixedParam})`,
-    ]);
+  start(nameOfLastFixedParam: CodeLike) {
+    return `va_start(${this.argsName}, ${nameOfLastFixedParam})`;
+  }
+
+  /**
+   * Initialize and start the var args stack.
+   *
+   * You have to pass the name of the last fixed param of the function.
+   */
+  declareAndStart(nameOfLastFixedParam: CodeLike) {
+    return chunk([this.declare(), this.start(nameOfLastFixedParam)]);
   }
 
   /** Get the next arg. You have to pass it's type.
@@ -114,6 +126,11 @@ export class StdString {
   static strstr = Func.new(Pointer.string(), "strstr", [
     Param.string("str", ["const"]),
     Param.string("substr", ["const"]),
+  ]);
+
+  static strcpy = Func.new(Pointer.string(), "strcpy", [
+    Param.string("dest", [], ["restrict"]),
+    Param.string("src", [], ["restrict"]),
   ]);
 
   static strncpy = Func.new(Pointer.string(), "strncpy", [

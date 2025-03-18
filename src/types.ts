@@ -4,7 +4,6 @@ import type { Pointer } from "./pointer";
 import type { Simple } from "./simple";
 import type { StructType } from "./struct";
 import type { Value } from "./value";
-import type { Variable } from "./variable";
 
 export const INTEGER_TYPES = [
   "char",
@@ -51,7 +50,7 @@ export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 export type TextLike = string | number;
 
 /** `string`, `number` or a typec object with `toString()` implemented. */
-export type CodeLike = TextLike | { kind: string; toString: () => string };
+export type CodeLike = TextLike | { toString: () => string };
 
 export class AnyType<S extends string = any> {
   constructor(specifier: S) {
@@ -60,30 +59,15 @@ export class AnyType<S extends string = any> {
   specifier;
 }
 
-export type NumberValue = Value<Simple<NumberType>>;
-
-export type IntegerValue = Value<Simple<IntegerType>>;
-
-export type PointerDiffValue = Value<Simple<"ptrdiff_t">>;
-
 export type NullValue = Value<Pointer<Simple<"void">>>;
 
-export type StringValue = Value<Pointer<Simple<"char">>>;
+/** `char*` */
+export type StringValue = CodeLike;
 
-export type ArrayIndexType = Simple<IntegerType>;
+export type ArrayIndex = CodeLike;
 
-export type ArrayIndexValue = Value<ArrayIndexType>;
+export type ArrayIndexPointer = CodeLike;
 
 export type InvalidValue = Value<never>;
 
 export type TypecType = Simple | Pointer | ArrayType | FuncType | StructType;
-
-export type AssignValue<T extends Simple | Pointer> = Value<T> | Variable<T>;
-
-export type AssignNumberValue = AssignValue<Simple<NumberType>>;
-
-export type AssignIntegerValue = AssignValue<Simple<IntegerType>>;
-
-export type AssignArrayIndexValue = AssignValue<Simple<IntegerType>>;
-
-export type AssignPointerNumberValue = AssignValue<Pointer<Simple<NumberType>>>;

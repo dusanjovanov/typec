@@ -2,13 +2,13 @@ import { BaseValue } from "./baseValue";
 import { Literal } from "./literal";
 import { Pointer } from "./pointer";
 import { Simple } from "./simple";
-import type { InvalidValue, NullValue, TextLike, TypeQualifier } from "./types";
+import type { CodeLike, InvalidValue, NullValue, TypeQualifier } from "./types";
 
 /** A value container containing an rvalue expression which resolves to a data type value. */
 export class Value<
   T extends Simple | Pointer | Value = any
 > extends BaseValue<T> {
-  constructor(type: T, valueExp: TextLike) {
+  constructor(type: T, valueExp: CodeLike) {
     super(type);
     this.type = type;
     this.value = valueExp;
@@ -25,15 +25,15 @@ export class Value<
     return Value.new(type, this.value);
   }
 
-  static int(intExp: TextLike) {
+  static int(intExp: CodeLike) {
     return Value.new(Simple.int(), intExp);
   }
 
-  static unsigned_int(unsignedIntExp: TextLike) {
+  static unsigned_int(unsignedIntExp: CodeLike) {
     return Value.new(Simple.type("unsigned int"), unsignedIntExp);
   }
 
-  static short(shortExp: TextLike) {
+  static short(shortExp: CodeLike) {
     return Value.new(Simple.short(), shortExp);
   }
 
@@ -55,7 +55,7 @@ export class Value<
 
   /** Returns a char* value. */
   static string(
-    strExp: string,
+    strExp: CodeLike,
     typeQualifiers?: TypeQualifier[],
     pointerTypeQualifiers?: TypeQualifier[]
   ) {
@@ -94,7 +94,7 @@ export class Value<
     return Value.new(Simple.void(), "") as InvalidValue;
   }
 
-  static new<T extends Simple | Pointer | Value>(type: T, valueExp: TextLike) {
+  static new<T extends Simple | Pointer | Value>(type: T, valueExp: CodeLike) {
     return new Value(type, valueExp);
   }
 }
