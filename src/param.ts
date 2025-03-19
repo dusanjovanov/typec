@@ -1,8 +1,8 @@
 import { Type } from "./type";
 import { type PointerQualifier, type TypeQualifier } from "./types";
-import { Variable } from "./variable";
+import { Var } from "./variable";
 
-export class Param<Name extends string = any> extends Variable {
+export class Param<Name extends string = any> extends Var {
   constructor(type: Type, name: Name) {
     super(type, name);
     this.name = name;

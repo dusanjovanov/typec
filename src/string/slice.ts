@@ -4,7 +4,7 @@ import { Func } from "../func";
 import { Param } from "../param";
 import { StdLib, StdString } from "../std";
 import { Type } from "../type";
-import { Variable } from "../variable";
+import { Var } from "../variable";
 
 /** JS String.slice equivalent for C */
 export const strSlice = (() => {
@@ -14,10 +14,10 @@ export const strSlice = (() => {
     Param.new(Type.size_t(), "end"),
   ]);
 
-  const len = Variable.size_t("len");
-  const sliceLen = Variable.size_t("copyLen");
-  const result = Variable.string("result");
-  const endIdx = Variable.int("end_idx");
+  const len = Var.size_t("len");
+  const sliceLen = Var.size_t("copyLen");
+  const result = Var.string("result");
+  const endIdx = Var.int("end_idx");
 
   const { str, start, end } = slice.params;
 

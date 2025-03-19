@@ -5,7 +5,7 @@ import { Loop } from "../loops";
 import { Param } from "../param";
 import { StdArg, StdLib, StdString } from "../std";
 import { Type } from "../type";
-import { Variable } from "../variable";
+import { Var } from "../variable";
 
 /** JS String.concat equivalent for C */
 export const strConcat = (() => {
@@ -16,10 +16,10 @@ export const strConcat = (() => {
     true
   );
 
-  const totalLen = Variable.size_t("total_len");
+  const totalLen = Var.size_t("total_len");
   const varArgs = StdArg.VarArgs.new();
-  const nextStr = Variable.string("next_str", ["const"]);
-  const result = Variable.string("result");
+  const nextStr = Var.string("next_str", ["const"]);
+  const result = Var.string("result");
 
   const { str } = concat.params;
 

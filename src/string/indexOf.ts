@@ -5,7 +5,7 @@ import { Loop } from "../loops";
 import { Param } from "../param";
 import { StdString } from "../std";
 import { Type } from "../type";
-import { Variable } from "../variable";
+import { Var } from "../variable";
 
 /** JS String.indexOf equivalent for C */
 export const strIndexOf = (() => {
@@ -17,10 +17,10 @@ export const strIndexOf = (() => {
 
   const { str, search, fromIndex } = indexOf.params;
 
-  const strLen = Variable.new(Type.size_t(), "str_len");
-  const searchLen = Variable.new(Type.size_t(), "search_len");
-  const start = Variable.new(Type.int(), "start");
-  const i = Variable.new(Type.int(), "i");
+  const strLen = Var.new(Type.size_t(), "str_len");
+  const searchLen = Var.new(Type.size_t(), "search_len");
+  const start = Var.new(Type.int(), "start");
+  const i = Var.new(Type.int(), "i");
 
   indexOf.add(
     // Handle NULL inputs

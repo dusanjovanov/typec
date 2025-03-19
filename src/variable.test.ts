@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Type } from "./type";
-import { Variable } from "./variable";
+import { Var } from "./variable";
 
 describe("Variable", () => {
   test("Simple", () => {
@@ -8,7 +8,7 @@ describe("Variable", () => {
     const varName = "abc";
 
     // constructor
-    const v = Variable.new(varType, varName);
+    const v = Var.new(varType, varName);
     expect(v.name).toBe(varName);
     expect(v.type).toBe(varType);
     expect(v.declare()).toBe(`int ${varName}`);
@@ -29,7 +29,7 @@ describe("Variable", () => {
     const varName = "abc";
 
     // constructor
-    const v = Variable.new(varType, varName);
+    const v = Var.new(varType, varName);
     expect(v.name).toBe(varName);
     expect(v.type).toBe(varType);
     expect(v.declare()).toBe(`${varType.str} ${varName}`);
@@ -43,19 +43,19 @@ describe("Variable", () => {
     expect(derefVal.value).toEqual(`*${varName}`);
 
     // assignment
-    const pointerVar = Variable.pointerInt("var");
+    const pointerVar = Var.pointerInt("var");
     expect(v.assign(pointerVar).toString()).toBe(`${varName}=${pointerVar}`);
     expect(v.init(pointerVar)).toBe(`int* ${varName}=${pointerVar}`);
 
     // arithmetic
 
     // pointer - int
-    const varMinus = Variable.int("var");
+    const varMinus = Var.int("var");
     const minusVal = v.minus(varMinus);
     expect(minusVal.value).toBe(`${varName}-${varMinus}`);
 
     // pointer - pointer
-    const varMinusPointer = Variable.pointerInt("var");
+    const varMinusPointer = Var.pointerInt("var");
     const minusPointerVal = v.minus(varMinusPointer);
     expect(minusPointerVal.value).toBe(`${varName}-${varMinusPointer}`);
   });

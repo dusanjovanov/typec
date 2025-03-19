@@ -5,7 +5,7 @@ import type { CodeLike, PointerQualifier, TypeQualifier } from "./types";
 import { Value } from "./value";
 
 /** Used for working with simple and pointer variables. */
-export class Variable extends RValue {
+export class Var extends RValue {
   constructor(type: Type, name: string) {
     super(name);
     this.type = type;
@@ -85,23 +85,23 @@ export class Variable extends RValue {
   }
 
   static new(type: Type, name: string) {
-    return new Variable(type, name);
+    return new Var(type, name);
   }
 
   static void(name: string, typeQualifiers?: TypeQualifier[]) {
-    return Variable.new(Type.void(typeQualifiers), name);
+    return Var.new(Type.void(typeQualifiers), name);
   }
 
   static char(name: string, typeQualifiers?: TypeQualifier[]) {
-    return Variable.new(Type.char(typeQualifiers), name);
+    return Var.new(Type.char(typeQualifiers), name);
   }
 
   static int(name: string, typeQualifiers?: TypeQualifier[]) {
-    return Variable.new(Type.int(typeQualifiers), name);
+    return Var.new(Type.int(typeQualifiers), name);
   }
 
   static size_t(name: string, typeQualifiers?: TypeQualifier[]) {
-    return Variable.new(Type.size_t(typeQualifiers), name);
+    return Var.new(Type.size_t(typeQualifiers), name);
   }
 
   /** Pointer variable for char*. */
@@ -110,7 +110,7 @@ export class Variable extends RValue {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Variable.new(Type.string(typeQualifiers, pointerQualifiers), name);
+    return Var.new(Type.string(typeQualifiers, pointerQualifiers), name);
   }
 
   static pointerVoid(
@@ -118,7 +118,7 @@ export class Variable extends RValue {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Variable.new(Type.ptrVoid(typeQualifiers, pointerQualifiers), name);
+    return Var.new(Type.ptrVoid(typeQualifiers, pointerQualifiers), name);
   }
 
   static pointerInt(
@@ -126,6 +126,6 @@ export class Variable extends RValue {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Variable.new(Type.ptrInt(typeQualifiers, pointerQualifiers), name);
+    return Var.new(Type.ptrInt(typeQualifiers, pointerQualifiers), name);
   }
 }
