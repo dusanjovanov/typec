@@ -2,7 +2,8 @@ import { curly } from "./chunk";
 import type { CodeLike } from "./types";
 import { joinArgs } from "./utils";
 
-export class Literal {
+/** Helpers for creating C literals. */
+export class Lit {
   /**
    * Returns the same string enclosed in double quotes with double quotes inside the string escaped.
    *
@@ -90,7 +91,7 @@ export class Literal {
    * `L'a'`
    */
   static wideChar(char: string) {
-    return `L${Literal.char(char)}`;
+    return `L${Lit.char(char)}`;
   }
 
   /**

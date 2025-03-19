@@ -84,18 +84,18 @@ export const stringSplice = (
 
 export class Utils {
   static min(left: CodeLike, right: CodeLike) {
-    return Operator.ternary(Operator.lessThan(left, right), left, right);
+    return Operator.ternary(Operator.lt(left, right), left, right);
   }
 
   static max(left: CodeLike, right: CodeLike) {
-    return Operator.ternary(Operator.greaterThan(left, right), left, right);
+    return Operator.ternary(Operator.gt(left, right), left, right);
   }
 
   static clamp(value: CodeLike, minVal: CodeLike, maxVal: CodeLike) {
     return Operator.ternary(
-      Operator.lessThan(value, minVal),
+      Operator.lt(value, minVal),
       minVal,
-      Operator.ternary(Operator.greaterThan(value, maxVal), maxVal, value)
+      Operator.ternary(Operator.gt(value, maxVal), maxVal, value)
     );
   }
 }

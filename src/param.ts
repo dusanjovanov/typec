@@ -16,13 +16,21 @@ export class Param<Name extends string = any> extends Variable {
     return Param.new(Type.size_t(typeQualifiers), name);
   }
 
-  /** Pointer variable for char*. */
+  /** Param for char*. */
   static string<Name extends string>(
     name: Name,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
     return Param.new(Type.string(typeQualifiers, pointerQualifiers), name);
+  }
+
+  static ptrInt<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Param.new(Type.ptrInt(typeQualifiers, pointerQualifiers), name);
   }
 
   static new<T extends Type, Name extends string = any>(type: T, name: Name) {

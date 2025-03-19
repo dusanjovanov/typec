@@ -1,5 +1,5 @@
 import { curly } from "./chunk";
-import { Literal } from "./literal";
+import { Lit } from "./literal";
 import { Operator } from "./operators";
 import { Type } from "./type";
 import type { CodeLike } from "./types";
@@ -36,7 +36,7 @@ export class Array {
 
   /** Returns the array initialization with a compound literal. */
   init(values: CodeLike[]) {
-    return Operator.assign(this.declare(), Literal.compound(values));
+    return Operator.assign(this.declare(), Lit.compound(values));
   }
 
   /** Returns an array initialization with a designated initializer. */

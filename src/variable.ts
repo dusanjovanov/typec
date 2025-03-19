@@ -81,6 +81,22 @@ export class Variable extends BaseValue {
     return Value.new(Operator.moduloAssign(this, value));
   }
 
+  postInc() {
+    return Value.new(Operator.postInc(this));
+  }
+
+  postDec() {
+    return Value.new(Operator.postDec(this));
+  }
+
+  preInc() {
+    return Value.new(Operator.preInc(this));
+  }
+
+  preDec() {
+    return Value.new(Operator.preDec(this));
+  }
+
   static new(type: Type, name: string) {
     return new Variable(type, name);
   }

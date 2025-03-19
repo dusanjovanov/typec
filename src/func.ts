@@ -64,17 +64,13 @@ export class Func<
     return `${this.declare()}${block(this.body)}`;
   }
 
-  /** Returns a function call expression. */
-  call(args: FuncArgs<Params, VarArgs>) {
+  /** Returns this function's call expression. */
+  call(...args: FuncArgs<Params, VarArgs>) {
     const _args = args.slice(0, this._params.length);
     if (this.hasVarArgs) {
       _args.push(...args.slice(this._params.length));
     }
     return Value.new(Func.call(this.name, _args as any));
-  }
-
-  return(value: CodeLike) {
-    return value;
   }
 
   /** Returns a return statement expression. */

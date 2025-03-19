@@ -51,8 +51,8 @@ export class Operator {
   // comparison
   static equal = binOp("==");
   static notEqual = binOp("!=");
-  static greaterThan = binOp(">");
-  static lessThan = binOp("<");
+  static gt = binOp(">");
+  static lt = binOp("<");
   static gte = binOp(">=");
   static lte = binOp("<=");
 

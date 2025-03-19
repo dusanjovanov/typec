@@ -8,4 +8,13 @@ export class Loop {
   static while(condition: CodeLike, body: CodeLike[]) {
     return `while(${condition})${block(body)}`;
   }
+
+  static for(
+    init: CodeLike,
+    condition: CodeLike,
+    update: CodeLike,
+    body: CodeLike[]
+  ) {
+    return `for(${init};${condition};${update};)${block(body)}`;
+  }
 }

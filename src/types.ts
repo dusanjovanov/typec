@@ -1,3 +1,6 @@
+import type { BaseValue } from "./baseValue";
+import type { Condition } from "./condition";
+
 export const INTEGER_TYPES = [
   "char",
   "signed char",
@@ -43,11 +46,4 @@ export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 export type TextLike = string | number;
 
 /** `string`, `number` or a typec object with `toString()` implemented. */
-export type CodeLike = TextLike | { toString: () => string };
-
-/** `char*` */
-export type StringValue = CodeLike;
-
-export type ArrayIndex = CodeLike;
-
-export type ArrayIndexPointer = CodeLike;
+export type CodeLike = TextLike | BaseValue | Condition;

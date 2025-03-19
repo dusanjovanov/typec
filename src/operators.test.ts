@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Operator } from "./operators";
 import { Type } from "./type";
+import { Lit } from "./literal";
 
 const testUnaryOp = (op: string, expected: string) =>
   test(op, () => {
@@ -43,8 +44,8 @@ describe("operators", () => {
     testUnaryOp("not", "!a");
     testBinaryOp("equal", "a==b");
     testBinaryOp("notEqual", "a!=b");
-    testBinaryOp("greaterThan", "a>b");
-    testBinaryOp("lessThan", "a<b");
+    testBinaryOp("gt", "a>b");
+    testBinaryOp("lt", "a<b");
     testBinaryOp("gte", "a>=b");
     testBinaryOp("lte", "a<=b");
     testBinaryOp("and", "a&&b");
@@ -76,7 +77,8 @@ describe("operators", () => {
   testBinaryOp("byAddress", "a->b");
 
   test("subscript", () => {
-    expect(Operator.subscript("arr", "3")).toBe(`arr[3]`);
+    expect(Operator.subscript("arr", 3)).toBe(`arr[3]`);
+    expect(Operator.subscript(Lit.string("abc"), 3)).toBe(`"abc"[3]`);
   });
 
   test("ternary", () => {
