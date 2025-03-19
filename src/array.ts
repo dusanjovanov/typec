@@ -1,9 +1,7 @@
-import { curly } from "./chunk";
 import { Lit } from "./literal";
 import { Operator } from "./operators";
 import { Type } from "./type";
 import type { CodeLike } from "./types";
-import { joinArgs } from "./utils";
 import { Value } from "./value";
 
 /** Used for creating array variables. */
@@ -41,16 +39,7 @@ export class Array {
 
   /** Returns an array initialization with a designated initializer. */
   initDesignated(values: Record<number, CodeLike>) {
-    return Array.designated(values);
-  }
-
-  /** Returns an array designated initializer. */
-  static designated(values: Record<number, CodeLike>) {
-    return curly(
-      joinArgs(
-        Object.entries(values).map(([index, value]) => `[${index}] = ${value}`)
-      )
-    );
+    return Lit.designatedSub(values);
   }
 
   static new(elementType: Type, length: number, name: string) {
