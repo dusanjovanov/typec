@@ -1,9 +1,9 @@
-import { BaseValue } from "./baseValue";
+import { RValue } from "./rValue";
 import { NULL, NULL_TERM } from "./constants";
 import type { CodeLike } from "./types";
 
 /** A value container containing an `rvalue` expression with helpers for generating other expression that include it. */
-export class Value extends BaseValue {
+export class Value extends RValue {
   constructor(valueExp: CodeLike) {
     super(valueExp);
   }

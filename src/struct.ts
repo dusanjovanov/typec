@@ -1,10 +1,10 @@
 import { block } from "./chunk";
-import type { Type } from "./type";
-import type { CodeLike } from "./types";
-import { joinArgs } from "./utils";
+import { StructVar } from "./structVar";
+import { Type } from "./type";
+import type { PointerQualifier, StructMembers, TypeQualifier } from "./types";
 
-/** Used for Struct type declarations. */
-export class Struct<Members extends StructMembers> {
+/** Used for declaring and working with structs. */
+export class Struct<Members extends StructMembers = any> {
   constructor(name: string, members: Members) {
     this.name = name;
     this.members = members;
@@ -12,31 +12,45 @@ export class Struct<Members extends StructMembers> {
   name;
   members;
 
-  /** Returns a struct declaration. */
+  /** Returns the struct declaration ( definition ). */
   declare() {
     return `struct ${this.name}${block(
       Object.entries(this.members).map(([name, type]) => `${type} ${name}`)
     )}`;
   }
 
-  /** Returns a struct designated initializer expression. */
-  designated(values: StructValuesFromMembers<Members>) {
-    return `{ ${joinArgs(
-      Object.entries(values).map(([name, value]) => `.${name}=${value}`)
-    )} }`;
+  /** Get a struct var type for this struct. */
+  type(qualifiers?: TypeQualifier[]) {
+    return Type.struct(this.name, qualifiers);
+  }
+
+  /** Get a struct pointer var type for this struct. */
+  pointerType(
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Type.ptrStruct(this.name, typeQualifiers, pointerQualifiers);
+  }
+
+  /** Returns a StructVar to hold an instance of this Struct. */
+  var(name: string, qualifiers?: TypeQualifier[]) {
+    return StructVar.new(this.type(qualifiers), name, this.members);
+  }
+
+  /** Returns a StructVar to hold a `pointer` to an instance of this Struct. */
+  pointer(
+    name: string,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return StructVar.new(
+      this.pointerType(typeQualifiers, pointerQualifiers),
+      name,
+      this.members
+    );
   }
 
   static new<Members extends StructMembers>(name: string, members: Members) {
     return new Struct(name, members);
   }
 }
-
-export type StructMembers = {
-  [Key: string]: Type;
-};
-
-export type StructMemberValues = { [key: string]: CodeLike };
-
-export type StructValuesFromMembers<Members extends StructMembers> = {
-  [Key in keyof Members]?: CodeLike;
-};

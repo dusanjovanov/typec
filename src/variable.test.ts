@@ -20,7 +20,7 @@ describe("Variable", () => {
     // assignment
     const varValue = 3;
     expect(v.assign(varValue).toString()).toBe(`${varName}=${varValue}`);
-    expect(v.init(varValue)).toBe(`${varType.full} ${varName}=${varValue}`);
+    expect(v.init(varValue)).toBe(`${varType.str} ${varName}=${varValue}`);
     expect(v.minus(varValue).toString()).toBe(`${varName}-${varValue}`);
   });
 
@@ -32,7 +32,7 @@ describe("Variable", () => {
     const v = Variable.new(varType, varName);
     expect(v.name).toBe(varName);
     expect(v.type).toBe(varType);
-    expect(v.declare()).toBe(`${varType.full} ${varName}`);
+    expect(v.declare()).toBe(`${varType.str} ${varName}`);
 
     // ref
     const refVal = v.ref();

@@ -28,16 +28,18 @@ const typesWithShortcuts = [
   "size_t",
   "void",
   "char",
+  "ptrdiff_t",
+  "short",
 ] as const satisfies SimpleType[];
 
-describe("Type.simple", () => {
+describe("Simple", () => {
   types.forEach((type) => {
     test(type, () => {
       const _t = Type.simple(type);
       if (_t.desc.kind === "simple") {
         expect(_t.desc.specifier).toBe(type);
         expect(_t.desc.qualifiers).toEqual([]);
-        expect(_t.full).toBe(type);
+        expect(_t.str).toBe(type);
       } else throw Error();
     });
     test(`const ${type}`, () => {
@@ -45,7 +47,7 @@ describe("Type.simple", () => {
       if (_t.desc.kind === "simple") {
         expect(_t.desc.specifier).toBe(type);
         expect(_t.desc.qualifiers).toEqual(["const"]);
-        expect(_t.full).toBe(`const ${type}`);
+        expect(_t.str).toBe(`const ${type}`);
       } else throw Error();
     });
     test(`const volatile ${type}`, () => {
@@ -53,20 +55,20 @@ describe("Type.simple", () => {
       if (_t.desc.kind === "simple") {
         expect(_t.desc.specifier).toBe(type as any);
         expect(_t.desc.qualifiers).toEqual(["const", "volatile"]);
-        expect(_t.full).toBe(`const volatile ${type}`);
+        expect(_t.str).toBe(`const volatile ${type}`);
       } else throw Error();
     });
   });
 });
 
 typesWithShortcuts.forEach((type) => {
-  describe(`Simple.${type}`, () => {
+  describe(`Type.${type}`, () => {
     test(type, () => {
       const _t = Type[type]();
       if (_t.desc.kind === "simple") {
         expect(_t.desc.specifier).toBe(type);
         expect(_t.desc.qualifiers).toEqual([]);
-        expect(_t.full).toBe(type);
+        expect(_t.str).toBe(type);
       } else throw Error();
     });
     test(`const ${type}`, () => {
@@ -74,7 +76,7 @@ typesWithShortcuts.forEach((type) => {
       if (_t.desc.kind === "simple") {
         expect(_t.desc.specifier).toBe(type);
         expect(_t.desc.qualifiers).toEqual(["const"]);
-        expect(_t.full).toBe(`const ${type}`);
+        expect(_t.str).toBe(`const ${type}`);
       } else throw Error();
     });
     test(`const volatile ${type}`, () => {
@@ -82,20 +84,20 @@ typesWithShortcuts.forEach((type) => {
       if (_t.desc.kind === "simple") {
         expect(_t.desc.specifier).toBe(type);
         expect(_t.desc.qualifiers).toEqual(["const", "volatile"]);
-        expect(_t.full).toBe(`const volatile ${type}`);
+        expect(_t.str).toBe(`const volatile ${type}`);
       } else throw Error();
     });
   });
 });
 
-describe("ArrayType", () => {
+describe("Array", () => {
   test("Simple element", () => {
     const elType = Type.int();
     const _t = Type.array(elType, 3);
     if (_t.desc.kind === "array") {
       expect(_t.desc.elementType).toEqual(elType);
       expect(_t.desc.length).toEqual(3);
-      expect(_t.full).toBe(`int [3]`);
+      expect(_t.str).toBe(`int [3]`);
     }
   });
   test("Pointer element", () => {
@@ -104,33 +106,33 @@ describe("ArrayType", () => {
     if (_t.desc.kind === "array") {
       expect(_t.desc.elementType).toEqual(elType);
       expect(_t.desc.length).toEqual(3);
-      expect(_t.full).toBe(`int* [3]`);
+      expect(_t.str).toBe(`int* [3]`);
     }
   });
 });
 
-describe("FuncType", () => {
-  test("Simple return and params", () => {
+describe("Func", () => {
+  test("Simple", () => {
     const returnType = Type.void();
     const paramTypes = [Type.char(), Type.int()];
     const _t = Type.func(returnType, paramTypes);
     if (_t.desc.kind === "func") {
       expect(_t.desc.returnType).toEqual(returnType);
       expect(_t.desc.paramTypes).toEqual(paramTypes);
-      expect(_t.full).toBe(`void (char,int)`);
+      expect(_t.str).toBe(`void (char,int)`);
     } else throw Error();
   });
-  test("Simple const return and const params", () => {
+  test("Simple complex", () => {
     const returnType = Type.void(["const"]);
     const paramTypes = [Type.char(["const"]), Type.int(["const"])];
     const _t = Type.func(returnType, paramTypes);
     if (_t.desc.kind === "func") {
       expect(_t.desc.returnType).toEqual(returnType);
       expect(_t.desc.paramTypes).toEqual(paramTypes);
-      expect(_t.full).toBe(`const void (const char,const int)`);
+      expect(_t.str).toBe(`const void (const char,const int)`);
     } else throw Error();
   });
-  test("const Pointer const return and const Pointer const params", () => {
+  test("Func with pointers complex", () => {
     const returnType = Type.pointer(Type.void(["const"]), ["const"]);
     const paramTypes = [
       Type.pointer(Type.char(["const"]), ["const"]),
@@ -140,9 +142,90 @@ describe("FuncType", () => {
     if (_t.desc.kind === "func") {
       expect(_t.desc.returnType).toEqual(returnType);
       expect(_t.desc.paramTypes).toEqual(paramTypes);
-      expect(_t.full).toBe(
+      expect(_t.str).toBe(
         `const void* const (const char* const,const int* const)`
       );
+    } else throw Error();
+  });
+});
+
+describe("Pointer", () => {
+  test("Struct", () => {
+    const structType = Type.struct("abc");
+    const type = Type.pointer(structType);
+    if (type.desc.kind === "pointer") {
+      expect(type.desc.type).toBe(structType);
+      expect(type.desc.qualifiers).toEqual([]);
+      expect(type.str).toBe(`struct abc*`);
+    } else throw Error();
+  });
+  test("Struct complex", () => {
+    const structType = Type.struct("abc", ["const"]);
+    const type = Type.pointer(structType, ["const"]);
+    if (type.desc.kind === "pointer") {
+      expect(type.desc.type).toBe(structType);
+      expect(type.desc.qualifiers).toEqual(["const"]);
+      expect(type.str).toBe(`const struct abc* const`);
+    } else throw Error();
+  });
+  test("Func", () => {
+    const returnType = Type.void();
+    const paramTypes = [Type.char(), Type.int()];
+    const funcType = Type.func(returnType, paramTypes);
+    const type = Type.pointer(funcType);
+    if (type.desc.kind === "pointer") {
+      expect(type.desc.type).toEqual(funcType);
+      expect(type.str).toBe(`void (*)(char,int)`);
+    } else throw Error();
+  });
+  test("Pointer Func", () => {
+    const ptrType = Type.pointer(
+      Type.func(Type.void(), [Type.char(), Type.int()])
+    );
+    const type = Type.pointer(ptrType);
+    if (type.desc.kind === "pointer") {
+      expect(type.desc.type).toEqual(ptrType);
+      expect(type.str).toBe(`void (**)(char,int)`);
+    } else throw Error();
+  });
+  test("Pointer Func complex", () => {
+    const ptrType = Type.pointer(
+      Type.func(Type.void(["const"]), [Type.char(), Type.int()]),
+      ["const"]
+    );
+    const type = Type.pointer(ptrType, ["const"]);
+    if (type.desc.kind === "pointer") {
+      expect(type.desc.type).toEqual(ptrType);
+      expect(type.str).toBe(`const void (*const*const)(char,int)`);
+    } else throw Error();
+  });
+  test("Array", () => {
+    const arrType = Type.array(Type.int(), 3);
+    const type = Type.pointer(arrType);
+    if (type.desc.kind === "pointer") {
+      expect(type.desc.type).toBe(arrType);
+      expect(type.desc.qualifiers).toEqual([]);
+      expect(type.str).toBe(`int (*)[3]`);
+    } else throw Error();
+  });
+
+  test("Pointer Array", () => {
+    const ptrType = Type.pointer(Type.array(Type.int(), 3));
+    const type = Type.pointer(ptrType);
+    if (type.desc.kind === "pointer") {
+      expect(type.desc.type).toBe(ptrType);
+      expect(type.desc.qualifiers).toEqual([]);
+      expect(type.str).toBe(`int (**)[3]`);
+    } else throw Error();
+  });
+
+  test("Pointer Array complex", () => {
+    const ptrType = Type.pointer(Type.array(Type.int(["const"]), 3), ["const"]);
+    const type = Type.pointer(ptrType, ["const"]);
+    if (type.desc.kind === "pointer") {
+      expect(type.desc.type).toBe(ptrType);
+      expect(type.desc.qualifiers).toEqual(["const"]);
+      expect(type.str).toBe(`const int (*const*const)[3]`);
     } else throw Error();
   });
 });

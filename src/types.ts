@@ -1,5 +1,7 @@
-import type { BaseValue } from "./baseValue";
 import type { Condition } from "./condition";
+import type { RValue } from "./rValue";
+import type { StructVar } from "./structVar";
+import type { Type } from "./type";
 
 export const INTEGER_TYPES = [
   "char",
@@ -46,4 +48,12 @@ export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 export type TextLike = string | number;
 
 /** `string`, `number` or a typec object with `toString()` implemented. */
-export type CodeLike = TextLike | BaseValue | Condition;
+export type CodeLike = TextLike | RValue | Condition | StructVar;
+
+export type StructMembers = {
+  [Key: string]: Type;
+};
+
+export type StructDesignatedInitValues<Members extends StructMembers> = {
+  [Key in keyof Members]?: CodeLike;
+};

@@ -5,6 +5,8 @@ import { joinArgs } from "./utils";
 /** Helpers for creating C literals. */
 export class Lit {
   /**
+   * string literal
+   *
    * Returns the same string enclosed in double quotes with double quotes inside the string escaped.
    *
    * `"abc"`
@@ -99,7 +101,33 @@ export class Lit {
    *
    * `{ "abc", 123, &var }`
    */
-  static compound(values: CodeLike[]) {
+  static compound(...values: CodeLike[]) {
     return curly(joinArgs(values));
+  }
+
+  /**
+   * Returns a struct ( dot ) designated initializer expression.
+   *
+   * `{ .a = 3, .b = &var, .c = "def" }`
+   */
+  static designatedDot(values: Partial<Record<string, CodeLike>>) {
+    return curly(
+      joinArgs(
+        Object.entries(values).map(([name, value]) => `.${name}=${value}`)
+      )
+    );
+  }
+
+  /**
+   * Returns an array ( subscript ) designated initializer expression.
+   *
+   * `{ [1] = 2, [3] = 5 }`
+   */
+  static designatedSub(values: Partial<Record<number, CodeLike>>) {
+    return curly(
+      joinArgs(
+        Object.entries(values).map(([name, value]) => `[${name}]=${value}`)
+      )
+    );
   }
 }

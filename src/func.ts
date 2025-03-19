@@ -52,7 +52,7 @@ export class Func<
 
   /** Returns the declaration ( prototype ) of the function. */
   declare() {
-    return `${this.returnType.full} ${this.name}(${
+    return `${this.returnType.str} ${this.name}(${
       this._params.length > 0
         ? joinArgs(this._params.map((param) => `${param.declare()}`))
         : "void"

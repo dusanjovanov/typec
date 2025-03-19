@@ -5,73 +5,10 @@ import { emptyFalsy, join, joinArgs, stringSplice } from "./utils";
 export class Type {
   constructor(desc: TypeDescription) {
     this.desc = desc;
-
-    this.full = "";
-
-    switch (desc.kind) {
-      case "simple": {
-        this.full = `${emptyFalsy(desc.qualifiers, (q) => `${join(q)} `)}${
-          desc.specifier
-        }`;
-        break;
-      }
-      case "pointer": {
-        switch (desc.type.desc.kind) {
-          case "simple": {
-            this.full = `${desc.type.full}*${emptyFalsy(
-              desc.qualifiers,
-              (q) => ` ${join(q)}`
-            )}`;
-            break;
-          }
-          case "array": {
-            this.full = stringSplice(
-              desc.type.full,
-              desc.type.full.indexOf("["),
-              `(*${emptyFalsy(desc.qualifiers, (q) => `${join(q)}`)})`
-            );
-            break;
-          }
-          case "func": {
-            this.full = stringSplice(
-              desc.type.full,
-              desc.type.full.indexOf("("),
-              "(*)"
-            );
-            break;
-          }
-          case "pointer": {
-            this.full = stringSplice(
-              desc.type.full,
-              desc.type.full.indexOf("*"),
-              "*"
-            );
-            break;
-          }
-        }
-        break;
-      }
-      case "array": {
-        this.full = `${desc.elementType.full} [${desc.length}]`;
-        break;
-      }
-      case "func": {
-        this.full = `${desc.returnType.full} (${joinArgs(
-          desc.paramTypes.map((p) => p.full)
-        )}${emptyFalsy(
-          desc.hasVarArgs,
-          (v) => `,${(v as any).type.specifier}`
-        )})`;
-        break;
-      }
-      case "struct": {
-        this.full = `struct ${desc.name}`;
-        break;
-      }
-    }
+    this.str = this.createTypeStr();
   }
   desc;
-  full: string;
+  str: string;
 
   /** Create a pointer to this type. */
   pointer(qualifiers?: PointerQualifier[]) {
@@ -79,7 +16,7 @@ export class Type {
   }
 
   toString() {
-    return this.full;
+    return this.str;
   }
 
   static simple(specifier: AutoSimpleType, qualifiers: TypeQualifier[] = []) {
@@ -103,7 +40,7 @@ export class Type {
   }
 
   /** integer type `ptrdiff_t` */
-  static ptrDiff(qualifiers?: TypeQualifier[]) {
+  static ptrdiff_t(qualifiers?: TypeQualifier[]) {
     return Type.simple("ptrdiff_t", qualifiers);
   }
 
@@ -155,44 +92,128 @@ export class Type {
     return Type.new({ kind: "func", returnType, paramTypes, hasVarArgs });
   }
 
+  static struct(name: string, qualifiers: TypeQualifier[] = []) {
+    return Type.new({ kind: "struct", name, qualifiers });
+  }
+
+  static ptrStruct(
+    name: string,
+    typeQualifiers: TypeQualifier[] = [],
+    pointerQualifiers: PointerQualifier[] = []
+  ) {
+    return Type.pointer(Type.struct(name, typeQualifiers), pointerQualifiers);
+  }
+
   static new(desc: TypeDescription) {
     return new Type(desc);
+  }
+
+  private qualifiersBefore(
+    desc: Exclude<TypeDescription, ArrayType | FuncType>
+  ) {
+    return emptyFalsy(desc.qualifiers, (q) => `${join(q)} `);
+  }
+
+  private createTypeStr() {
+    const desc = this.desc;
+
+    switch (desc.kind) {
+      case "simple": {
+        return `${this.qualifiersBefore(desc)}${desc.specifier}`;
+      }
+      case "array": {
+        return `${desc.elementType.str} [${desc.length}]`;
+      }
+      case "func": {
+        return `${desc.returnType.str} (${joinArgs(
+          desc.paramTypes.map((p) => p.str)
+        )}${emptyFalsy(desc.hasVarArgs, () => `,...`)})`;
+      }
+      case "struct": {
+        return `${this.qualifiersBefore(desc)}struct ${desc.name}`;
+      }
+      case "pointer": {
+        switch (desc.type.desc.kind) {
+          case "simple":
+          case "struct": {
+            return `${desc.type.str}*${emptyFalsy(
+              desc.qualifiers,
+              (q) => ` ${join(q)}`
+            )}`;
+          }
+          case "array": {
+            return stringSplice(
+              desc.type.str,
+              desc.type.str.indexOf("["),
+              `(*${emptyFalsy(desc.qualifiers, (q) => `${join(q)}`)})`
+            );
+          }
+          case "func": {
+            return stringSplice(
+              desc.type.str,
+              desc.type.str.indexOf("("),
+              `(*${emptyFalsy(desc.qualifiers, (q) => `${join(q)}`)})`
+            );
+          }
+          case "pointer": {
+            let index = desc.type.str.indexOf("*");
+
+            switch (desc.type.desc.type.desc.kind) {
+              case "func": {
+                index = desc.type.str.indexOf(")");
+                break;
+              }
+              case "array": {
+                index = desc.type.str.indexOf(")");
+                break;
+              }
+            }
+
+            return stringSplice(
+              desc.type.str,
+              index,
+              `*${emptyFalsy(desc.qualifiers, (q) => `${join(q)}`)}`
+            );
+          }
+        }
+      }
+    }
   }
 }
 
 export type TypeDescription =
-  | SimpleTypeDescription
-  | PointerTypeDescription
-  | ArrayTypeDescription
-  | FuncTypeDescription
-  | StructTypeDescription;
+  | Simple
+  | Pointer
+  | ArrayType
+  | FuncType
+  | StructType;
 
-export type SimpleTypeDescription = {
+export type Simple = {
   kind: "simple";
   specifier: string;
   qualifiers: TypeQualifier[];
 };
 
-export type PointerTypeDescription = {
+export type Pointer = {
   kind: "pointer";
   type: Type;
   qualifiers: PointerQualifier[];
 };
 
-export type ArrayTypeDescription = {
+export type ArrayType = {
   kind: "array";
   elementType: Type;
   length: number;
 };
 
-export type FuncTypeDescription = {
+export type FuncType = {
   kind: "func";
   returnType: Type;
   paramTypes: Type[];
   hasVarArgs: boolean;
 };
 
-export type StructTypeDescription = {
+export type StructType = {
   kind: "struct";
   name: string;
   qualifiers: TypeQualifier[];

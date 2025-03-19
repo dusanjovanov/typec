@@ -35,8 +35,8 @@ export class Array {
   }
 
   /** Returns the array initialization with a compound literal. */
-  init(values: CodeLike[]) {
-    return Operator.assign(this.declare(), Lit.compound(values));
+  init(...values: CodeLike[]) {
+    return Operator.assign(this.declare(), Lit.compound(...values));
   }
 
   /** Returns an array initialization with a designated initializer. */

@@ -89,17 +89,17 @@ export class Operator {
   }
 
   /**
-   * Accesses a struct member by value (e.g., structName.member).
+   * Accesses a struct member by value (e.g., `structVar.member`).
    */
-  static byValue(structName: CodeLike, member: CodeLike) {
-    return `${structName}.${member}`;
+  static dot(structExp: CodeLike, key: CodeLike) {
+    return `${structExp}.${key}`;
   }
 
   /**
-   * Accesses a struct member by pointer (e.g., structName->member).
+   * Accesses a struct member by pointer (e.g., `structVar->member`).
    */
-  static byAddress(structName: CodeLike, member: CodeLike) {
-    return `${structName}->${member}`;
+  static arrow(structExp: CodeLike, key: CodeLike) {
+    return `${structExp}->${key}`;
   }
 
   /** Access an array element by index. (e.g. `arr[2]`) */

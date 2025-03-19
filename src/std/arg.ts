@@ -35,7 +35,7 @@ export class VarArgs {
 
   /** Get the next arg. You have to pass it's type. */
   nextArg(type: Type) {
-    return Value.new(`va_arg(${this.argsName}, ${type.full})`);
+    return Value.new(`va_arg(${this.argsName}, ${type.str})`);
   }
 
   /** Cleanup - this has to be called when you're done reading the var args. */

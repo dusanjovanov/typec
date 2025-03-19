@@ -3,9 +3,11 @@ import { Func } from "./func";
 import { Operator } from "./operators";
 import type { Type } from "./type";
 import type { CodeLike } from "./types";
+import { Utils } from "./utils";
 import { Value } from "./value";
 
-export class BaseValue {
+/** Base class for `rvalue` expressions. */
+export class RValue {
   constructor(valueExp: CodeLike) {
     this.value = String(valueExp);
   }
@@ -68,6 +70,18 @@ export class BaseValue {
   /** Returns a Value for the ternary `cond?exp1:exp2` expression where the condition is this expression.  */
   ternary(exp1: CodeLike, exp2: CodeLike) {
     return Value.new(Operator.ternary(this, exp1, exp2));
+  }
+
+  /**
+   * Returns the smaller value expression using relational logical operators between this variable's name and another expression of the same type.
+   */
+  min(value: CodeLike) {
+    return Value.new(Utils.min(this, value));
+  }
+
+  /** Returns an assignment expression with a clamped value between min and max. */
+  clamp(min: CodeLike, max: CodeLike) {
+    return Value.new(Operator.assign(this, Utils.clamp(this, min, max)));
   }
 
   /**

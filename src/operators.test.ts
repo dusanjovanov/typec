@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { Lit } from "./literal";
 import { Operator } from "./operators";
 import { Type } from "./type";
-import { Lit } from "./literal";
 
 const testUnaryOp = (op: string, expected: string) =>
   test(op, () => {
@@ -73,8 +73,8 @@ describe("operators", () => {
     expect(Operator.cast(Type.char(), "abc")).toBe(`(char)abc`);
   });
 
-  testBinaryOp("byValue", "a.b");
-  testBinaryOp("byAddress", "a->b");
+  testBinaryOp("dot", "a.b");
+  testBinaryOp("arrow", "a->b");
 
   test("subscript", () => {
     expect(Operator.subscript("arr", 3)).toBe(`arr[3]`);

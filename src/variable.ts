@@ -1,12 +1,11 @@
-import { BaseValue } from "./baseValue";
 import { Operator } from "./operators";
+import { RValue } from "./rValue";
 import { Type } from "./type";
 import type { CodeLike, PointerQualifier, TypeQualifier } from "./types";
-import { Utils } from "./utils";
 import { Value } from "./value";
 
 /** Used for working with simple and pointer variables. */
-export class Variable extends BaseValue {
+export class Variable extends RValue {
   constructor(type: Type, name: string) {
     super(name);
     this.type = type;
@@ -16,6 +15,11 @@ export class Variable extends BaseValue {
   type;
   name;
 
+  /** Returns the variable declaration statement. */
+  declare() {
+    return `${this.type.str} ${this.name}`;
+  }
+
   /** Returns the reference expression for this variable. `&name` */
   ref() {
     return Value.new(Operator.ref(this.name));
@@ -24,11 +28,6 @@ export class Variable extends BaseValue {
   /** Returns the dereference expression for this variable `*name`. Only works for pointers. */
   deRef() {
     return Value.new(Operator.deRef(this.name));
-  }
-
-  /** Returns the variable declaration statement. */
-  declare() {
-    return `${this.type.full} ${this.name}`;
   }
 
   /** Initialize with a value. */
@@ -44,18 +43,6 @@ export class Variable extends BaseValue {
   /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
   subAssign(index: CodeLike, value: CodeLike) {
     return Operator.assign(Operator.subscript(this.name, index), value);
-  }
-
-  /**
-   * Returns the smaller value expression using relational logical operators between this variable's name and another expression of the same type.
-   */
-  min(value: CodeLike) {
-    return Value.new(Utils.min(this, value));
-  }
-
-  /** Returns an assignment expression with a clamped value between min and max. */
-  clamp(min: CodeLike, max: CodeLike) {
-    return Value.new(Operator.assign(this, Utils.clamp(this, min, max)));
   }
 
   plusAssign(value: CodeLike) {
