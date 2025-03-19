@@ -118,7 +118,7 @@ export class Var extends RValue {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(Type.pointerVoid(typeQualifiers, pointerQualifiers), name);
+    return Var.new(Type.voidPointer(typeQualifiers, pointerQualifiers), name);
   }
 
   static pointerInt(
@@ -126,6 +126,6 @@ export class Var extends RValue {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(Type.pointerInt(typeQualifiers, pointerQualifiers), name);
+    return Var.new(Type.intPointer(typeQualifiers, pointerQualifiers), name);
   }
 }

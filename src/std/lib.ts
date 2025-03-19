@@ -12,19 +12,19 @@ export class StdLib {
     return Include.system("cstdlib.h");
   }
 
-  static malloc = Func.new(Type.pointerVoid(), "malloc", [Param.size_t("_Size")]);
+  static malloc = Func.new(Type.voidPointer(), "malloc", [Param.size_t("_Size")]);
 
-  static calloc = Func.new(Type.pointerVoid(), "calloc", [
+  static calloc = Func.new(Type.voidPointer(), "calloc", [
     Param.size_t("_Count"),
     Param.size_t("_Size"),
   ]);
 
-  static realloc = Func.new(Type.pointerVoid(), "realloc", [
-    Param.new(Type.pointerVoid(), "_Block"),
+  static realloc = Func.new(Type.voidPointer(), "realloc", [
+    Param.new(Type.voidPointer(), "_Block"),
     Param.size_t("_Size"),
   ]);
 
   static free = Func.new(Type.void(), "free", [
-    Param.new(Type.pointerVoid(), "_Block"),
+    Param.new(Type.voidPointer(), "_Block"),
   ]);
 }

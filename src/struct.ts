@@ -29,7 +29,7 @@ export class Struct<Members extends StructMembers = any> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.pointerStruct(this.name, typeQualifiers, pointerQualifiers);
+    return Type.structPointer(this.name, typeQualifiers, pointerQualifiers);
   }
 
   /** Returns a StructVar to hold an instance of this Struct. */
