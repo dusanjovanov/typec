@@ -25,12 +25,12 @@ export class Param<Name extends string = any> extends Var {
     return Param.new(Type.string(typeQualifiers, pointerQualifiers), name);
   }
 
-  static ptrInt<Name extends string>(
+  static pointerInt<Name extends string>(
     name: Name,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Param.new(Type.ptrInt(typeQualifiers, pointerQualifiers), name);
+    return Param.new(Type.pointerInt(typeQualifiers, pointerQualifiers), name);
   }
 
   static new<T extends Type, Name extends string = any>(type: T, name: Name) {

@@ -25,7 +25,7 @@ describe("Variable", () => {
   });
 
   test("Pointer", () => {
-    const varType = Type.ptrInt();
+    const varType = Type.pointerInt();
     const varName = "abc";
 
     // constructor

@@ -12,7 +12,7 @@ export const strIndexOf = (() => {
   const indexOf = Func.new(Type.int(), "tc_str_indexOf", [
     Param.string("str", ["const"]),
     Param.string("search", ["const"]),
-    Param.ptrInt("fromIndex"),
+    Param.pointerInt("fromIndex"),
   ]);
 
   const { str, search, fromIndex } = indexOf.params;

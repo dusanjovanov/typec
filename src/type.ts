@@ -52,7 +52,7 @@ export class Type {
     return Type.new({ kind: "pointer", type, qualifiers });
   }
 
-  static simplePtr(
+  static pointerSimple(
     specifier: AutoSimpleType,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
@@ -67,21 +67,21 @@ export class Type {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.simplePtr("char", typeQualifiers, pointerQualifiers);
+    return Type.pointerSimple("char", typeQualifiers, pointerQualifiers);
   }
 
-  static ptrInt(
+  static pointerInt(
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.simplePtr("int", typeQualifiers, pointerQualifiers);
+    return Type.pointerSimple("int", typeQualifiers, pointerQualifiers);
   }
 
-  static ptrVoid(
+  static pointerVoid(
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.simplePtr("void", typeQualifiers, pointerQualifiers);
+    return Type.pointerSimple("void", typeQualifiers, pointerQualifiers);
   }
 
   static array(elementType: Type, length: number) {
@@ -96,7 +96,7 @@ export class Type {
     return Type.new({ kind: "struct", name, qualifiers });
   }
 
-  static ptrStruct(
+  static pointerStruct(
     name: string,
     typeQualifiers: TypeQualifier[] = [],
     pointerQualifiers: PointerQualifier[] = []
