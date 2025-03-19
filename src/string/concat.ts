@@ -27,19 +27,19 @@ export const strConcat = (() => {
     // Return NULL if the initial string is NULL
     str.equalReturn(NULL),
     // Start with the length of the first string
-    totalLen.init(StdString.strlen.call([str])),
+    totalLen.init(StdString.strlen.call(str)),
     varArgs.declare(),
     varArgs.start(str),
     nextStr.declare(),
     Loop.while(nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(NULL), [
       // Double-check to avoid issues with NULL in list
       Condition.if(nextStr.notEqual(NULL), [
-        totalLen.plusAssign(StdString.strlen.call([nextStr])),
+        totalLen.plusAssign(StdString.strlen.call(nextStr)),
       ]),
     ]),
     varArgs.end(),
     // Allocate memory for the result (+1 for null terminator)
-    result.init(StdLib.malloc.call([totalLen.plus(1)])),
+    result.init(StdLib.malloc.call(totalLen.plus(1))),
     result.equalReturn(NULL),
     // Copy the first string
     StdString.strcpy.call(result, str),

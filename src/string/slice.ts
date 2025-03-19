@@ -25,7 +25,7 @@ export const strSlice = (() => {
     // Return NULL if input string is NULL
     str.equalReturn(NULL),
     // Get the length of the input string
-    len.init(StdString.strlen.call([str])),
+    len.init(StdString.strlen.call(str)),
     // Clamp start index: ensure it's within [0, len]
     start.clamp(0, len),
     // Determine end index: use string length if end is NULL, otherwise clamp
@@ -37,7 +37,7 @@ export const strSlice = (() => {
     // calculate length to copy
     sliceLen.init(end.minus(start)),
     // Allocate memory for the sliced string (+1 for null terminator)
-    result.init(StdLib.malloc.call([len.plus(1)]).cast(result.type)),
+    result.init(StdLib.malloc.call(len.plus(1)).cast(result.type)),
     // Return NULL if allocation fails
     result.equalReturn(NULL),
     // Copy the substring
