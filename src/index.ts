@@ -11,6 +11,7 @@ export * from "./param";
 export * from "./std";
 export * from "./string";
 export * from "./struct";
+export * from "./structVar";
 export * from "./type";
 export * from "./types";
 export * from "./utils";
