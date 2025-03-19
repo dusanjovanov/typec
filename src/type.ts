@@ -82,7 +82,7 @@ export class Type {
     return this.full;
   }
 
-  static simple(specifier: AutoSimpleType, qualifiers?: TypeQualifier[]) {
+  static simple(specifier: AutoSimpleType, qualifiers: TypeQualifier[] = []) {
     return Type.new({ kind: "simple", specifier, qualifiers });
   }
 
@@ -111,7 +111,7 @@ export class Type {
     return Type.simple("short", qualifiers);
   }
 
-  static pointer(type: Type, qualifiers?: PointerQualifier[]) {
+  static pointer(type: Type, qualifiers: PointerQualifier[] = []) {
     return Type.new({ kind: "pointer", type, qualifiers });
   }
 
@@ -170,13 +170,13 @@ export type TypeDescription =
 export type SimpleTypeDescription = {
   kind: "simple";
   specifier: string;
-  qualifiers?: TypeQualifier[];
+  qualifiers: TypeQualifier[];
 };
 
 export type PointerTypeDescription = {
   kind: "pointer";
   type: Type;
-  qualifiers?: PointerQualifier[];
+  qualifiers: PointerQualifier[];
 };
 
 export type ArrayTypeDescription = {
@@ -195,5 +195,5 @@ export type FuncTypeDescription = {
 export type StructTypeDescription = {
   kind: "struct";
   name: string;
-  qualifiers?: TypeQualifier[];
+  qualifiers: TypeQualifier[];
 };

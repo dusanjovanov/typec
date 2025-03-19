@@ -2,10 +2,9 @@ import { block } from "./chunk";
 import { Operator } from "./operators";
 import type { Param } from "./param";
 import { Type } from "./type";
-import { type CodeLike, type PointerQualifier } from "./types";
+import { type CodeLike } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
 import { Value } from "./value";
-import { Variable } from "./variable";
 
 /** Used for creating functions or just declaring them if they come from other C libraries. */
 export class Func<
@@ -78,14 +77,9 @@ export class Func<
     return value;
   }
 
-  /** Returns a pointer variable meant to point to this function. */
-  pointer(name: string, pointerQualifiers?: PointerQualifier[]) {
-    return Variable.new(this.type.pointer(pointerQualifiers), name);
-  }
-
   /** Returns a return statement expression. */
   static return(value: CodeLike) {
-    return `return ${value};`;
+    return `return ${value}`;
   }
 
   /** Returns a function call expression. */

@@ -8,7 +8,7 @@ import { Value } from "./value";
 /** Used for working with simple and pointer variables. */
 export class Variable extends BaseValue {
   constructor(type: Type, name: string) {
-    super();
+    super(name);
     this.type = type;
     this.name = name;
   }
@@ -79,10 +79,6 @@ export class Variable extends BaseValue {
   /** `%=` */
   moduloAssign(value: CodeLike) {
     return Value.new(Operator.moduloAssign(this, value));
-  }
-
-  toString() {
-    return this.name;
   }
 
   static new(type: Type, name: string) {

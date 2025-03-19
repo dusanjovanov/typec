@@ -6,8 +6,6 @@ export * from "./gcc";
 export * from "./include";
 export * from "./loops";
 export * from "./operators";
-export * from "./pointer";
-export * from "./simple";
 export * from "./std";
 export * from "./string";
 export * from "./struct";

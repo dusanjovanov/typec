@@ -45,13 +45,6 @@ export type TextLike = string | number;
 /** `string`, `number` or a typec object with `toString()` implemented. */
 export type CodeLike = TextLike | { toString: () => string };
 
-export class AnyType<S extends string = any> {
-  constructor(specifier: S) {
-    this.specifier = specifier;
-  }
-  specifier;
-}
-
 /** `char*` */
 export type StringValue = CodeLike;
 

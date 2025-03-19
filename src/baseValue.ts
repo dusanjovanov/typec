@@ -1,36 +1,50 @@
 import { Condition } from "./condition";
 import { Func } from "./func";
 import { Operator } from "./operators";
+import type { Type } from "./type";
 import type { CodeLike } from "./types";
 import { Value } from "./value";
 
 export class BaseValue {
+  constructor(valueExp: CodeLike) {
+    this.value = valueExp;
+  }
+  value;
+  
+  toString() {
+    return String(this.value);
+  }
+
   /** Returns the `+` binary expression between this value and a number value expression. */
   plus(value: CodeLike) {
-    return Value.new(Operator.plus(this, value));
+    return new Value(Operator.plus(this, value));
   }
 
   /** Returns a bool value for the `>` expression between this variable's name and a value expression of the same type.  */
   greaterThan(value: CodeLike) {
-    return Value.new(Operator.greaterThan(this, value));
+    return new Value(Operator.greaterThan(this, value));
   }
 
   /** Returns a bool value for the `<` expression between this variable's name and a value expression of the same type.  */
   lessThan(value: CodeLike) {
-    return Value.new(Operator.lessThan(this, value));
+    return new Value(Operator.lessThan(this, value));
   }
 
   /** Returns the `-` binary expression between this value and an integer value expression. */
   minus(value: CodeLike) {
-    return Value.new(Operator.minus(this, value));
+    return new Value(Operator.minus(this, value));
   }
 
   equal(value: CodeLike) {
-    return Value.new(Operator.equal(this, value));
+    return new Value(Operator.equal(this, value));
   }
 
   notEqual(value: CodeLike) {
-    return Value.new(Operator.notEqual(this, value));
+    return new Value(Operator.notEqual(this, value));
+  }
+
+  cast(type: Type) {
+    return Value.new(Operator.cast(type, this));
   }
 
   /**
