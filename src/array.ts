@@ -42,6 +42,10 @@ export class Array {
     return Lit.designatedSub(values);
   }
 
+  toString() {
+    return this.name;
+  }
+
   static new(elementType: Type, length: number, name: string) {
     return new Array(elementType, length, name);
   }

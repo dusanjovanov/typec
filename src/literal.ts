@@ -12,7 +12,7 @@ export class Lit {
    * `"abc"`
    */
   static string(str: string) {
-    return `"${str.replaceAll(/"/g, `\"`)}"`;
+    return `"${str.replaceAll(/"/g, `\\"`)}"`;
   }
 
   /**

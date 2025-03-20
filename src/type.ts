@@ -48,6 +48,14 @@ export class Type {
     return Type.simple("short", qualifiers);
   }
 
+  static bool(qualifiers?: TypeQualifier[]) {
+    return Type.simple("bool", qualifiers);
+  }
+
+  static double(qualifiers?: TypeQualifier[]) {
+    return Type.simple("double", qualifiers);
+  }
+
   static pointer(type: Type, qualifiers: PointerQualifier[] = []) {
     return Type.new({ kind: "pointer", type, qualifiers });
   }

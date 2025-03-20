@@ -6,20 +6,21 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    "default": "./dist/index.js",
-    "types": "./dist/index.d.ts"
+    "types": "./dist/index.d.ts",
+    "default": "./dist/index.js"
   },
   "devDependencies": {
     "@types/bun": "~1.1",
     "bun": "~1.1",
-    "bun-plugin-dts": "^0.3.0",
-    "prettier": "2.8"
+    "prettier": "2.8",
+    "tsup": "^8.4.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "build": "bun build.ts",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "test": "bun test",
     "test-dev": "bun test --watch"
   }
