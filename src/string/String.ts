@@ -16,8 +16,8 @@ import { strSlice } from "./slice";
  * Uses `stdlib` str functions and binds their first char* argument to the passed char* expression.
  */
 export class String {
-  constructor(charAddress: CodeLike) {
-    this.str = Value.new(charAddress);
+  constructor(strExp: CodeLike) {
+    this.str = Value.new(strExp);
   }
   /** The Value of the passed char* expression. */
   str;
