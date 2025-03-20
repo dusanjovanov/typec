@@ -7,7 +7,7 @@ describe("literal", () => {
   });
 
   test('string `a"b"c`', () => {
-    expect(Lit.string(`a"b"c`)).toBe(`"a\"b\"c"`);
+    expect(Lit.string(`a"b"c`)).toBe(`"a\\"b\\"c"`);
   });
 
   test(`char 'a'`, () => {
@@ -15,7 +15,7 @@ describe("literal", () => {
   });
 
   test(`char '\''`, () => {
-    expect(Lit.char(`'`)).toBe(`'\''`);
+    expect(Lit.char(`'`)).toBe(`'\\''`);
   });
 
   test("unsigned 23", () => {
@@ -51,11 +51,11 @@ describe("literal", () => {
   });
 
   test("wideChar '''", () => {
-    expect(Lit.wideChar(`'`)).toBe(`L'\''`);
+    expect(Lit.wideChar(`'`)).toBe(`L'\\''`);
   });
 
   test("compound", () => {
-    expect(Lit.compound([Lit.string("abc"), 123, "&var"])).toBe(
+    expect(Lit.compound(Lit.string("abc"), 123, "&var")).toBe(
       `{"abc",123,&var}`
     );
   });

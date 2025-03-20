@@ -21,7 +21,7 @@ export class Lit {
    * `'a'`
    */
   static char(char: string) {
-    return `'${char.replace(/'/g, `\'`)}'`;
+    return `'${char.replace(/'/g, `\\'`)}'`;
   }
 
   /**
