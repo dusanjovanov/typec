@@ -126,4 +126,4 @@ export type FuncParamsByName<Params extends readonly Param[]> =
     ? Rest extends readonly Param[]
       ? Record<First["name"], First> & FuncParamsByName<Rest>
       : Record<First["name"], First>
-    : "test";
+    : [];
