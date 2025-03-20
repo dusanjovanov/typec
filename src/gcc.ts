@@ -1,4 +1,4 @@
-import { emptyFalsy, join, joinWithPrefix } from "./utils";
+import { emptyFalsy, join, joinArgs, joinWithPrefix } from "./utils";
 
 /**
  * Helper to generate a gcc compiler command.
@@ -31,7 +31,7 @@ export const gcc = ({
     }),
     emptyFalsy(optimizationLevel, (s) => `-O${s}`),
     emptyFalsy(linkerOptions, (arr) =>
-      emptyFalsy(arr, () => `-Wl,${join(arr, ",")}`)
+      emptyFalsy(arr, () => `-Wl,${joinArgs(arr)}`)
     ),
     emptyFalsy(saveTempFiles, () => `-save-temps`),
     emptyFalsy(allWarnings, () => `-Wall`),

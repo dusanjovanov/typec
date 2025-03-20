@@ -12,7 +12,10 @@ export class StdIo {
     Type.int(),
     "printf",
     [Param.string("_Format")],
-    true
+    undefined,
+    {
+      hasVarArgs: true,
+    }
   );
 
   static puts = Func.new(Type.int(), "puts", [

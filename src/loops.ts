@@ -1,4 +1,4 @@
-import { block } from "./chunk";
+import { Block } from "./chunk";
 import type { CodeLike } from "./types";
 
 export class Loop {
@@ -6,7 +6,7 @@ export class Loop {
    * Returns a while loop statement.
    */
   static while(condition: CodeLike, body: CodeLike[]) {
-    return `while(${condition})${block(body)}`;
+    return `while(${condition})${Block.new(body)}`;
   }
 
   static for(
@@ -15,6 +15,6 @@ export class Loop {
     update: CodeLike,
     body: CodeLike[]
   ) {
-    return `for(${init};${condition};${update};)${block(body)}`;
+    return `for(${init};${condition};${update};)${Block.new(body)}`;
   }
 }

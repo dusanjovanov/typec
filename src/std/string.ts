@@ -4,7 +4,7 @@ import { Param } from "../param";
 import { Type } from "../type";
 
 export class StdString {
-  include() {
+  static include() {
     return Include.system("string.h");
   }
 

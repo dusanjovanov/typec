@@ -1,9 +1,10 @@
-import { chunk } from "../chunk";
+import { Chunk } from "../chunk";
 import { Include } from "../include";
 import type { Type } from "../type";
 import type { CodeLike } from "../types";
 import { Value } from "../value";
 
+/** Helper class for implementing a var arg function parameter. */
 export class VarArgs {
   constructor(argsName = "args") {
     this.argsName = argsName;
@@ -30,7 +31,7 @@ export class VarArgs {
    * You have to pass the name of the last fixed param of the function.
    */
   declareAndStart(nameOfLastFixedParam: CodeLike) {
-    return chunk([this.declare(), this.start(nameOfLastFixedParam)]);
+    return Chunk.new([this.declare(), this.start(nameOfLastFixedParam)]);
   }
 
   /** Get the next arg. You have to pass it's type. */
@@ -52,7 +53,4 @@ export class StdArg {
   static include() {
     return Include.system("stdarg.h");
   }
-
-  /** Helper class for implementing a var arg function parameter. */
-  static VarArgs = VarArgs;
 }

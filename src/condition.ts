@@ -1,4 +1,4 @@
-import { block, chunk } from "./chunk";
+import { Block, Chunk } from "./chunk";
 import type { CodeLike } from "./types";
 
 export class Condition {
@@ -14,12 +14,12 @@ export class Condition {
   }
 
   else(body: CodeLike[]) {
-    this.str.push(`else${block(body)}`);
+    this.str.push(`else${Block.new(body)}`);
     return this;
   }
 
   toString() {
-    return chunk(this.str);
+    return Chunk.new(this.str).toString();
   }
 
   /**
@@ -37,7 +37,7 @@ const condBlock = (
   condition: CodeLike,
   body: CodeLike[]
 ) => {
-  return `${type}(${condition})${block(body)}`;
+  return `${type}(${condition})${Block.new(body)}`;
 };
 
 type CondBlockType = "if" | "else if";

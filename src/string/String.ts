@@ -1,3 +1,4 @@
+import { Chunk } from "../chunk";
 import { NULL } from "../constants";
 import { Lit } from "../literal";
 import { Operator } from "../operators";
@@ -14,6 +15,8 @@ import { strSlice } from "./slice";
  * Accepts a `char*` value expression - could be a string literal or a char* variable, or function param.
  *
  * Uses `stdlib` str functions and binds their first char* argument to the passed char* expression.
+ *
+ * Make sure to call `String.include()` and `String.embed()` to get the declarations it uses.
  */
 export class String {
   constructor(strExp: CodeLike) {
@@ -22,6 +25,18 @@ export class String {
   /** The Value of the passed char* expression. */
   str;
 
+  static include() {
+    return StdString.include();
+  }
+
+  static embed() {
+    return Chunk.new([
+      strConcat.define(),
+      strIndexOf.define(),
+      strSlice.define(),
+    ]);
+  }
+
   /** Returns the length of the string. */
   get length() {
     return StdString.strlen.call(this.str);
@@ -29,7 +44,7 @@ export class String {
 
   /** Returns a string that contains the concatenation of two or more strings. */
   concat(...strings: CodeLike[]) {
-    return String.concat.call(this.str, ...strings);
+    return strConcat.call(this.str, ...strings);
   }
 
   /**
@@ -57,14 +72,14 @@ export class String {
    * @param position — The index at which to begin searching the String object. If omitted, search starts at the beginning of the string.
    */
   indexOf(searchString: CodeLike, position: CodeLike = 0) {
-    return String.indexOf.call(this.str, searchString, position);
+    return strIndexOf.call(this.str, searchString, position);
   }
 
   /**
    * Extracts a section of a string from start to end (exclusive) and returns a new string.
    */
   slice(start: CodeLike, end: CodeLike) {
-    return String.slice.call(this.str, start, end);
+    return strSlice.call(this.str, start, end);
   }
 
   /** Creates a new Value with Lit.string */
@@ -75,8 +90,4 @@ export class String {
   static new(charAddress: CodeLike) {
     return new String(charAddress);
   }
-
-  static slice = strSlice;
-  static concat = strConcat;
-  static indexOf = strIndexOf;
 }

@@ -1,4 +1,4 @@
-import { block } from "./chunk";
+import { Block } from "./chunk";
 import { Operator } from "./operators";
 import type { Param } from "./param";
 import { Type } from "./type";
@@ -15,14 +15,16 @@ export class Func<
     returnType: Type,
     name: string,
     params: Params,
-    hasVarArgs?: VarArgs
+    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    options?: FuncOptions<VarArgs>
   ) {
     this.returnType = returnType;
     this.name = name;
     this._params = params;
     this._paramTypes = params.map((p) => p.type);
     this.type = Type.func(returnType, this._paramTypes);
-    this.hasVarArgs = hasVarArgs;
+    this.body = body;
+    this.hasVarArgs = options?.hasVarArgs;
 
     const paramsByName: Record<string, any> = {};
     params.forEach((p) => {
@@ -35,15 +37,10 @@ export class Func<
   name;
   /** Params by name */
   params;
-  body: CodeLike[] = [];
+  body;
   hasVarArgs;
   _params;
   _paramTypes;
-
-  /** Add statements to the functions body. */
-  add(...statements: CodeLike[]) {
-    this.body.push(...statements);
-  }
 
   /** Returns the address of this function. */
   ref() {
@@ -61,7 +58,9 @@ export class Func<
 
   /** Returns the definition ( implementation ) of the function. */
   define() {
-    return `${this.declare()}${block(this.body)}`;
+    return `${this.declare()}${Block.new(
+      this.body?.({ params: this.params }) ?? []
+    )}`;
   }
 
   /** Returns this function's call expression. */
@@ -100,10 +99,20 @@ export class Func<
     Return extends Type,
     const Params extends readonly Param[],
     VarArgs extends boolean = false
-  >(returnType: Return, name: string, params: Params, varArgsParam?: VarArgs) {
-    return new Func(returnType, name, params, varArgsParam);
+  >(
+    returnType: Return,
+    name: string,
+    params: Params,
+    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    options?: FuncOptions<VarArgs>
+  ) {
+    return new Func(returnType, name, params, body, options);
   }
 }
+
+type FuncOptions<VarArgs extends boolean> = {
+  hasVarArgs?: VarArgs;
+};
 
 export type FuncArgs<
   Params extends readonly Param[],

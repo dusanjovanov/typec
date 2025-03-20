@@ -1,4 +1,4 @@
-import { block } from "./chunk";
+import { Block } from "./chunk";
 import { StructVar } from "./structVar";
 import { Type } from "./type";
 import type { PointerQualifier, StructMembers, TypeQualifier } from "./types";
@@ -14,7 +14,7 @@ export class Struct<Members extends StructMembers = any> {
 
   /** Returns the struct declaration ( definition ). */
   declare() {
-    return `struct ${this.name}${block(
+    return `struct ${this.name}${Block.new(
       Object.entries(this.members).map(([name, type]) => `${type} ${name}`)
     )}`;
   }

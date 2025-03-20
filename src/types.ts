@@ -1,4 +1,5 @@
 import type { Array } from "./array";
+import type { Block, Chunk } from "./chunk";
 import type { Condition } from "./condition";
 import type { RValue } from "./rValue";
 import type { StructVar } from "./structVar";
@@ -49,7 +50,14 @@ export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 export type TextLike = string | number;
 
 /** `string`, `number` or a typec object with `toString()` implemented. */
-export type CodeLike = TextLike | RValue | Condition | StructVar | Array;
+export type CodeLike =
+  | TextLike
+  | Chunk
+  | Block
+  | RValue
+  | Condition
+  | StructVar
+  | Array;
 
 export type StructMembers = {
   [Key: string]: Type;
