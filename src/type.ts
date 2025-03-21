@@ -71,6 +71,7 @@ export class Type {
     );
   }
 
+  /** `char*` */
   static string(
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
@@ -122,6 +123,19 @@ export class Type {
     return emptyFalsy(desc.qualifiers, (q) => `${join(q)} `);
   }
 
+  static createFuncParamList(desc: FuncType) {
+    if (desc.paramTypes.length === 0) {
+      return "(void)";
+    }
+    //
+    else {
+      return `(${joinArgs(desc.paramTypes.map((p) => p.str))}${emptyFalsy(
+        desc.hasVarArgs,
+        () => `,...`
+      )})`;
+    }
+  }
+
   private createTypeStr() {
     const desc = this.desc;
 
@@ -133,9 +147,7 @@ export class Type {
         return `${desc.elementType.str} [${desc.length}]`;
       }
       case "func": {
-        return `${desc.returnType.str} (${joinArgs(
-          desc.paramTypes.map((p) => p.str)
-        )}${emptyFalsy(desc.hasVarArgs, () => `,...`)})`;
+        return `${desc.returnType.str} ${Type.createFuncParamList(desc)}`;
       }
       case "struct": {
         return `${this.qualifiersBefore(desc)}struct ${desc.name}`;

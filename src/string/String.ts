@@ -1,22 +1,30 @@
-import { Chunk } from "../chunk";
 import { NULL } from "../constants";
+import { lib } from "../lib";
 import { Lit } from "../literal";
 import { Operator } from "../operators";
-import { StdString } from "../std";
+import { stdstring } from "../std";
 import type { CodeLike } from "../types";
 import { Value } from "../value";
-import { strConcat } from "./concat";
-import { strIndexOf } from "./indexOf";
-import { strSlice } from "./slice";
+import { concat } from "./concat";
+import { indexOf } from "./indexOf";
+import { slice } from "./slice";
+
+/** typec string library */
+export const tcstring = lib({
+  externals: [],
+  internals: {
+    concat,
+    indexOf,
+    slice,
+  },
+});
 
 /**
  * Helper class for working with strings that mimics the JS String class.
  *
  * Accepts a `char*` value expression - could be a string literal or a char* variable, or function param.
  *
- * Uses `stdlib` str functions and binds their first char* argument to the passed char* expression.
- *
- * Make sure to call `String.include()` and `String.embed()` to get the declarations it uses.
+ * Uses the standard `string.h` library and `tcstring` library functions and binds their first char* argument to the passed char* expression.
  */
 export class String {
   constructor(strExp: CodeLike) {
@@ -25,26 +33,14 @@ export class String {
   /** The Value of the passed char* expression. */
   str;
 
-  static include() {
-    return StdString.include();
-  }
-
-  static embed() {
-    return Chunk.new([
-      strConcat.define(),
-      strIndexOf.define(),
-      strSlice.define(),
-    ]);
-  }
-
   /** Returns the length of the string. */
   get length() {
-    return StdString.strlen.call(this.str);
+    return stdstring.strlen.call(this.str);
   }
 
   /** Returns a string that contains the concatenation of two or more strings. */
   concat(...strings: CodeLike[]) {
-    return strConcat.call(this.str, ...strings);
+    return concat.call(this.str, ...strings);
   }
 
   /**
@@ -53,7 +49,7 @@ export class String {
   includes(searchString: CodeLike, position: CodeLike = 0) {
     return Value.new(
       Operator.notEqual(
-        StdString.strstr.call(this.str.plus(position), searchString),
+        stdstring.strstr.call(this.str.plus(position), searchString),
         NULL
       )
     );
@@ -72,14 +68,14 @@ export class String {
    * @param position — The index at which to begin searching the String object. If omitted, search starts at the beginning of the string.
    */
   indexOf(searchString: CodeLike, position: CodeLike = 0) {
-    return strIndexOf.call(this.str, searchString, position);
+    return indexOf.call(this.str, searchString, position);
   }
 
   /**
    * Extracts a section of a string from start to end (exclusive) and returns a new string.
    */
   slice(start: CodeLike, end: CodeLike) {
-    return strSlice.call(this.str, start, end);
+    return slice.call(this.str, start, end);
   }
 
   /** Creates a new Value with Lit.string */

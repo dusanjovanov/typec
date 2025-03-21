@@ -3,12 +3,12 @@ import { NULL } from "../constants";
 import { Func } from "../func";
 import { Loop } from "../loops";
 import { Param } from "../param";
-import { StdString } from "../std";
+import { stdstring } from "../std";
 import { Type } from "../type";
 import { Var } from "../variable";
 
 /** JS String.indexOf equivalent for C */
-export const strIndexOf = Func.new(
+export const indexOf = Func.new(
   Type.int(),
   "tc_str_indexOf",
   [
@@ -28,8 +28,8 @@ export const strIndexOf = Func.new(
       // Handle NULL inputs
       Condition.if(str.equal(NULL).or(search.equal(NULL)), [Func.return(-1)]),
       // Get lengths
-      strLen.init(StdString.strlen.call(str)),
-      searchLen.init(StdString.strlen.call(search)),
+      strLen.init(stdstring.strlen.call(str)),
+      searchLen.init(stdstring.strlen.call(search)),
       // If search string is empty or longer than str, it can't be found
       Condition.if(searchLen.equal(0).or(searchLen.gt(strLen)), [
         Func.return(-1),
@@ -50,7 +50,7 @@ export const strIndexOf = Func.new(
         i.postInc(),
         [
           Condition.if(
-            StdString.strncmp.call(str.plus(i), search, searchLen).equal(0),
+            stdstring.strncmp.call(str.plus(i), search, searchLen).equal(0),
             [
               // Found at index i
               Func.return(i),

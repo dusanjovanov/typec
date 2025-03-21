@@ -1,7 +1,7 @@
 import { Block } from "./chunk";
 import { Operator } from "./operators";
 import type { Param } from "./param";
-import { Type } from "./type";
+import { Type, type FuncType } from "./type";
 import { type CodeLike } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
 import { Value } from "./value";
@@ -50,11 +50,9 @@ export class Func<
 
   /** Returns the declaration ( prototype ) of the function. */
   declare() {
-    return `${this.returnType.str} ${this.name}(${
-      this._params.length > 0
-        ? joinArgs(this._params.map((param) => `${param.declare()}`))
-        : "void"
-    })`;
+    return `${this.returnType.str} ${this.name}${Type.createFuncParamList(
+      this.type.desc as FuncType
+    )}`;
   }
 
   /**

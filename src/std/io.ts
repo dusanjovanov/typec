@@ -1,24 +1,27 @@
 import { Func } from "../func";
 import { Include } from "../include";
+import { lib } from "../lib";
 import { Param } from "../param";
 import { Type } from "../type";
 
-export class StdIo {
-  static include() {
-    return Include.system("stdio.h");
-  }
-
-  static printf = Func.new(
-    Type.int(),
-    "printf",
-    [Param.string("_Format")],
-    undefined,
+export const stdio = lib({
+  externals: [
     {
-      hasVarArgs: true,
-    }
-  );
-
-  static puts = Func.new(Type.int(), "puts", [
-    Param.string("_Buffer", ["const"]),
-  ]);
-}
+      include: Include.system("stdio.h"),
+      api: {
+        printf: Func.new(
+          Type.int(),
+          "printf",
+          [Param.string("_Format")],
+          undefined,
+          {
+            hasVarArgs: true,
+          }
+        ),
+        puts: Func.new(Type.int(), "puts", [
+          Param.string("_Buffer", ["const"]),
+        ]),
+      },
+    },
+  ],
+});
