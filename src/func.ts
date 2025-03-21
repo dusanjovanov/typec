@@ -6,7 +6,7 @@ import { type CodeLike } from "./types";
 import { emptyFalsy, joinArgs } from "./utils";
 import { Value } from "./value";
 
-/** Used for creating functions or just declaring them if they come from other C libraries. */
+/** Used for creating and using functions or just declaring and using their api if they come from C libraries. */
 export class Func<
   const Params extends readonly Param[] = any,
   VarArgs extends boolean = false
