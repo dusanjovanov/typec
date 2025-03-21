@@ -5,12 +5,12 @@ import { Type } from "./type";
 
 const testUnaryOp = (op: string, expected: string) =>
   test(op, () => {
-    expect((Operator as any)[op]("a")).toBe(expected);
+    expect((Operator as any)[op]("a").toString()).toBe(expected);
   });
 
 const testBinaryOp = (op: string, expected: string) =>
   test(op, () => {
-    expect((Operator as any)[op]("a", "b")).toBe(expected);
+    expect((Operator as any)[op]("a", "b").toString()).toBe(expected);
   });
 
 describe("operators", () => {
@@ -70,18 +70,20 @@ describe("operators", () => {
   });
 
   test("cast", () => {
-    expect(Operator.cast(Type.char(), "abc")).toBe(`(char)abc`);
+    expect(Operator.cast(Type.char(), "abc").toString()).toBe(`(char)abc`);
   });
 
   testBinaryOp("dot", "a.b");
   testBinaryOp("arrow", "a->b");
 
   test("subscript", () => {
-    expect(Operator.subscript("arr", 3)).toBe(`arr[3]`);
-    expect(Operator.subscript(Lit.string("abc"), 3)).toBe(`"abc"[3]`);
+    expect(Operator.subscript("arr", 3).toString()).toBe(`arr[3]`);
+    expect(Operator.subscript(Lit.string("abc"), 3).toString()).toBe(
+      `"abc"[3]`
+    );
   });
 
   test("ternary", () => {
-    expect(Operator.ternary("a>b", "a", "b")).toBe(`a>b?a:b`);
+    expect(Operator.ternary("a>b", "a", "b").toString()).toBe(`a>b?a:b`);
   });
 });

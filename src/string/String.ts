@@ -47,17 +47,15 @@ export class String {
    * Returns true if this string contains the passed string starting from position ( default 0 ), otherwise false.
    */
   includes(searchString: CodeLike, position: CodeLike = 0) {
-    return Value.new(
-      Operator.notEqual(
-        stdstring.strstr.call(this.str.plus(position), searchString),
-        NULL
-      )
+    return Operator.notEqual(
+      stdstring.strstr.call(this.str.plus(position), searchString),
+      NULL
     );
   }
 
   /** Returns the character at the specified index. */
   charAt(pos: CodeLike) {
-    return Value.new(Operator.subscript(this.str, pos));
+    return Operator.subscript(this.str, pos);
   }
 
   /**

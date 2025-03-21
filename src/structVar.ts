@@ -7,7 +7,6 @@ import type {
   StructDesignatedInitValues,
   StructMembers,
 } from "./types";
-import { Value } from "./value";
 
 /** Used for working with struct instance variables and pointers. */
 export class StructVar<Members extends StructMembers = any> {
@@ -28,19 +27,17 @@ export class StructVar<Members extends StructMembers = any> {
 
   /** Returns the reference expression for this variable. `&name` */
   ref() {
-    return Value.new(Operator.ref(this.name));
+    return Operator.ref(this.name);
   }
 
   /** Returns the dereference expression for this variable `*name`. Only works for pointers. */
   deRef() {
-    return Value.new(Operator.deRef(this.name));
+    return Operator.deRef(this.name);
   }
 
   /** Initialize with a designated initializer. */
   init(values: StructDesignatedInitValues<Members>) {
-    return Value.new(
-      Operator.assign(this.declare(), Lit.designatedDot(values))
-    );
+    return Operator.assign(this.declare(), Lit.designatedDot(values));
   }
 
   /** Initialize with a compound initializer. */
@@ -50,12 +47,12 @@ export class StructVar<Members extends StructMembers = any> {
 
   /** Access a member of the struct directly. */
   dot(key: StringKeyOf<Members>) {
-    return Value.new(Operator.dot(this, key));
+    return Operator.dot(this, key);
   }
 
   /** Access a member of the struct through a pointer. */
   arrow(key: StringKeyOf<Members>) {
-    return Value.new(Operator.arrow(this, key));
+    return Operator.arrow(this, key);
   }
 
   static new<Members extends StructMembers = any>(

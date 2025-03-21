@@ -22,12 +22,12 @@ export class Var extends RValue {
 
   /** Returns the reference expression for this variable. `&name` */
   ref() {
-    return Value.new(Operator.ref(this.name));
+    return Operator.ref(this.name);
   }
 
   /** Returns the dereference expression for this variable `*name`. Only works for pointers. */
   deRef() {
-    return Value.new(Operator.deRef(this.name));
+    return Operator.deRef(this.name);
   }
 
   /** Initialize with a value. */
@@ -37,7 +37,7 @@ export class Var extends RValue {
 
   /** Assign a value. */
   assign(value: CodeLike) {
-    return Value.new(Operator.assign(this.name, value));
+    return Operator.assign(this.name, value);
   }
 
   /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
@@ -46,42 +46,42 @@ export class Var extends RValue {
   }
 
   plusAssign(value: CodeLike) {
-    return Value.new(Operator.plusAssign(this, value));
+    return Operator.plusAssign(this, value);
   }
 
   minusAssign(value: CodeLike) {
-    return Value.new(Operator.minusAssign(this, value));
+    return Operator.minusAssign(this, value);
   }
 
   /** `*=` */
   multAssign(value: CodeLike) {
-    return Value.new(Operator.multAssign(this, value));
+    return Operator.multAssign(this, value);
   }
 
   /** `/=` */
   divAssign(value: CodeLike) {
-    return Value.new(Operator.divAssign(this, value));
+    return Operator.divAssign(this, value);
   }
 
   /** `%=` */
   moduloAssign(value: CodeLike) {
-    return Value.new(Operator.moduloAssign(this, value));
+    return Operator.moduloAssign(this, value);
   }
 
   postInc() {
-    return Value.new(Operator.postInc(this));
+    return Operator.postInc(this);
   }
 
   postDec() {
-    return Value.new(Operator.postDec(this));
+    return Operator.postDec(this);
   }
 
   preInc() {
-    return Value.new(Operator.preInc(this));
+    return Operator.preInc(this);
   }
 
   preDec() {
-    return Value.new(Operator.preDec(this));
+    return Operator.preDec(this);
   }
 
   static new(type: Type, name: string) {

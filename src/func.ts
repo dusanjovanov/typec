@@ -45,7 +45,7 @@ export class Func<
 
   /** Returns the address of this function. */
   ref() {
-    return Value.new(Operator.ref(this.name));
+    return Operator.ref(this.name);
   }
 
   /** Returns the declaration ( prototype ) of the function. */
@@ -75,7 +75,7 @@ export class Func<
     if (this.hasVarArgs) {
       _args.push(...args.slice(this._params.length));
     }
-    return Value.new(Func.call(this.name, _args as any));
+    return Func.call(this.name, _args as any);
   }
 
   /** Subscribe to `.call()` calls. */
@@ -93,7 +93,7 @@ export class Func<
 
   /** Returns a function call expression. */
   static call(fnName: string, args: CodeLike[]) {
-    return `${fnName}(${emptyFalsy(args, joinArgs)})`;
+    return Value.new(`${fnName}(${emptyFalsy(args, joinArgs)})`);
   }
 
   /** Returns a function call expression with support for varargs. */

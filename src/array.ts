@@ -24,7 +24,7 @@ export class Array {
 
   /** Returns the address expression for the entire array. */
   refArray() {
-    return Value.new(Operator.ref(this.name));
+    return Operator.ref(this.name);
   }
 
   /** Returns the array declaration. */
@@ -34,12 +34,15 @@ export class Array {
 
   /** Returns the array initialization with a compound literal. */
   init(...values: CodeLike[]) {
-    return Operator.assign(this.declare(), Lit.compound(...values));
+    return Operator.assign(this.declare(), Lit.compound(...values)).toString();
   }
 
   /** Returns an array initialization with a designated initializer. */
   initDesignated(values: Record<number, CodeLike>) {
-    return Lit.designatedSub(values);
+    return Operator.assign(
+      this.declare(),
+      Lit.designatedSub(values)
+    ).toString();
   }
 
   toString() {

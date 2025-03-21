@@ -86,6 +86,7 @@ export const unique = <T>(arr: T[]) => {
   return Array.from(new Set(arr));
 };
 
+/** Various utils that are elementary, but not part of standard C syntax. */
 export class Utils {
   static min(left: CodeLike, right: CodeLike) {
     return Operator.ternary(Operator.lt(left, right), left, right);

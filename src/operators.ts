@@ -1,11 +1,12 @@
 import type { Type } from "./type";
 import type { CodeLike } from "./types";
+import { Value } from "./value";
 
-const preUn = (op: string) => (exp: CodeLike) => `${op}${exp}`;
-const postUn = (op: string) => (exp: CodeLike) => `${exp}${op}`;
+const preUn = (op: string) => (exp: CodeLike) => Value.new(`${op}${exp}`);
+const postUn = (op: string) => (exp: CodeLike) => Value.new(`${exp}${op}`);
 
 const binOp = (op: string) => (left: CodeLike, right: CodeLike) => {
-  return `${left}${op}${right}`;
+  return Value.new(`${left}${op}${right}`);
 };
 
 export class Operator {
@@ -26,14 +27,14 @@ export class Operator {
 
   // memory
   static sizeOf(exp: CodeLike) {
-    return `sizeof(${exp})`;
+    return Value.new(`sizeof(${exp})`);
   }
   static alignOf(exp: CodeLike) {
-    return `alignof(${exp})`;
+    return Value.new(`alignof(${exp})`);
   }
   /** Dereference operator `*`. */
   static deRef(pointerName: CodeLike) {
-    return `*${pointerName}`;
+    return Value.new(`*${pointerName}`);
   }
   /** Reference operator `&`. */
   static ref = preUn("&");
@@ -85,32 +86,32 @@ export class Operator {
    * Returns a type cast expression.
    */
   static cast(type: Type, exp: CodeLike) {
-    return `(${type})${exp}`;
+    return Value.new(`(${type})${exp}`);
   }
 
   /**
    * Accesses a struct member by value (e.g., `structVar.member`).
    */
   static dot(structExp: CodeLike, key: CodeLike) {
-    return `${structExp}.${key}`;
+    return Value.new(`${structExp}.${key}`);
   }
 
   /**
    * Accesses a struct member by pointer (e.g., `structVar->member`).
    */
   static arrow(structExp: CodeLike, key: CodeLike) {
-    return `${structExp}->${key}`;
+    return Value.new(`${structExp}->${key}`);
   }
 
   /** Access an array element by index. (e.g. `arr[2]`) */
   static subscript(arrExp: CodeLike, index: CodeLike) {
-    return `${arrExp}[${index}]`;
+    return Value.new(`${arrExp}[${index}]`);
   }
 
   /**
    * Creates a ternary expression (e.g., condition ? exp1 : exp2).
    */
   static ternary(condition: CodeLike, exp1: CodeLike, exp2: CodeLike) {
-    return `${condition}?${exp1}:${exp2}`;
+    return Value.new(`${condition}?${exp1}:${exp2}`);
   }
 }

@@ -4,7 +4,6 @@ import { Operator } from "./operators";
 import type { Type } from "./type";
 import type { CodeLike } from "./types";
 import { Utils } from "./utils";
-import { Value } from "./value";
 
 /** Base class for `rvalue` expressions. */
 export class RValue {
@@ -19,42 +18,42 @@ export class RValue {
 
   /** Returns a Value for the `+` binary expression between this and another expression. */
   plus(value: CodeLike) {
-    return new Value(Operator.plus(this, value));
+    return Operator.plus(this, value);
   }
 
   /** Returns a Value for the `-` binary expression between this and another expression. */
   minus(value: CodeLike) {
-    return new Value(Operator.minus(this, value));
+    return Operator.minus(this, value);
   }
 
   /** Returns a Value for the `>` expression between this and another expression.  */
   gt(value: CodeLike) {
-    return new Value(Operator.gt(this, value));
+    return Operator.gt(this, value);
   }
 
   /** Returns a Value for the `<` expression between this and another expression.  */
   lt(value: CodeLike) {
-    return new Value(Operator.lt(this, value));
+    return Operator.lt(this, value);
   }
 
   /** Returns a Value for the `<=` expression between this and another expression.  */
   gte(value: CodeLike) {
-    return new Value(Operator.gte(this, value));
+    return Operator.gte(this, value);
   }
 
   /** Returns a Value for the `<=` expression between this and another expression.  */
   lte(value: CodeLike) {
-    return new Value(Operator.lte(this, value));
+    return Operator.lte(this, value);
   }
 
   /** Returns a Value for the `==` expression between this and another expression.  */
   equal(value: CodeLike) {
-    return new Value(Operator.equal(this, value));
+    return Operator.equal(this, value);
   }
 
   /** Returns a Value for the `!=` expression between this and another expression.  */
   notEqual(value: CodeLike) {
-    return new Value(Operator.notEqual(this, value));
+    return Operator.notEqual(this, value);
   }
 
   /** Returns a Value for the `||` expression between this and another expression.  */
@@ -64,24 +63,24 @@ export class RValue {
 
   /** Returns a Value for the cast `(type)exp` expression of this expression to the passed Type.  */
   cast(type: Type) {
-    return Value.new(Operator.cast(type, this));
+    return Operator.cast(type, this);
   }
 
   /** Returns a Value for the ternary `cond?exp1:exp2` expression where the condition is this expression.  */
   ternary(exp1: CodeLike, exp2: CodeLike) {
-    return Value.new(Operator.ternary(this, exp1, exp2));
+    return Operator.ternary(this, exp1, exp2);
   }
 
   /**
    * Returns the smaller value expression using relational logical operators between this variable's name and another expression of the same type.
    */
   min(value: CodeLike) {
-    return Value.new(Utils.min(this, value));
+    return Utils.min(this, value);
   }
 
   /** Returns an assignment expression with a clamped value between min and max. */
   clamp(min: CodeLike, max: CodeLike) {
-    return Value.new(Operator.assign(this, Utils.clamp(this, min, max)));
+    return Operator.assign(this, Utils.clamp(this, min, max));
   }
 
   /**
