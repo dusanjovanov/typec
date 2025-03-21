@@ -41,6 +41,7 @@ export class Func<
   hasVarArgs;
   _params;
   _paramTypes;
+  _subs = new Set<FuncSubscriber<this>>();
 
   /** Returns the address of this function. */
   ref() {
@@ -56,20 +57,35 @@ export class Func<
     })`;
   }
 
-  /** Returns the definition ( implementation ) of the function. */
+  /**
+   * Returns the definition ( implementation ) of the function.
+   *
+   * Returns an empty string if the body function is not defined.
+   */
   define() {
+    if (!this.body) return "";
+
     return `${this.declare()}${Block.new(
-      this.body?.({ params: this.params }) ?? []
+      this.body({ params: this.params }) ?? []
     )}`;
   }
 
   /** Returns this function's call expression. */
   call(...args: FuncArgs<Params, VarArgs>) {
+    this._subs.forEach((s) => s(this));
     const _args = args.slice(0, this._params.length);
     if (this.hasVarArgs) {
       _args.push(...args.slice(this._params.length));
     }
     return Value.new(Func.call(this.name, _args as any));
+  }
+
+  /** Subscribe to `.call()` calls. */
+  onCall(cb: FuncSubscriber<this>) {
+    this._subs.add(cb);
+    return () => {
+      this._subs.delete(cb);
+    };
   }
 
   /** Returns a return statement expression. */
@@ -136,3 +152,5 @@ export type FuncParamsByName<Params extends readonly Param[]> =
       ? Record<First["name"], First> & FuncParamsByName<Rest>
       : Record<First["name"], First>
     : {};
+
+type FuncSubscriber<T extends Func<any, any>> = (func: T) => void;

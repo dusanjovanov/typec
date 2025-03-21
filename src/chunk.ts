@@ -26,7 +26,8 @@ export class Chunk {
           str[0] !== "#" &&
           lastChar !== "}" &&
           lastChar !== ";" &&
-          lastChar !== "\n"
+          lastChar !== "\n" &&
+          lastChar !== ""
         ) {
           return `${b};`;
         }
