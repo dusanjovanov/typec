@@ -52,6 +52,7 @@ export type TextLike = string | number;
 /** `string`, `number` or a typec object with `toString()` implemented. */
 export type CodeLike =
   | TextLike
+  | null
   | Chunk
   | Block
   | RValue

@@ -11,19 +11,55 @@ export class Enum<Values extends Record<string, number | null>> {
     this.__values = values;
 
     const names: Record<string, any> = {};
+    const newValues: Record<string, any> = {};
 
-    Object.keys(values).forEach((name) => {
+    Object.entries(values).forEach(([name, value]) => {
       names[name] = Value.new(name);
+      newValues[name] = Value.new(value);
     });
 
     this.names = names as {
       [key in keyof Values]: Value;
     };
+    this.values = newValues as {
+      [key in keyof Values]: Value;
+    };
   }
   name;
   __values;
-  /** Access names of the enum value by name. */
+  /**
+   * Access the names of the enum defined values by name.
+   *
+   * ```ts
+   * const myEnum = Enum.new("my_enum", {
+   *  A: 0,
+   *  B: 1,
+   *  C: null
+   * })
+   *
+   * myEnum.names.A === "A"
+   * myEnum.names.C === "C"
+   * ```
+   */
   names;
+  /**
+   * Access the values of the enum defined values by name.
+   *
+   * typec doesn't automatically increment enum values like C does,
+   * so if you passed null when defining a value, you're going to get a null when accessing it.
+   *
+   * ```ts
+   * const myEnum = Enum.new("my_enum", {
+   *  A: 0,
+   *  B: 1,
+   *  C: null
+   * })
+   *
+   * myEnum.values.A === 0
+   * myEnum.values.C === null
+   * ```
+   */
+  values;
 
   declare() {
     return `enum ${this.name}${Block.new(
@@ -58,7 +94,7 @@ export class Enum<Values extends Record<string, number | null>> {
     return Var.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
   }
 
-  static new<Values extends Record<string, number>>(
+  static new<Values extends Record<string, number | null>>(
     name: string,
     values: Values
   ) {
