@@ -82,6 +82,10 @@ export const stringSplice = (
   );
 };
 
+export const unique = <T>(arr: T[]) => {
+  return Array.from(new Set(arr));
+};
+
 export class Utils {
   static min(left: CodeLike, right: CodeLike) {
     return Operator.ternary(Operator.lt(left, right), left, right);
