@@ -33,7 +33,7 @@ export class Param<Name extends string = any> extends Var {
     return Param.new(Type.intPointer(typeQualifiers, pointerQualifiers), name);
   }
 
-  static new<T extends Type, Name extends string = any>(type: T, name: Name) {
+  static new<Name extends string = any>(type: Type, name: Name) {
     return new Param(type, name);
   }
 }

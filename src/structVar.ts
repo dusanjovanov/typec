@@ -22,7 +22,7 @@ export class StructVar<Members extends StructMembers = any> {
 
   /** Returns the variable declaration statement. */
   declare() {
-    return `${this.type.str} ${this.name}`;
+    return `${this.type} ${this.name}`;
   }
 
   /** Returns the reference expression for this variable. `&name` */

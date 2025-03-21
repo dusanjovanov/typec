@@ -68,7 +68,7 @@ export class VarArgs {
 
   /** Get the next arg. You have to pass it's type. */
   nextArg(type: Type) {
-    return stdarg.va_arg.call(this.args, type.str);
+    return stdarg.va_arg.call(this.args, type);
   }
 
   /** Cleanup - this has to be called when you're done reading the var args. */

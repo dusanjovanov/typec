@@ -57,7 +57,8 @@ export type CodeLike =
   | RValue
   | Condition
   | StructVar
-  | Array;
+  | Array
+  | Type;
 
 export type StructMembers = {
   [Key: string]: Type;
