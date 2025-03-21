@@ -5,6 +5,7 @@ export * from "./condition";
 export * from "./func";
 export * from "./gcc";
 export * from "./include";
+export * from "./lib";
 export * from "./literal";
 export * from "./loops";
 export * from "./operators";
