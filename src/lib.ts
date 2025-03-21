@@ -3,8 +3,8 @@ import type { Func } from "./func";
 /**
  * Used for defining a typec library.
  *
- * You could use the object this returns independently, but it's highly recommended that it's passed into the `libs` field of the `App` class,
- * becuse that way you get automatic ( usage based ) include directives and embedding of internals in your app's .c file.
+ * You can use the object this returns independently, but you can also pass it into the `libs` field of the `App` class,
+ * and then you get automatic ( usage based ) include directives and embedding of internals in your app's .c file.
  *
  * Accepts an object with 2 fields:
  *
