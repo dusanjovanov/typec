@@ -6,8 +6,8 @@ import { stdio } from "./std";
 describe("App", () => {
   test("simple", () => {
     const app = App.new({
-      libs: { stdio },
-      main({ libs: { stdio } }) {
+      libs: [stdio],
+      main() {
         return [stdio.puts.call(Lit.string("abc"))];
       },
     });

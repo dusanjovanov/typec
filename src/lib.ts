@@ -79,12 +79,12 @@ export type ExternalLibDefinition = {
 
 type LibApi = Record<string, any>;
 
-export type Lib<T extends LibDefinition = any> = ApiFromExternals<
-  T["externals"]
-> &
+export type Lib<T extends LibDefinition> = ApiFromExternals<T["externals"]> &
   T["internals"] & {
-    __subscribe: LibSubscriber;
+    __subscribe: LibSubscribeFn;
   };
+
+export type LibSubscribeFn = (sub: LibSubscriber) => () => void;
 
 export type LibSubscriber = (arg: LibSubscriberArg) => void;
 

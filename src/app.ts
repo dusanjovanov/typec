@@ -1,12 +1,12 @@
 import { Chunk } from "./chunk";
 import { Func } from "./func";
-import type { Lib, LibSubscriberArg } from "./lib";
+import type { LibSubscribeFn, LibSubscriberArg } from "./lib";
 import { Type } from "./type";
 import type { CodeLike } from "./types";
 import { unique } from "./utils";
 
-export class App<Libs extends Record<string, Lib>> {
-  constructor({ libs, main, includes = [], embeds = [] }: AppOptions<Libs>) {
+export class App {
+  constructor({ libs, main, includes = [], embeds = [] }: AppOptions) {
     this.libs = libs;
     this.main = main;
     this.includes = includes;
@@ -23,8 +23,8 @@ export class App<Libs extends Record<string, Lib>> {
     const embeds: string[] = [];
     const unsubs: Function[] = [];
 
-    Object.values(this.libs).forEach((lib) => {
-      const unsub = lib.__subscribe((arg: LibSubscriberArg) => {
+    this.libs.forEach((lib) => {
+      const unsub = lib.__subscribe((arg) => {
         if (arg.type === "external") {
           includes.push(arg.include);
         }
@@ -37,7 +37,7 @@ export class App<Libs extends Record<string, Lib>> {
     });
 
     const mainFn = Func.new(Type.int(), "main", [], () => {
-      return this.main({ libs: this.libs });
+      return this.main();
     });
 
     const mainDef = mainFn.define();
@@ -55,22 +55,24 @@ export class App<Libs extends Record<string, Lib>> {
     ]).toString();
   }
 
-  static new<Libs extends Record<string, Lib>>(options: AppOptions<Libs>) {
+  static new(options: AppOptions) {
     return new App(options);
   }
 }
 
-export type AppOptions<Libs extends Record<string, Lib>> = {
+export type AppOptions = {
   /**
-   * A dictionary of libraries that you plan on using. Libraries need to be in the shape returned from the `lib` function also exported from typec.
+   * A list of libraries that you plan on using. Libraries need to be in the shape returned from the `lib` function also exported from typec.
    *
    * Includes and embeds are automatically added to the final code by tracking usage ( Func calls ).
    */
-  libs: Libs;
+  libs: AppLib[];
   /** The app's main function */
-  main: (arg: { libs: Libs }) => CodeLike[];
+  main: () => CodeLike[];
   /** To manually add include directives. */
   includes?: CodeLike[];
   /** To manually add code between the include directives and the main function. */
   embeds?: CodeLike[];
 };
+
+export type AppLib = { __subscribe: LibSubscribeFn };
