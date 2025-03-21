@@ -18,6 +18,7 @@ export class Chunk {
 
   toString() {
     return this.statements
+      .filter((s) => Boolean(s) && typeof s !== "boolean")
       .map((b) => {
         const str = b.toString();
 

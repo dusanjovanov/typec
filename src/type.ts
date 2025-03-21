@@ -113,6 +113,18 @@ export class Type {
     return Type.pointer(Type.struct(name, typeQualifiers), pointerQualifiers);
   }
 
+  static enum(name: string, qualifiers: TypeQualifier[] = []) {
+    return Type.new({ kind: "enum", name, qualifiers });
+  }
+
+  static enumPointer(
+    name: string,
+    typeQualifiers: TypeQualifier[] = [],
+    pointerQualifiers: PointerQualifier[] = []
+  ) {
+    return Type.pointer(Type.enum(name, typeQualifiers), pointerQualifiers);
+  }
+
   static new(desc: TypeDescription) {
     return new Type(desc);
   }
@@ -150,10 +162,14 @@ export class Type {
       case "struct": {
         return `${this.qualifiersBefore(desc)}struct ${desc.name}`;
       }
+      case "enum": {
+        return `${this.qualifiersBefore(desc)}enum ${desc.name}`;
+      }
       case "pointer": {
         switch (desc.type.desc.kind) {
           case "simple":
-          case "struct": {
+          case "struct":
+          case "enum": {
             return `${desc.type.str}*${emptyFalsy(
               desc.qualifiers,
               (q) => ` ${join(q)}`
@@ -204,7 +220,8 @@ export type TypeDescription =
   | Pointer
   | ArrayType
   | FuncType
-  | StructType;
+  | StructType
+  | EnumType;
 
 export type Simple = {
   kind: "simple";
@@ -233,6 +250,12 @@ export type FuncType = {
 
 export type StructType = {
   kind: "struct";
+  name: string;
+  qualifiers: TypeQualifier[];
+};
+
+export type EnumType = {
+  kind: "enum";
   name: string;
   qualifiers: TypeQualifier[];
 };
