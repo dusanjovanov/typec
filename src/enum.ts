@@ -1,4 +1,5 @@
 import { Block } from "./chunk";
+import { NULL } from "./constants";
 import { Type } from "./type";
 import type { PointerQualifier, TypeQualifier } from "./types";
 import { Value } from "./value";
@@ -15,7 +16,7 @@ export class Enum<Values extends Record<string, number | null>> {
 
     Object.entries(values).forEach(([name, value]) => {
       names[name] = Value.new(name);
-      newValues[name] = Value.new(value);
+      newValues[name] = Value.new(value ?? NULL);
     });
 
     this.names = names as {
