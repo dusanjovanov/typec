@@ -94,6 +94,10 @@ export class Func<
     };
   }
 
+  toString() {
+    return this.name;
+  }
+
   /** Returns a return statement expression. */
   static return(value: CodeLike) {
     return `return ${value}`;

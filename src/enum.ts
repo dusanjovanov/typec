@@ -6,20 +6,20 @@ import { Value } from "./value";
 import { Var } from "./variable";
 
 /** Used for declaring and working with enums. */
-export class Enum<Values extends Record<string, number | null>> {
+export class Enum<Values extends Record<string, string | number | null>> {
   constructor(name: string, values: Values) {
     this.name = name;
     this.__values = values;
 
-    const names: Record<string, any> = {};
+    const keys: Record<string, any> = {};
     const newValues: Record<string, any> = {};
 
     Object.entries(values).forEach(([name, value]) => {
-      names[name] = Value.new(name);
+      keys[name] = Value.new(name);
       newValues[name] = Value.new(value ?? NULL);
     });
 
-    this.names = names as {
+    this.keys = keys as {
       [key in keyof Values]: Value;
     };
     this.values = newValues as {
@@ -38,11 +38,11 @@ export class Enum<Values extends Record<string, number | null>> {
    *  C: null
    * })
    *
-   * myEnum.names.A === "A"
-   * myEnum.names.C === "C"
+   * myEnum.keys.A === Value("A")
+   * myEnum.keys.C === Value("C")
    * ```
    */
-  names;
+  keys;
   /**
    * Access the values of the enum defined values by name.
    *
@@ -56,8 +56,8 @@ export class Enum<Values extends Record<string, number | null>> {
    *  C: null
    * })
    *
-   * myEnum.values.A === 0
-   * myEnum.values.C === null
+   * myEnum.values.A === Value(0)
+   * myEnum.values.C === Value(NULL)
    * ```
    */
   values;
@@ -95,7 +95,7 @@ export class Enum<Values extends Record<string, number | null>> {
     return Var.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
   }
 
-  static new<Values extends Record<string, number | null>>(
+  static new<Values extends Record<string, string | number | null>>(
     name: string,
     values: Values
   ) {

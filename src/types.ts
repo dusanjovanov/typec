@@ -1,6 +1,7 @@
 import type { Array } from "./array";
 import type { Block, Chunk } from "./chunk";
 import type { Condition } from "./condition";
+import type { Func } from "./func";
 import type { RValue } from "./rValue";
 import type { StructVar } from "./structVar";
 import type { Type } from "./type";
@@ -58,7 +59,8 @@ export type CodeLike =
   | Condition
   | StructVar
   | Array
-  | Type;
+  | Type
+  | Func;
 
 export type StructMembers = {
   [Key: string]: Type;
