@@ -76,6 +76,8 @@ export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 
 export type TextLike = string | number | boolean;
 
+export type Numberish = number | string;
+
 /** `string`, `number` or a typec object with `toString()` implemented. */
 export type CodeLike =
   | TextLike

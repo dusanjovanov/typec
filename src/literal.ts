@@ -1,5 +1,5 @@
 import { curly } from "./chunk";
-import type { CodeLike } from "./types";
+import type { CodeLike, Numberish } from "./types";
 import { joinArgs } from "./utils";
 
 /** Helpers for creating C literals. */
@@ -29,7 +29,7 @@ export class Lit {
    *
    * `23U`
    */
-  static unsigned(value: number) {
+  static unsigned(value: Numberish) {
     return `${value}U`;
   }
 
@@ -38,7 +38,7 @@ export class Lit {
    *
    * `23L`
    */
-  static longInt(value: number) {
+  static longInt(value: Numberish) {
     return `${value}L`;
   }
 
@@ -47,7 +47,7 @@ export class Lit {
    *
    * `23UL`
    */
-  static unsignedLongInt(value: number) {
+  static unsignedLongInt(value: Numberish) {
     return `${value}UL`;
   }
 
@@ -56,7 +56,7 @@ export class Lit {
    *
    * `23LL`
    */
-  static longLongInt(value: number) {
+  static longLongInt(value: Numberish) {
     return `${value}LL`;
   }
 
@@ -65,7 +65,7 @@ export class Lit {
    *
    * `23ULL`
    */
-  static unsignedLongLongInt(value: number) {
+  static unsignedLongLongInt(value: Numberish) {
     return `${value}ULL`;
   }
 
@@ -74,7 +74,7 @@ export class Lit {
    *
    * `23.45F`
    */
-  static float(value: number) {
+  static float(value: Numberish) {
     return `${value}F`;
   }
 
@@ -83,7 +83,7 @@ export class Lit {
    *
    * `23.45L`
    */
-  static longDouble(value: number) {
+  static longDouble(value: Numberish) {
     return `${value}L`;
   }
 
@@ -92,8 +92,8 @@ export class Lit {
    *
    * `L'a'`
    */
-  static wideChar(char: string) {
-    return `L${Lit.char(char)}`;
+  static wideChar(char: Numberish) {
+    return `L${Lit.char(String(char))}`;
   }
 
   /**
