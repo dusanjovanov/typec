@@ -13,7 +13,8 @@ export const emptyFalsy = <T>(
   const isEmpty =
     value == null ||
     value === false ||
-    (Array.isArray(value) && value.length === 0);
+    (Array.isArray(value) && value.length === 0) ||
+    value === "";
 
   if (isEmpty) return "";
 

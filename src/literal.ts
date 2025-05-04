@@ -130,4 +130,13 @@ export class Lit {
       )
     );
   }
+
+  /**
+   * Returns a one member initializer expression used for unions.
+   *
+   * `{23}`
+   */
+  static simpleMember(value: CodeLike) {
+    return curly(value);
+  }
 }

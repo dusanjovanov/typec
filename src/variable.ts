@@ -2,7 +2,6 @@ import { Operator } from "./operators";
 import { RValue } from "./rValue";
 import { Type } from "./type";
 import type { CodeLike, PointerQualifier, TypeQualifier } from "./types";
-import { Value } from "./value";
 
 /** Used for working with simple and pointer variables. */
 export class Var extends RValue {
@@ -102,6 +101,10 @@ export class Var extends RValue {
 
   static size_t(name: string, typeQualifiers?: TypeQualifier[]) {
     return Var.new(Type.size_t(typeQualifiers), name);
+  }
+
+  static bool(name: string, typeQualifiers?: TypeQualifier[]) {
+    return Var.new(Type.bool(typeQualifiers), name);
   }
 
   /** Pointer variable for char*. */

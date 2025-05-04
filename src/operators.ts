@@ -33,9 +33,7 @@ export class Operator {
     return Value.new(`alignof(${exp})`);
   }
   /** Dereference operator `*`. */
-  static deRef(pointerName: CodeLike) {
-    return Value.new(`*${pointerName}`);
-  }
+  static deRef = preUn("*");
   /** Reference operator `&`. */
   static ref = preUn("&");
 
@@ -43,7 +41,6 @@ export class Operator {
   static modulo = binOp("%");
   static plus = binOp("+");
   static minus = binOp("-");
-  /** Division */
   static div = binOp("/");
   static mult = binOp("*");
 

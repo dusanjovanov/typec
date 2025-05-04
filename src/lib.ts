@@ -1,4 +1,4 @@
-import type { Func } from "./func";
+import { Func } from "./func";
 
 /**
  * Used for defining a typec library.
@@ -37,18 +37,22 @@ export const lib = <const T extends LibDefinition>(def: T) => {
   // internals
   Object.entries(def.internals ?? {}).forEach(([key, value]) => {
     obj[key] = value;
-    value.onCall(() => {
-      subs.forEach((s) => s({ type: "internal", value }));
-    });
+    if (value instanceof Func) {
+      value.onCall(() => {
+        subs.forEach((s) => s({ type: "internal", value }));
+      });
+    }
   });
 
   // externals
   def.externals.forEach((incl) => {
     Object.entries(incl.api).forEach(([key, value]) => {
       obj[key] = value;
-      value.onCall(() => {
-        subs.forEach((s) => s({ type: "external", include: incl.include }));
-      });
+      if (value instanceof Func) {
+        value.onCall(() => {
+          subs.forEach((s) => s({ type: "external", include: incl.include }));
+        });
+      }
     });
   });
 

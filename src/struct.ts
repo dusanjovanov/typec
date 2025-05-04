@@ -1,10 +1,10 @@
 import { Block } from "./chunk";
 import { StructVar } from "./structVar";
 import { Type } from "./type";
-import type { PointerQualifier, StructMembers, TypeQualifier } from "./types";
+import type { PointerQualifier, GenericMembers, TypeQualifier } from "./types";
 
 /** Used for declaring and working with structs. */
-export class Struct<Members extends StructMembers = any> {
+export class Struct<Members extends GenericMembers = any> {
   constructor(name: string, members: Members) {
     this.name = name;
     this.members = members;
@@ -50,7 +50,7 @@ export class Struct<Members extends StructMembers = any> {
     );
   }
 
-  static new<Members extends StructMembers>(name: string, members: Members) {
+  static new<Members extends GenericMembers>(name: string, members: Members) {
     return new Struct(name, members);
   }
 }

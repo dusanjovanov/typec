@@ -48,7 +48,7 @@ export type AutoSimpleType = Autocomplete<SimpleType>;
 
 export type StringKeyOf<T extends object> = Extract<keyof T, string>;
 
-export type TextLike = string | number;
+export type TextLike = string | number | boolean;
 
 /** `string`, `number` or a typec object with `toString()` implemented. */
 export type CodeLike =
@@ -62,10 +62,10 @@ export type CodeLike =
   | Type
   | Func;
 
-export type StructMembers = {
+export type GenericMembers = {
   [Key: string]: Type;
 };
 
-export type StructDesignatedInitValues<Members extends StructMembers> = {
+export type StructDesignatedInitValues<Members extends GenericMembers> = {
   [Key in keyof Members]?: CodeLike;
 };

@@ -36,7 +36,7 @@ export class RValue {
     return Operator.lt(this, value);
   }
 
-  /** Returns a Value for the `<=` expression between this and another expression.  */
+  /** Returns a Value for the `>=` expression between this and another expression.  */
   gte(value: CodeLike) {
     return Operator.gte(this, value);
   }
@@ -49,6 +49,11 @@ export class RValue {
   /** Returns a Value for the `==` expression between this and another expression.  */
   equal(value: CodeLike) {
     return Operator.equal(this, value);
+  }
+
+  /** Returns a Value for the `!` unary expression.  */
+  not() {
+    return Operator.not(this);
   }
 
   /** Returns a Value for the `!=` expression between this and another expression.  */
@@ -106,5 +111,24 @@ export class RValue {
     returnValue: CodeLike = valueToCompare
   ) {
     return Condition.if(this.equal(valueToCompare), [Func.return(returnValue)]);
+  }
+
+  /**
+   * Returns an if block that checks if the value is falsy using the ! unary operator and returns the second expression argument.
+   */
+  notReturn(returnValue: CodeLike) {
+    return Condition.if(this.not(), [Func.return(returnValue)]);
+  }
+
+  /**
+   * Returns an if block that checks if the value is falsy using the ! unary operator and accepts an argument to be the ifs body.
+   */
+  notThen(body: CodeLike[]) {
+    return Condition.if(this.not(), body);
+  }
+
+  /** Returns a Value for the `|` expression between this and another expression.  */
+  bitOr(value: CodeLike) {
+    return Operator.bitOr(this, value);
   }
 }

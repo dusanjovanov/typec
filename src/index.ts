@@ -2,6 +2,7 @@ export * from "./app";
 export * from "./array";
 export * from "./chunk";
 export * from "./condition";
+export * from "./constants";
 export * from "./enum";
 export * from "./func";
 export * from "./gcc";
