@@ -1,27 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { Type } from "./type";
-import type { SimpleType } from "./types";
+import { NUMBER_TYPES, type SimpleType } from "./types";
 
-const types: SimpleType[] = [
-  "char",
-  "signed char",
-  "unsigned char",
-  "short",
-  "unsigned short",
-  "int",
-  "unsigned int",
-  "long",
-  "unsigned long",
-  "long long",
-  "unsigned long long",
-  "size_t",
-  "ptrdiff_t",
-  "float",
-  "double",
-  "long double",
-  "wchar_t",
-  "void",
-];
+const types: SimpleType[] = [...NUMBER_TYPES, "void", "bool"];
 
 const typesWithShortcuts = [
   "int",
@@ -30,6 +11,7 @@ const typesWithShortcuts = [
   "char",
   "ptrdiff_t",
   "short",
+  "double",
 ] as const satisfies SimpleType[];
 
 describe("Simple", () => {

@@ -114,14 +114,28 @@ export class RValue {
   }
 
   /**
-   * Returns an if block that checks if the value is falsy using the ! unary operator and returns the second expression argument.
+   * Returns an if block with the value itself as the condition and returns the expression argument.
+   */
+  thenReturn(returnValue: CodeLike) {
+    return Condition.if(this, [Func.return(returnValue)]);
+  }
+
+  /**
+   * Returns an if block that checks if the value is falsy using the ! unary operator and returns the expression argument.
    */
   notReturn(returnValue: CodeLike) {
     return Condition.if(this.not(), [Func.return(returnValue)]);
   }
 
   /**
-   * Returns an if block that checks if the value is falsy using the ! unary operator and accepts an argument to be the ifs body.
+   * Returns an if block with the value itself as the condition and accepts an argument to be the if's body.
+   */
+  then(body: CodeLike[]) {
+    return Condition.if(this, body);
+  }
+
+  /**
+   * Returns an if block that checks if the value is falsy using the ! unary operator and accepts an argument to be the if's body.
    */
   notThen(body: CodeLike[]) {
     return Condition.if(this.not(), body);

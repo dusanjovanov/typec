@@ -16,7 +16,7 @@ export class Enum<Values extends Record<string, string | number | null>> {
 
     Object.entries(values).forEach(([name, value]) => {
       keys[name] = Value.new(name);
-      newValues[name] = Value.new(value ?? NULL);
+      newValues[name] = value ? Value.new(value) : NULL;
     });
 
     this.keys = keys as {

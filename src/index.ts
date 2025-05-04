@@ -18,6 +18,7 @@ export * from "./struct";
 export * from "./structVar";
 export * from "./type";
 export * from "./types";
+export * from "./union";
 export * from "./utils";
 export * from "./value";
 export * from "./variable";
