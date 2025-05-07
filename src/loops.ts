@@ -15,6 +15,6 @@ export class Loop {
     update: CodeLike,
     body: CodeLike[]
   ) {
-    return `for(${init};${condition};${update};)${Block.new(body)}`;
+    return `for(${init};${condition};${update})${Block.new(body)}`;
   }
 }

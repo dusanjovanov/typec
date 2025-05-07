@@ -9,7 +9,7 @@ import { Var } from "../variable";
 /** JS String.slice equivalent for C */
 export const slice = Func.new(
   Type.string(),
-  "tc_str_slice",
+  "str_slice",
   [
     Param.string("str", ["const"]),
     Param.size_t("start"),

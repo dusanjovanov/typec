@@ -3,8 +3,7 @@ import { Operator } from "./operators";
 import type { Param } from "./param";
 import { Type } from "./type";
 import { type CodeLike } from "./types";
-import { emptyFalsy, joinArgs } from "./utils";
-import { Value } from "./value";
+import { joinArgs } from "./utils";
 
 /** Used for creating and using functions or just declaring and using their api if they come from C libraries. */
 export class Func<
@@ -83,15 +82,7 @@ export class Func<
     if (this.hasVarArgs) {
       _args.push(...args.slice(this._params.length));
     }
-    return Func.call(this.name, _args as any);
-  }
-
-  /** Subscribe to `.call()` calls. */
-  onCall(cb: FuncSubscriber<this>) {
-    this._subs.add(cb);
-    return () => {
-      this._subs.delete(cb);
-    };
+    return Operator.call(this.name, _args as any);
   }
 
   toString() {
@@ -99,13 +90,8 @@ export class Func<
   }
 
   /** Returns a return statement expression. */
-  static return(value: CodeLike) {
-    return `return ${value}`;
-  }
-
-  /** Returns a function call expression. */
-  static call(fnName: string, args: CodeLike[]) {
-    return Value.new(`${fnName}(${emptyFalsy(args, joinArgs)})`);
+  static return(value?: CodeLike) {
+    return Operator.return(value);
   }
 
   /** Returns a function call expression with support for varargs. */
@@ -118,7 +104,7 @@ export class Func<
     if (varArgs.length > 0) {
       args.push(...varArgs);
     }
-    return Func.call(fnName, args);
+    return Operator.call(fnName, args);
   }
 
   static new<
@@ -164,3 +150,18 @@ export type FuncParamsByName<Params extends readonly Param[]> =
     : {};
 
 type FuncSubscriber<T extends Func<any, any>> = (func: T) => void;
+
+const emptyFalsy = <T>(
+  value: T | null | undefined | boolean,
+  format?: (str: T) => string
+) => {
+  const isEmpty =
+    value == null ||
+    value === false ||
+    (Array.isArray(value) && value.length === 0) ||
+    value === "";
+
+  if (isEmpty) return "";
+
+  return format ? format(value as T) : String(value);
+};

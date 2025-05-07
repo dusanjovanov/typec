@@ -1,5 +1,6 @@
 import type { Type } from "./type";
 import type { CodeLike } from "./types";
+import { emptyFalsy, joinArgs } from "./utils";
 import { Value } from "./value";
 
 const preUn = (op: string) => (exp: CodeLike) => Value.new(`${op}${exp}`);
@@ -42,7 +43,7 @@ export class Operator {
   static plus = binOp("+");
   static minus = binOp("-");
   static div = binOp("/");
-  static mult = binOp("*");
+  static mul = binOp("*");
 
   // Logical
 
@@ -70,7 +71,7 @@ export class Operator {
   static assign = binOp("=");
   static plusAssign = binOp("+=");
   static minusAssign = binOp("-=");
-  static multAssign = binOp("*=");
+  static mulAssign = binOp("*=");
   static divAssign = binOp("/=");
   static moduloAssign = binOp("%=");
   static bitAndAssign = binOp("&=");
@@ -110,5 +111,23 @@ export class Operator {
    */
   static ternary(condition: CodeLike, exp1: CodeLike, exp2: CodeLike) {
     return Value.new(`${condition}?${exp1}:${exp2}`);
+  }
+
+  static negative(exp: CodeLike) {
+    return Value.new(`-(${exp})`);
+  }
+
+  static itemAt(exp: CodeLike, index: CodeLike) {
+    return Value.new(`${exp}[${index}]`);
+  }
+
+  /** Returns a return statement expression. */
+  static return(value?: CodeLike) {
+    return Value.new(`return${emptyFalsy(value, (v) => ` ${v}`)}`);
+  }
+
+  /** Returns a function call expression. */
+  static call(fnName: string, args: CodeLike[]) {
+    return Value.new(`${fnName}(${emptyFalsy(args, joinArgs)})`);
   }
 }

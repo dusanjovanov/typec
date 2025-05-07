@@ -10,7 +10,7 @@ import { Var } from "../variable";
 /** JS String.concat equivalent for C */
 export const concat = Func.new(
   Type.string(),
-  "tc_str_concat",
+  "str_concat",
   [Param.string("str", ["const"])],
   ({ params }) => {
     const totalLen = Var.size_t("total_len");

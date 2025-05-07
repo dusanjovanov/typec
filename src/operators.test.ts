@@ -57,14 +57,14 @@ describe("operators", () => {
     testBinaryOp("plus", "a+b");
     testBinaryOp("minus", "a-b");
     testBinaryOp("div", "a/b");
-    testBinaryOp("mult", "a*b");
+    testBinaryOp("mul", "a*b");
   });
 
   describe("asignment", () => {
     testBinaryOp("assign", "a=b");
     testBinaryOp("plusAssign", "a+=b");
     testBinaryOp("minusAssign", "a-=b");
-    testBinaryOp("multAssign", "a*=b");
+    testBinaryOp("mulAssign", "a*=b");
     testBinaryOp("divAssign", "a/=b");
     testBinaryOp("moduloAssign", "a%=b");
   });

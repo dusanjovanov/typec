@@ -15,7 +15,7 @@ export class Union<Members extends GenericMembers = any> {
   declare() {
     return `union ${this.name}${Block.new(
       Object.entries(this.members).map(([name, type]) => `${type} ${name}`)
-    )}`;
+    )};`;
   }
 
   /** Get a union var type for this Union. */

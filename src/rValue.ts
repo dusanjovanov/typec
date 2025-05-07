@@ -1,5 +1,4 @@
 import { Condition } from "./condition";
-import { Func } from "./func";
 import { Operator } from "./operators";
 import type { Type } from "./type";
 import type { CodeLike } from "./types";
@@ -24,6 +23,21 @@ export class RValue {
   /** Returns a Value for the `-` binary expression between this and another expression. */
   minus(value: CodeLike) {
     return Operator.minus(this, value);
+  }
+
+  /** Returns a Value for the `*` binary expression between this and another expression. */
+  mul(value: CodeLike) {
+    return Operator.mul(this, value);
+  }
+
+  /** Returns a Value for the `/` binary expression between this and another expression. */
+  div(value: CodeLike) {
+    return Operator.div(this, value);
+  }
+
+  /** Returns a Value for the `%` binary expression between this and another expression. */
+  modulo(value: CodeLike) {
+    return Operator.modulo(this, value);
   }
 
   /** Returns a Value for the `>` expression between this and another expression.  */
@@ -91,13 +105,13 @@ export class RValue {
   /**
    * Returns an if block that checks if the value is equal to the first expression argument and returns the second expression argument.
    * 
-   * The second argument is optional, and by default its value is the same as the first one.
+   * The second argument - return value is optional
    * 
    * Useful for early checks and returns.
    * 
    * This code in Typescript:
    * ```ts
-   * strPointer.equalReturn(Value.null());
+   * strPointer.equalReturn(NULL, NULL);
    * ```
    * Produces this C code:
    * ```c
@@ -106,25 +120,24 @@ export class RValue {
      }
    * ```
    */
-  equalReturn(
-    valueToCompare: CodeLike,
-    returnValue: CodeLike = valueToCompare
-  ) {
-    return Condition.if(this.equal(valueToCompare), [Func.return(returnValue)]);
+  equalReturn(valueToCompare: CodeLike, returnValue?: CodeLike) {
+    return Condition.if(this.equal(valueToCompare), [
+      Operator.return(returnValue),
+    ]);
   }
 
   /**
    * Returns an if block with the value itself as the condition and returns the expression argument.
    */
-  thenReturn(returnValue: CodeLike) {
-    return Condition.if(this, [Func.return(returnValue)]);
+  thenReturn(returnValue?: CodeLike) {
+    return Condition.if(this, [Operator.return(returnValue)]);
   }
 
   /**
    * Returns an if block that checks if the value is falsy using the ! unary operator and returns the expression argument.
    */
-  notReturn(returnValue: CodeLike) {
-    return Condition.if(this.not(), [Func.return(returnValue)]);
+  notReturn(returnValue?: CodeLike) {
+    return Condition.if(this.not(), [Operator.return(returnValue)]);
   }
 
   /**
@@ -144,5 +157,40 @@ export class RValue {
   /** Returns a Value for the `|` expression between this and another expression.  */
   bitOr(value: CodeLike) {
     return Operator.bitOr(this, value);
+  }
+
+  /** Returns a Value for the `&` expression between this and another expression.  */
+  bitAnd(value: CodeLike) {
+    return Operator.bitAnd(this, value);
+  }
+
+  /** Returns a Value for the sizeof expression.  */
+  sizeOf() {
+    return Operator.sizeOf(this);
+  }
+
+  /** Assign a value. */
+  assign(value: CodeLike) {
+    return Operator.assign(this, value);
+  }
+
+  /** Returns a Value with the `-` in front of this Value. */
+  negative() {
+    return Operator.negative(this);
+  }
+
+  /** Returns a Value for an index accessor `arr[3]`. */
+  at(index: CodeLike) {
+    return Operator.itemAt(this, index);
+  }
+
+  /** Access a member of the struct directly. */
+  dot(key: CodeLike) {
+    return Operator.dot(this, key);
+  }
+
+  /** Access a member of the struct through a pointer. */
+  arrow(key: CodeLike) {
+    return Operator.arrow(this, key);
   }
 }

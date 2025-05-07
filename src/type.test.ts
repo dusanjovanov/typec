@@ -107,22 +107,22 @@ describe("Func", () => {
 describe("Struct", () => {
   test("simple", () => {
     const type = Type.struct("Test");
-    expect(type.str).toBe(`Test`);
+    expect(type.str).toBe(`struct Test`);
   });
   test("const", () => {
     const type = Type.struct("Test", ["const"]);
-    expect(type.str).toBe(`const Test`);
+    expect(type.str).toBe(`const struct Test`);
   });
 });
 
 describe("Union", () => {
   test("simple", () => {
     const type = Type.union("Test");
-    expect(type.str).toBe(`Test`);
+    expect(type.str).toBe(`union Test`);
   });
   test("const", () => {
     const type = Type.union("Test", ["const"]);
-    expect(type.str).toBe(`const Test`);
+    expect(type.str).toBe(`const union Test`);
   });
 });
 
@@ -130,13 +130,13 @@ describe("Pointer", () => {
   test("Struct", () => {
     const type = Type.pointer(Type.struct("abc"));
     if (type.desc.kind === "pointer") {
-      expect(type.str).toBe(`abc*`);
+      expect(type.str).toBe(`struct abc*`);
     } else throw Error();
   });
   test("Struct complex", () => {
     const type = Type.pointer(Type.struct("abc", ["const"]), ["const"]);
     if (type.desc.kind === "pointer") {
-      expect(type.str).toBe(`const abc* const`);
+      expect(type.str).toBe(`const struct abc* const`);
     } else throw Error();
   });
   test("Func", () => {

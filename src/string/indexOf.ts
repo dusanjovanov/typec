@@ -10,7 +10,7 @@ import { Var } from "../variable";
 /** JS String.indexOf equivalent for C */
 export const indexOf = Func.new(
   Type.int(),
-  "tc_str_indexOf",
+  "str_indexOf",
   [
     Param.string("str", ["const"]),
     Param.string("search", ["const"]),

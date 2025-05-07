@@ -1,9 +1,4 @@
-import type { Array } from "./array";
-import type { Block, Chunk } from "./chunk";
-import type { Condition } from "./condition";
-import type { Func } from "./func";
-import type { RValue } from "./rValue";
-import type { StructVar } from "./structVar";
+// import type { RValue } from "./rValue";
 import type { Type } from "./type";
 
 export const INTEGER_TYPES = [
@@ -79,16 +74,7 @@ export type TextLike = string | number | boolean;
 export type Numberish = number | string;
 
 /** `string`, `number` or a typec object with `toString()` implemented. */
-export type CodeLike =
-  | TextLike
-  | Chunk
-  | Block
-  | RValue
-  | Condition
-  | StructVar
-  | Array
-  | Type
-  | Func;
+export type CodeLike = TextLike | { toString(): string };
 
 export type GenericMembers = {
   [Key: string]: Type;

@@ -29,7 +29,7 @@ export class Chunk {
           lastChar !== ";" &&
           lastChar !== "\n"
         ) {
-          return `${b};`;
+          return semicolon(b);
         }
         return b;
       })
@@ -65,4 +65,9 @@ export class Block {
 /** Code between curly braces */
 export const curly = (code: CodeLike) => {
   return `{${code}}`;
+};
+
+/** Adds a semicolon at the end. */
+export const semicolon = (code: CodeLike) => {
+  return `${code};`;
 };

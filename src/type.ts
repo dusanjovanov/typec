@@ -56,6 +56,10 @@ export class Type {
     return Type.simple("double", qualifiers);
   }
 
+  static float(qualifiers?: TypeQualifier[]) {
+    return Type.simple("float", qualifiers);
+  }
+
   static pointer(type: Type, qualifiers: PointerQualifier[] = []) {
     return Type.new({ kind: "pointer", type, qualifiers });
   }
@@ -93,7 +97,14 @@ export class Type {
     return Type.simplePointer("void", typeQualifiers, pointerQualifiers);
   }
 
-  static array(elementType: Type, length: number) {
+  static floatPointer(
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Type.simplePointer("float", typeQualifiers, pointerQualifiers);
+  }
+
+  static array(elementType: Type, length?: number | number[]) {
     return Type.new({ kind: "array", elementType, length });
   }
 
@@ -171,9 +182,11 @@ export class Type {
           )})`;
         }
       }
-      case "struct":
+      case "struct": {
+        return `${emptyFalsy(this.qualifiersBefore(desc))}struct ${desc.name}`;
+      }
       case "union": {
-        return `${emptyFalsy(this.qualifiersBefore(desc))}${desc.name}`;
+        return `${emptyFalsy(this.qualifiersBefore(desc))}union ${desc.name}`;
       }
       case "enum": {
         return `${this.qualifiersBefore(desc)}enum ${desc.name}`;
@@ -253,7 +266,7 @@ export type Pointer = {
 export type ArrayType = {
   kind: "array";
   elementType: Type;
-  length: number;
+  length?: number | number[];
 };
 
 export type FuncType = {

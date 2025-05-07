@@ -3,7 +3,7 @@ import { Func } from "./func";
 /**
  * Used for defining a typec library.
  *
- * You can use the object this returns independently, but you can also pass it into the `libs` field of the `App` class,
+ * You can pass the object it returns into the `libs` field of the `App` class,
  * and then you get automatic ( usage based ) include directives and embedding of internals in your app's .c file.
  *
  * Accepts an object with 2 fields:
@@ -32,27 +32,29 @@ export const lib = <const T extends LibDefinition>(def: T) => {
         subs.delete(sub);
       };
     },
+    __internals: def.internals,
+    __embeds: def.embeds,
   };
 
   // internals
   Object.entries(def.internals ?? {}).forEach(([key, value]) => {
-    obj[key] = value;
-    if (value instanceof Func) {
-      value.onCall(() => {
-        subs.forEach((s) => s({ type: "internal", value }));
-      });
-    }
+    Object.defineProperty(obj, key, {
+      get() {
+        subs.forEach((s) => s({ type: "internal", key, value }));
+        return value;
+      },
+    });
   });
 
   // externals
   def.externals.forEach((incl) => {
     Object.entries(incl.api).forEach(([key, value]) => {
-      obj[key] = value;
-      if (value instanceof Func) {
-        value.onCall(() => {
+      Object.defineProperty(obj, key, {
+        get() {
           subs.forEach((s) => s({ type: "external", include: incl.include }));
-        });
-      }
+          return value;
+        },
+      });
     });
   });
 
@@ -74,6 +76,8 @@ export type LibDefinition = {
    * These are meant to be embedded in your app's .c file, rather than included via an .h file.
    */
   internals?: LibApi;
+  /** Things that need to be embedded. Usually declarations that are used internally. */
+  embeds?: any[];
 };
 
 export type ExternalLibDefinition = {
@@ -86,6 +90,8 @@ type LibApi = Record<string, any>;
 export type Lib<T extends LibDefinition> = ApiFromExternals<T["externals"]> &
   T["internals"] & {
     __subscribe: LibSubscribeFn;
+    __internals?: Record<string, any>;
+    __embeds?: any[];
   };
 
 export type LibSubscribeFn = (sub: LibSubscriber) => () => void;
@@ -93,7 +99,7 @@ export type LibSubscribeFn = (sub: LibSubscriber) => () => void;
 export type LibSubscriber = (arg: LibSubscriberArg) => void;
 
 export type LibSubscriberArg =
-  | { type: "internal"; value: Func }
+  | { type: "internal"; key: string; value: Func }
   | { type: "external"; include: string };
 
 type ApiFromExternals<T extends readonly ExternalLibDefinition[]> =

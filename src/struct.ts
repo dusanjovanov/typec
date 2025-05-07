@@ -1,11 +1,13 @@
 import { Block } from "./chunk";
+import { RValue } from "./rValue";
 import { StructVar } from "./structVar";
 import { Type } from "./type";
-import type { PointerQualifier, GenericMembers, TypeQualifier } from "./types";
+import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
 
 /** Used for declaring and working with structs. */
-export class Struct<Members extends GenericMembers = any> {
+export class Struct<Members extends GenericMembers = any> extends RValue {
   constructor(name: string, members: Members) {
+    super(`struct ${name}`);
     this.name = name;
     this.members = members;
   }
@@ -16,7 +18,7 @@ export class Struct<Members extends GenericMembers = any> {
   declare() {
     return `struct ${this.name}${Block.new(
       Object.entries(this.members).map(([name, type]) => `${type} ${name}`)
-    )}`;
+    )};`;
   }
 
   /** Get a struct var type for this struct. */

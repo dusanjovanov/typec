@@ -34,11 +34,6 @@ export class Var extends RValue {
     return Operator.assign(this.declare(), value);
   }
 
-  /** Assign a value. */
-  assign(value: CodeLike) {
-    return Operator.assign(this.name, value);
-  }
-
   /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
   subAssign(index: CodeLike, value: CodeLike) {
     return Operator.assign(Operator.subscript(this.name, index), value);
@@ -53,8 +48,8 @@ export class Var extends RValue {
   }
 
   /** `*=` */
-  multAssign(value: CodeLike) {
-    return Operator.multAssign(this, value);
+  mulAssign(value: CodeLike) {
+    return Operator.mulAssign(this, value);
   }
 
   /** `/=` */
@@ -105,6 +100,10 @@ export class Var extends RValue {
 
   static bool(name: string, typeQualifiers?: TypeQualifier[]) {
     return Var.new(Type.bool(typeQualifiers), name);
+  }
+
+  static float(name: string, typeQualifiers?: TypeQualifier[]) {
+    return Var.new(Type.float(typeQualifiers), name);
   }
 
   /** Pointer variable for char*. */

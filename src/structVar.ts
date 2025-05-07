@@ -1,12 +1,13 @@
+import { semicolon } from "./chunk";
 import { Lit } from "./literal";
 import { Operator } from "./operators";
 import { RValue } from "./rValue";
 import { Type } from "./type";
 import type {
   CodeLike,
+  GenericMembers,
   StringKeyOf,
   StructDesignatedInitValues,
-  GenericMembers,
 } from "./types";
 
 /** Used for working with struct instance variables and pointers. */
@@ -44,12 +45,15 @@ export class StructVar<Members extends GenericMembers = any> extends RValue {
 
   /** Initialize with a designated initializer. */
   initDesignated(values: StructDesignatedInitValues<Members>) {
-    return Operator.assign(this.declare(), Lit.designatedDot(values));
+    return Operator.assign(
+      this.declare(),
+      semicolon(Lit.designatedDot(values))
+    );
   }
 
   /** Initialize with a compound initializer. */
   initCompound(...values: CodeLike[]) {
-    return Operator.assign(this.declare(), Lit.compound(...values));
+    return Operator.assign(this.declare(), semicolon(Lit.compound(...values)));
   }
 
   /** Access a member of the struct directly. */
