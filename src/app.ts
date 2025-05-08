@@ -7,29 +7,26 @@ import type { CodeLike } from "./types";
 import { unique } from "./utils";
 
 export class App {
-  constructor({ libs, main, includes = [], embeds = [] }: AppOptions) {
+  constructor({ libs, main, includes = [] }: AppOptions) {
     this.libs = libs;
     this.main = main;
     this.includes = includes;
-    this.embeds = embeds;
   }
   libs;
   main;
   includes;
-  embeds;
 
   /** Returns the entire main .c file code in a string. */
   create() {
-    const includes: string[] = [];
     const embeds: string[] = [];
     const unsubs: Function[] = [];
 
     const libEmbedsMap = new Map<Lib<any>, Record<string, true>>();
 
     this.libs.forEach((lib) => {
-      if (lib.__embeds) {
+      if (lib.__preEmbeds) {
         embeds.push(
-          ...lib.__embeds.map((e) => {
+          ...lib.__preEmbeds.map((e) => {
             if (e instanceof Func) {
               return e.define();
             }
@@ -39,24 +36,18 @@ export class App {
             }
             //
             else {
-              return "";
+              return e;
             }
           })
         );
       }
-      if (lib.__internals) {
+      if (lib.__api) {
         libEmbedsMap.set(lib, {});
       }
       const unsub = lib.__subscribe((arg) => {
-        if (arg.type === "external") {
-          includes.push(arg.include);
-        }
-        //
-        else if (lib.__internals) {
-          const rec = libEmbedsMap.get(lib);
-          if (rec == null) return;
-          libEmbedsMap.set(lib, { ...rec, [arg.key]: true });
-        }
+        const rec = libEmbedsMap.get(lib);
+        if (rec == null) return;
+        libEmbedsMap.set(lib, { ...rec, [arg.key]: true });
       });
       unsubs.push(unsub);
     });
@@ -70,10 +61,10 @@ export class App {
     unsubs.forEach((fn) => fn());
 
     this.libs.forEach((lib) => {
-      if (lib.__internals == null) return;
+      if (lib.__api == null) return;
       const rec = libEmbedsMap.get(lib);
       if (rec == null) return;
-      Object.entries(lib.__internals).forEach(([key, value]) => {
+      Object.entries(lib.__api).forEach(([key, value]) => {
         const flag = rec[key];
         if (flag !== true) return;
         if (value instanceof Func) {
@@ -87,8 +78,7 @@ export class App {
     });
 
     // Handle manual includes and embeds
-    includes.push(...this.includes.map((i) => i.toString()));
-    embeds.push(...this.embeds.map((e) => e.toString()));
+    const includes = this.includes.map((i) => i.toString());
 
     return Chunk.new([
       ...unique(includes),
@@ -113,12 +103,10 @@ export type AppOptions = {
   main: () => CodeLike[];
   /** To manually add include directives. */
   includes?: CodeLike[];
-  /** To manually add code between the include directives and the main function. */
-  embeds?: CodeLike[];
 };
 
 export type AppLib = {
   __subscribe: LibSubscribeFn;
-  __internals?: Record<string, any>;
-  __embeds?: any[];
+  __api: Record<string, any>;
+  __preEmbeds?: any[];
 };

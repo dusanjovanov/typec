@@ -2,36 +2,29 @@ import { Chunk } from "../chunk";
 import { MACRO_TYPE } from "../constants";
 import { Func } from "../func";
 import { Include } from "../include";
-import { lib } from "../lib";
 import { Param } from "../param";
 import { Type } from "../type";
 import type { CodeLike } from "../types";
 import { Var } from "../variable";
 
-export const stdarg = lib({
-  externals: [
-    {
-      include: Include.system("stdarg.h"),
-      api: {
-        va_start: Func.new(Type.void(), "va_start", [
-          Param.new(Type.simple("va_list"), "ap"),
-          Param.new(MACRO_TYPE, "parmN"),
-        ]),
-        va_arg: Func.new(MACRO_TYPE, "va_arg", [
-          Param.new(Type.simple("va_list"), "ap"),
-          Param.new(MACRO_TYPE, "T"),
-        ]),
-        va_end: Func.new(Type.void(), "ap", [
-          Param.new(Type.simple("va_list"), "ap"),
-        ]),
-        va_copy: Func.new(Type.void(), "va_copy", [
-          Param.new(Type.simple("va_list"), "dest"),
-          Param.new(Type.simple("va_list"), "src"),
-        ]),
-      },
-    },
-  ],
-});
+export const stdarg = {
+  include: Include.system("stdarg.h"),
+  va_start: Func.new(Type.void(), "va_start", [
+    Param.new(Type.simple("va_list"), "ap"),
+    Param.new(MACRO_TYPE, "parmN"),
+  ]),
+  va_arg: Func.new(MACRO_TYPE, "va_arg", [
+    Param.new(Type.simple("va_list"), "ap"),
+    Param.new(MACRO_TYPE, "T"),
+  ]),
+  va_end: Func.new(Type.void(), "ap", [
+    Param.new(Type.simple("va_list"), "ap"),
+  ]),
+  va_copy: Func.new(Type.void(), "va_copy", [
+    Param.new(Type.simple("va_list"), "dest"),
+    Param.new(Type.simple("va_list"), "src"),
+  ]),
+};
 
 /**
  * Helper class for implementing a var arg function parameter.

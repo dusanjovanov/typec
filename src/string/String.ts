@@ -11,8 +11,7 @@ import { slice } from "./slice";
 
 /** typec string library */
 export const tcstring = lib({
-  externals: [],
-  internals: {
+  api: {
     concat,
     indexOf,
     slice,
