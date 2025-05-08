@@ -1,5 +1,4 @@
 export * from "./app";
-export * from "./array";
 export * from "./chunk";
 export * from "./condition";
 export * from "./constants";
@@ -16,7 +15,6 @@ export * from "./param";
 export * from "./std";
 export * from "./string";
 export * from "./struct";
-export * from "./structVar";
 export * from "./type";
 export * from "./types";
 export * from "./union";

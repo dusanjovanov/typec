@@ -1,12 +1,11 @@
 import { Block } from "./chunk";
 import { RValue } from "./rValue";
-import { StructVar } from "./structVar";
 import { Type } from "./type";
 import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
 
 /** Used for declaring and working with structs. */
 export class Struct<Members extends GenericMembers = any> extends RValue {
-  constructor(name: string, members: Members) {
+  constructor(members: Members, name: string | null = null) {
     super(`struct ${name}`);
     this.name = name;
     this.members = members;
@@ -34,25 +33,12 @@ export class Struct<Members extends GenericMembers = any> extends RValue {
     return Type.structPointer(this.name, typeQualifiers, pointerQualifiers);
   }
 
-  /** Returns a StructVar to hold an instance of this Struct. */
-  var(name: string, qualifiers?: TypeQualifier[]) {
-    return StructVar.new(this.type(qualifiers), name, this.members);
-  }
-
-  /** Returns a StructVar to hold a `pointer` to an instance of this Struct. */
-  pointer(
-    name: string,
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return StructVar.new(
-      this.pointerType(typeQualifiers, pointerQualifiers),
-      name,
-      this.members
-    );
-  }
-
   static new<Members extends GenericMembers>(name: string, members: Members) {
-    return new Struct(name, members);
+    return new Struct(members, name);
+  }
+
+  /** Create an anonymous Struct. */
+  static anon<Members extends GenericMembers>(members: Members) {
+    return new Struct(members);
   }
 }

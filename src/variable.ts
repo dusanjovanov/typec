@@ -1,7 +1,11 @@
+import { semicolon } from "./chunk";
+import { Lit } from "./literal";
 import { Operator } from "./operators";
 import { RValue } from "./rValue";
-import { Type } from "./type";
+import type { Struct } from "./struct";
+import { Type, type ArrayType } from "./type";
 import type { CodeLike, PointerQualifier, TypeQualifier } from "./types";
+import { Value } from "./value";
 
 /** Used for working with simple and pointer variables. */
 export class Var extends RValue {
@@ -14,13 +18,51 @@ export class Var extends RValue {
   type;
   name;
 
+  private declareArray(type: ArrayType) {
+    let str = `${type.elementType} ${this.name}`;
+
+    if (type.length == null) {
+      str += "[]";
+    }
+    //
+    else if (Array.isArray(type.length)) {
+      str += type.length.map((l) => `[${l}]`).join("");
+    }
+    //
+    else {
+      str += `[${type.length}]`;
+    }
+
+    return str;
+  }
+
+  isArray() {
+    return this.type.desc.kind === "array";
+  }
+
   /** Returns the variable declaration statement. */
   declare() {
+    if (this.isArray()) {
+      return this.declareArray(this.type.desc as ArrayType);
+    }
     return `${this.type} ${this.name}`;
   }
 
-  /** Returns the reference expression for this variable. `&name` */
+  /**
+   * Returns the reference expression for this variable. `&name`.
+   *
+   * For arrays, it returns the array's name as a Value, which is what you usually want ( i.e. the reference to the first element of the array ).
+   *
+   * If you want the ref to the array itself - use `refArray`.
+   */
   ref() {
+    if (this.isArray()) {
+      return Value.new(this.name);
+    }
+    return Operator.ref(this.name);
+  }
+
+  refArray() {
     return Operator.ref(this.name);
   }
 
@@ -32,6 +74,32 @@ export class Var extends RValue {
   /** Initialize with a value. */
   init(value: CodeLike) {
     return Operator.assign(this.declare(), value);
+  }
+
+  /** Returns the compound initialization. */
+  initCompound(...values: CodeLike[]) {
+    return Operator.assign(this.declare(), semicolon(Lit.compound(...values)));
+  }
+
+  /** Returns the designated sub initialization. */
+  initDesignatedSub(values: Record<number, CodeLike>) {
+    return Operator.assign(
+      this.declare(),
+      semicolon(Lit.designatedSub(values))
+    );
+  }
+
+  /** Initialize with a designated dot initializer. */
+  initDesignatedDot(values: Record<string | number, CodeLike>) {
+    return Operator.assign(
+      this.declare(),
+      semicolon(Lit.designatedDot(values))
+    );
+  }
+
+  /** Simple member initializer. */
+  initSimple(value: CodeLike) {
+    return Operator.assign(this.declare(), Lit.simpleMember(value));
   }
 
   /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
@@ -104,6 +172,27 @@ export class Var extends RValue {
 
   static float(name: string, typeQualifiers?: TypeQualifier[]) {
     return Var.new(Type.float(typeQualifiers), name);
+  }
+
+  static array(
+    name: string,
+    elementType: Type,
+    length: number | number[] | undefined = undefined
+  ) {
+    return Var.new(Type.array(elementType, length), name);
+  }
+
+  static struct(name: string, s: Struct, typeQualifiers?: TypeQualifier[]) {
+    return Var.new(s.type(typeQualifiers), name);
+  }
+
+  static structPointer(
+    name: string,
+    s: Struct,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Var.new(s.pointerType(typeQualifiers, pointerQualifiers), name);
   }
 
   /** Pointer variable for char*. */

@@ -104,7 +104,10 @@ export class Type {
     return Type.simplePointer("float", typeQualifiers, pointerQualifiers);
   }
 
-  static array(elementType: Type, length?: number | number[]) {
+  static array(
+    elementType: Type,
+    length: number | number[] | undefined = undefined
+  ) {
     return Type.new({ kind: "array", elementType, length });
   }
 
@@ -112,24 +115,24 @@ export class Type {
     return Type.new({ kind: "func", returnType, paramTypes, hasVarArgs });
   }
 
-  static struct(name: string, qualifiers: TypeQualifier[] = []) {
+  static struct(name: string | null, qualifiers: TypeQualifier[] = []) {
     return Type.new({ kind: "struct", name, qualifiers });
   }
 
   static structPointer(
-    name: string,
+    name: string | null,
     typeQualifiers: TypeQualifier[] = [],
     pointerQualifiers: PointerQualifier[] = []
   ) {
     return Type.pointer(Type.struct(name, typeQualifiers), pointerQualifiers);
   }
 
-  static union(name: string, qualifiers: TypeQualifier[] = []) {
+  static union(name: string | null, qualifiers: TypeQualifier[] = []) {
     return Type.new({ kind: "union", name, qualifiers });
   }
 
   static unionPointer(
-    name: string,
+    name: string | null,
     typeQualifiers: TypeQualifier[] = [],
     pointerQualifiers: PointerQualifier[] = []
   ) {
@@ -278,13 +281,13 @@ export type FuncType = {
 
 export type StructType = {
   kind: "struct";
-  name: string;
+  name: string | null;
   qualifiers: TypeQualifier[];
 };
 
 export type UnionType = {
   kind: "union";
-  name: string;
+  name: string | null;
   qualifiers: TypeQualifier[];
 };
 

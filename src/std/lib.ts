@@ -1,11 +1,14 @@
 import { Func } from "../func";
 import { Include } from "../include";
+import { Operator } from "../operators";
 import { Param } from "../param";
 import { Type } from "../type";
 
+const malloc = Func.new(Type.voidPointer(), "malloc", [Param.size_t("_Size")]);
+
 export const stdlib = {
   include: Include.system("stdlib.h"),
-  malloc: Func.new(Type.voidPointer(), "malloc", [Param.size_t("_Size")]),
+  malloc,
   calloc: Func.new(Type.voidPointer(), "calloc", [
     Param.size_t("_Count"),
     Param.size_t("_Size"),
@@ -17,4 +20,7 @@ export const stdlib = {
   free: Func.new(Type.void(), "free", [
     Param.new(Type.voidPointer(), "_Block"),
   ]),
+  mallocForType: (type: Type) => {
+    return malloc.call(Operator.sizeOf(type));
+  },
 };

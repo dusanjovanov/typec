@@ -1,10 +1,9 @@
 import { Block } from "./chunk";
 import { Type } from "./type";
 import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
-import { UnionVar } from "./unionVar";
 
 export class Union<Members extends GenericMembers = any> {
-  constructor(name: string, members: Members) {
+  constructor(members: Members, name: string | null = null) {
     this.name = name;
     this.members = members;
   }
@@ -31,25 +30,13 @@ export class Union<Members extends GenericMembers = any> {
     return Type.unionPointer(this.name, typeQualifiers, pointerQualifiers);
   }
 
-  /** Returns a UnionVar to hold an instance of this Union. */
-  var(name: string, qualifiers?: TypeQualifier[]) {
-    return UnionVar.new(this.type(qualifiers), name, this.members);
-  }
-
-  /** Returns a UnionVar to hold a `pointer` to an instance of this Union. */
-  pointer(
-    name: string,
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return UnionVar.new(
-      this.pointerType(typeQualifiers, pointerQualifiers),
-      name,
-      this.members
-    );
-  }
-
+  /** Create a named union. */
   static new<Members extends GenericMembers>(name: string, members: Members) {
-    return new Union(name, members);
+    return new Union(members, name);
+  }
+
+  /** Create an anonymous Union. */
+  static anon<Members extends GenericMembers>(members: Members) {
+    return new Union(members);
   }
 }

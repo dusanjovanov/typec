@@ -16,6 +16,15 @@ export class Lit {
   }
 
   /**
+   * multiline string literal
+   *
+   * Same as `string`, but for multiple strings each on a new line.
+   */
+  static multilineString(...strings: string[]) {
+    return strings.map((s) => Lit.string(s)).join("\n");
+  }
+
+  /**
    * Returns the same char string enclosed in single quotes and escapes the single quote char.
    *
    * `'a'`
