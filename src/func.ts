@@ -14,7 +14,7 @@ export class Func<
     returnType: Type,
     name: string,
     params: Params,
-    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
     this.returnType = returnType;
@@ -40,7 +40,6 @@ export class Func<
   hasVarArgs;
   _params;
   _paramTypes;
-  _subs = new Set<FuncSubscriber<this>>();
 
   /** Returns the address of this function. */
   ref() {
@@ -81,7 +80,6 @@ export class Func<
 
   /** Returns this function's call expression. */
   call(...args: FuncArgs<Params, VarArgs>) {
-    this._subs.forEach((s) => s(this));
     const _args = args.slice(0, this._params.length);
     if (this.hasVarArgs) {
       _args.push(...args.slice(this._params.length));
@@ -153,7 +151,9 @@ export type FuncParamsByName<Params extends readonly Param[]> =
       : Record<First["name"], First>
     : {};
 
-type FuncSubscriber<T extends Func<any, any>> = (func: T) => void;
+export type BodyFn<Params extends readonly Param[]> = (arg: {
+  params: FuncParamsByName<Params>;
+}) => CodeLike[];
 
 const emptyFalsy = <T>(
   value: T | null | undefined | boolean,
