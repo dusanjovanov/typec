@@ -1,6 +1,6 @@
 import type { Type } from "./type";
 import type { CodeLike } from "./types";
-import { emptyFalsy, joinArgs } from "./utils";
+import { emptyFalsy, emptyNotFalse, joinArgs } from "./utils";
 import { Value } from "./value";
 
 const preUn = (op: string) => (exp: CodeLike) => Value.new(`${op}${exp}`);
@@ -123,11 +123,15 @@ export class Operator {
 
   /** Returns a return statement expression. */
   static return(value?: CodeLike) {
-    return Value.new(`return${emptyFalsy(value, (v) => ` ${v}`)}`);
+    return Value.new(`return${emptyNotFalse(value, (v) => ` ${v}`)}`);
   }
 
   /** Returns a function call expression. */
-  static call(fnName: string, args: CodeLike[]) {
+  static call(fnName: CodeLike, args: CodeLike[]) {
     return Value.new(`${fnName}(${emptyFalsy(args, joinArgs)})`);
+  }
+
+  static parens(exp: CodeLike) {
+    return Value.new(`(${exp})`);
   }
 }

@@ -1,14 +1,14 @@
 import { Chunk } from "../chunk";
 import { MACRO_TYPE } from "../constants";
+import { Directive } from "../directive";
 import { Func } from "../func";
-import { Include } from "../include";
 import { Param } from "../param";
 import { Type } from "../type";
 import type { CodeLike } from "../types";
 import { Var } from "../variable";
 
 export const stdarg = {
-  include: Include.system("stdarg.h"),
+  include: Directive.includeSystem("stdarg.h"),
   va_start: Func.new(Type.void(), "va_start", [
     Param.new(Type.simple("va_list"), "ap"),
     Param.new(MACRO_TYPE, "parmN"),
@@ -56,7 +56,7 @@ export class VarArgs {
    * You have to pass the name of the last fixed param of the function.
    */
   declareAndStart(nameOfLastFixedParam: CodeLike) {
-    return Chunk.new([this.declare(), this.start(nameOfLastFixedParam)]);
+    return Chunk.new(this.declare(), this.start(nameOfLastFixedParam));
   }
 
   /** Get the next arg. You have to pass it's type. */

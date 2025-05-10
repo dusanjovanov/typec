@@ -1,5 +1,5 @@
+import { Directive } from "../directive";
 import { Func } from "../func";
-import { Include } from "../include";
 import { Operator } from "../operators";
 import { Param } from "../param";
 import { Type } from "../type";
@@ -7,7 +7,7 @@ import { Type } from "../type";
 const malloc = Func.new(Type.voidPointer(), "malloc", [Param.size_t("_Size")]);
 
 export const stdlib = {
-  include: Include.system("stdlib.h"),
+  include: Directive.includeSystem("stdlib.h"),
   malloc,
   calloc: Func.new(Type.voidPointer(), "calloc", [
     Param.size_t("_Count"),

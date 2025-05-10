@@ -1,3 +1,4 @@
+import { Chunk } from "./chunk";
 import { Condition } from "./condition";
 import { Operator } from "./operators";
 import type { Type } from "./type";
@@ -192,5 +193,73 @@ export class RValue {
   /** Access a member of the struct through a pointer. */
   arrow(key: CodeLike) {
     return Operator.arrow(this, key);
+  }
+
+  /** Returns the reference expression for this value. `&expression`. */
+  ref() {
+    return Operator.ref(this);
+  }
+
+  assignMultipleArrow(values: Record<string, CodeLike>) {
+    return Chunk.new(
+      ...Object.entries(values).map(([key, value]) => {
+        return this.arrow(key).assign(value);
+      })
+    );
+  }
+
+  /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
+  subAssign(index: CodeLike, value: CodeLike) {
+    return Operator.assign(Operator.subscript(this, index), value);
+  }
+
+  /** `+=` */
+  plusAssign(value: CodeLike) {
+    return Operator.plusAssign(this, value);
+  }
+
+  /** `-=` */
+  minusAssign(value: CodeLike) {
+    return Operator.minusAssign(this, value);
+  }
+
+  /** `*=` */
+  mulAssign(value: CodeLike) {
+    return Operator.mulAssign(this, value);
+  }
+
+  /** `/=` */
+  divAssign(value: CodeLike) {
+    return Operator.divAssign(this, value);
+  }
+
+  /** `%=` */
+  moduloAssign(value: CodeLike) {
+    return Operator.moduloAssign(this, value);
+  }
+
+  /** Wraps the expression in parenthesis. */
+  parens() {
+    return Operator.parens(this);
+  }
+
+  postInc() {
+    return Operator.postInc(this);
+  }
+
+  postDec() {
+    return Operator.postDec(this);
+  }
+
+  preInc() {
+    return Operator.preInc(this);
+  }
+
+  preDec() {
+    return Operator.preDec(this);
+  }
+
+  call(...args: CodeLike[]) {
+    return Operator.call(this, args);
   }
 }

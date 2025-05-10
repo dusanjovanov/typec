@@ -71,8 +71,12 @@ export class Func<
     if (!this.body) return "";
 
     return `${this.declare()}${Block.new(
-      this.body({ params: this.params }) ?? []
+      ...(this.body({ params: this.params }) ?? [])
     )}`;
+  }
+
+  embed() {
+    return this.define();
   }
 
   /** Returns this function's call expression. */

@@ -36,7 +36,7 @@ export class Chunk {
       .join(`\n`);
   }
 
-  static new(statements: CodeLike[]) {
+  static new(...statements: CodeLike[]) {
     return new Chunk(statements);
   }
 }
@@ -44,7 +44,7 @@ export class Chunk {
 /** A block of code or chunk within curly braces. Can be stringified. */
 export class Block {
   constructor(statements: CodeLike[]) {
-    this.chunk = Chunk.new(statements);
+    this.chunk = Chunk.new(...statements);
   }
   chunk;
 
@@ -57,7 +57,7 @@ export class Block {
     return `\n${curly(`\n${this.chunk}\n`)}`;
   }
 
-  static new(statements: CodeLike[]) {
+  static new(...statements: CodeLike[]) {
     return new Block(statements);
   }
 }

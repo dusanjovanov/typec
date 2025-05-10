@@ -2,6 +2,7 @@ import { Block } from "./chunk";
 import { Type } from "./type";
 import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
 
+/** Used for declaring and working with unions. */
 export class Union<Members extends GenericMembers = any> {
   constructor(members: Members, name: string | null = null) {
     this.name = name;
@@ -12,14 +13,12 @@ export class Union<Members extends GenericMembers = any> {
 
   /** Returns the union declaration ( definition ). */
   declare() {
-    return `union ${this.name}${Block.new(
-      Object.entries(this.members).map(([name, type]) => `${type} ${name}`)
-    )};`;
+    return `union ${this.name}${Union.membersBlock(this.members)};`;
   }
 
   /** Get a union var type for this Union. */
   type(qualifiers?: TypeQualifier[]) {
-    return Type.union(this.name, qualifiers);
+    return Type.union(this.name, this.members, qualifiers);
   }
 
   /** Get a union pointer var type for this Union. */
@@ -27,7 +26,19 @@ export class Union<Members extends GenericMembers = any> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.unionPointer(this.name, typeQualifiers, pointerQualifiers);
+    return Type.unionPointer(
+      this.name,
+      this.members,
+      typeQualifiers,
+      pointerQualifiers
+    );
+  }
+
+  /** Generates a block of union members. */
+  static membersBlock(members: GenericMembers) {
+    return Block.new(
+      ...Object.entries(members).map(([name, type]) => `${type} ${name}`)
+    );
   }
 
   /** Create a named union. */

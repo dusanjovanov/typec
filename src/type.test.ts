@@ -117,11 +117,11 @@ describe("Struct", () => {
 
 describe("Union", () => {
   test("simple", () => {
-    const type = Type.union("Test");
+    const type = Type.union("Test", {});
     expect(type.str).toBe(`union Test`);
   });
   test("const", () => {
-    const type = Type.union("Test", ["const"]);
+    const type = Type.union("Test", {}, ["const"]);
     expect(type.str).toBe(`const union Test`);
   });
 });

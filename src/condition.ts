@@ -3,23 +3,23 @@ import type { CodeLike } from "./types";
 
 export class Condition {
   constructor(condition: CodeLike, body: CodeLike[]) {
-    this.str.push(condBlock("if", condition, body));
+    this.statements.push(condBlock("if", condition, body));
   }
   kind = "condition" as const;
-  str: CodeLike[] = [];
+  statements: CodeLike[] = [];
 
   elseif(condition: CodeLike, body: CodeLike[]) {
-    this.str.push(condBlock("else if", condition, body));
+    this.statements.push(condBlock("else if", condition, body));
     return this;
   }
 
   else(body: CodeLike[]) {
-    this.str.push(`else${Block.new(body)}`);
+    this.statements.push(`else${Block.new(...body)}`);
     return this;
   }
 
   toString() {
-    return Chunk.new(this.str).toString();
+    return Chunk.new(...this.statements).toString();
   }
 
   /**
@@ -37,7 +37,7 @@ const condBlock = (
   condition: CodeLike,
   body: CodeLike[]
 ) => {
-  return `${type}(${condition})${Block.new(body)}`;
+  return `${type}(${condition})${Block.new(...body)}`;
 };
 
 type CondBlockType = "if" | "else if";

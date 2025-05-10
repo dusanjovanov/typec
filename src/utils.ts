@@ -21,6 +21,20 @@ export const emptyFalsy = <T>(
   return format ? format(value as T) : String(value);
 };
 
+export const emptyNotFalse = <T>(
+  value: T | null | undefined | boolean,
+  format?: (str: T) => string
+) => {
+  const isEmpty =
+    value == null ||
+    (Array.isArray(value) && value.length === 0) ||
+    value === "";
+
+  if (isEmpty) return "";
+
+  return format ? format(value as T) : String(value);
+};
+
 export const join = (arr: CodeLike[], sep = " ") => {
   return arr.filter((v) => v != null).join(sep);
 };

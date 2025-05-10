@@ -1,4 +1,11 @@
-import type { AutoSimpleType, PointerQualifier, TypeQualifier } from "./types";
+import { Operator } from "./operators";
+import type {
+  AutoSimpleType,
+  GenericMembers,
+  PointerQualifier,
+  TypeQualifier,
+} from "./types";
+import { Union } from "./union";
 import { emptyFalsy, join, joinArgs, stringSplice } from "./utils";
 
 /** Used for generating C type syntax. */
@@ -13,6 +20,21 @@ export class Type {
   /** Create a pointer to this type. */
   pointer(qualifiers?: PointerQualifier[]) {
     return Type.pointer(this, qualifiers);
+  }
+
+  /** Add the `const` modifier to the type. */
+  const() {
+    if ("qualifiers" in this.desc) {
+      return Type.new({
+        ...this.desc,
+        qualifiers: [...(this.desc.qualifiers as any[]), "const"],
+      });
+    }
+    return this;
+  }
+
+  sizeOf() {
+    return Operator.sizeOf(this);
   }
 
   toString() {
@@ -83,6 +105,18 @@ export class Type {
     return Type.simplePointer("char", typeQualifiers, pointerQualifiers);
   }
 
+  /** `const char*` */
+  static constString(
+    typeQualifiers: TypeQualifier[] = [],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Type.simplePointer(
+      "char",
+      ["const", ...typeQualifiers],
+      pointerQualifiers
+    );
+  }
+
   static intPointer(
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
@@ -127,16 +161,24 @@ export class Type {
     return Type.pointer(Type.struct(name, typeQualifiers), pointerQualifiers);
   }
 
-  static union(name: string | null, qualifiers: TypeQualifier[] = []) {
-    return Type.new({ kind: "union", name, qualifiers });
+  static union(
+    name: string | null,
+    members: GenericMembers,
+    qualifiers: TypeQualifier[] = []
+  ) {
+    return Type.new({ kind: "union", name, members, qualifiers });
   }
 
   static unionPointer(
     name: string | null,
+    members: GenericMembers,
     typeQualifiers: TypeQualifier[] = [],
     pointerQualifiers: PointerQualifier[] = []
   ) {
-    return Type.pointer(Type.union(name, typeQualifiers), pointerQualifiers);
+    return Type.pointer(
+      Type.union(name, members, typeQualifiers),
+      pointerQualifiers
+    );
   }
 
   static enum(name: string, qualifiers: TypeQualifier[] = []) {
@@ -180,7 +222,7 @@ export class Type {
         //
         else {
           return `${retStr} (${joinArgs(desc.paramTypes)}${emptyFalsy(
-            desc.hasVarArgs,
+            desc.hasVarArgs === false ? null : desc.hasVarArgs,
             () => `,...`
           )})`;
         }
@@ -189,6 +231,9 @@ export class Type {
         return `${emptyFalsy(this.qualifiersBefore(desc))}struct ${desc.name}`;
       }
       case "union": {
+        if (desc.name == null) {
+          return `union ${Union.membersBlock(desc.members)}`;
+        }
         return `${emptyFalsy(this.qualifiersBefore(desc))}union ${desc.name}`;
       }
       case "enum": {
@@ -288,6 +333,7 @@ export type StructType = {
 export type UnionType = {
   kind: "union";
   name: string | null;
+  members: GenericMembers;
   qualifiers: TypeQualifier[];
 };
 

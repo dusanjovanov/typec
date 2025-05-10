@@ -1,7 +1,9 @@
 import { Block } from "./chunk";
+import { Param } from "./param";
 import { RValue } from "./rValue";
 import { Type } from "./type";
 import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
+import { Var } from "./variable";
 
 /** Used for declaring and working with structs. */
 export class Struct<Members extends GenericMembers = any> extends RValue {
@@ -16,8 +18,12 @@ export class Struct<Members extends GenericMembers = any> extends RValue {
   /** Returns the struct declaration ( definition ). */
   declare() {
     return `struct ${this.name}${Block.new(
-      Object.entries(this.members).map(([name, type]) => `${type} ${name}`)
+      ...Object.entries(this.members).map(([name, type]) => `${type} ${name}`)
     )};`;
+  }
+
+  embed() {
+    return this.declare();
   }
 
   /** Get a struct var type for this struct. */
@@ -31,6 +37,30 @@ export class Struct<Members extends GenericMembers = any> extends RValue {
     pointerQualifiers?: PointerQualifier[]
   ) {
     return Type.structPointer(this.name, typeQualifiers, pointerQualifiers);
+  }
+
+  var(name: string, typeQualifiers?: TypeQualifier[]) {
+    return Var.new(this.type(typeQualifiers), name);
+  }
+
+  pointer(
+    name: string,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Var.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
+  }
+
+  param<Name extends string>(name: Name, typeQualifiers?: TypeQualifier[]) {
+    return Param.new(this.type(typeQualifiers), name);
+  }
+
+  pointerParam<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Param.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
   }
 
   static new<Members extends GenericMembers>(name: string, members: Members) {

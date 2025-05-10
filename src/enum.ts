@@ -1,7 +1,7 @@
-import { Block } from "./chunk";
-import { NULL } from "./constants";
+import { curly } from "./chunk";
 import { Type } from "./type";
 import type { PointerQualifier, TypeQualifier } from "./types";
+import { join } from "./utils";
 import { Value } from "./value";
 import { Var } from "./variable";
 
@@ -12,17 +12,12 @@ export class Enum<Values extends Record<string, string | number | null>> {
     this.__values = values;
 
     const keys: Record<string, any> = {};
-    const newValues: Record<string, any> = {};
 
-    Object.entries(values).forEach(([name, value]) => {
+    Object.keys(values).forEach((name) => {
       keys[name] = Value.new(name);
-      newValues[name] = value ? Value.new(value) : NULL;
     });
 
     this.keys = keys as {
-      [key in keyof Values]: Value;
-    };
-    this.values = newValues as {
       [key in keyof Values]: Value;
     };
   }
@@ -43,29 +38,23 @@ export class Enum<Values extends Record<string, string | number | null>> {
    * ```
    */
   keys;
-  /**
-   * Access the values of the enum defined values by name.
-   *
-   * typec doesn't automatically increment enum values like C does,
-   * so if you passed null when defining a value, you're going to get a null when accessing it.
-   *
-   * ```ts
-   * const myEnum = Enum.new("my_enum", {
-   *  A: 0,
-   *  B: 1,
-   *  C: null
-   * })
-   *
-   * myEnum.values.A === Value(0)
-   * myEnum.values.C === Value(NULL)
-   * ```
-   */
-  values;
 
   declare() {
-    return `enum ${this.name}${Block.new(
-      Object.entries(this.__values).map(([name, value]) => `${name}=${value}`)
-    )}`;
+    return `enum ${this.name}${curly(
+      join(
+        Object.entries(this.__values).map(([name, value]) => {
+          if (value == null) {
+            return name;
+          }
+          return `${name}=${value}`;
+        }),
+        ","
+      )
+    )};`;
+  }
+
+  embed() {
+    return this.declare();
   }
 
   /** Get a variable type for this enum. */
@@ -99,6 +88,25 @@ export class Enum<Values extends Record<string, string | number | null>> {
     name: string,
     values: Values
   ) {
-    return new Enum(name, values);
+    return new Enum<Values>(name, values);
+  }
+
+  /** Api-only Enum that comes from an external library. */
+  static api<const Keys extends readonly string[]>(name: string, keys: Keys) {
+    return new Enum(
+      name,
+      keys.reduce((prev, key) => {
+        (prev as any)[key] = null;
+        return prev;
+      }, {} as ValuesFromKeys<Keys>)
+    );
   }
 }
+
+type ValuesFromKeys<Keys extends readonly string[]> = Keys extends readonly []
+  ? {}
+  : Keys extends readonly [infer First extends string, ...infer Rest]
+  ? Rest extends readonly string[]
+    ? Record<First, null> & ValuesFromKeys<Rest>
+    : Record<First, null>
+  : {};

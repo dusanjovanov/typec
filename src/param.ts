@@ -9,6 +9,13 @@ export class Param<Name extends string = any> extends Var {
   }
   name;
 
+  static int<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[]
+  ) {
+    return Param.new(Type.int(typeQualifiers), name);
+  }
+
   static size_t<Name extends string>(
     name: Name,
     typeQualifiers?: TypeQualifier[]

@@ -102,50 +102,6 @@ export class Var extends RValue {
     return Operator.assign(this.declare(), Lit.simpleMember(value));
   }
 
-  /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
-  subAssign(index: CodeLike, value: CodeLike) {
-    return Operator.assign(Operator.subscript(this.name, index), value);
-  }
-
-  plusAssign(value: CodeLike) {
-    return Operator.plusAssign(this, value);
-  }
-
-  minusAssign(value: CodeLike) {
-    return Operator.minusAssign(this, value);
-  }
-
-  /** `*=` */
-  mulAssign(value: CodeLike) {
-    return Operator.mulAssign(this, value);
-  }
-
-  /** `/=` */
-  divAssign(value: CodeLike) {
-    return Operator.divAssign(this, value);
-  }
-
-  /** `%=` */
-  moduloAssign(value: CodeLike) {
-    return Operator.moduloAssign(this, value);
-  }
-
-  postInc() {
-    return Operator.postInc(this);
-  }
-
-  postDec() {
-    return Operator.postDec(this);
-  }
-
-  preInc() {
-    return Operator.preInc(this);
-  }
-
-  preDec() {
-    return Operator.preDec(this);
-  }
-
   static new(type: Type, name: string) {
     return new Var(type, name);
   }
@@ -175,20 +131,20 @@ export class Var extends RValue {
   }
 
   static array(
-    name: string,
     elementType: Type,
+    name: string,
     length: number | number[] | undefined = undefined
   ) {
     return Var.new(Type.array(elementType, length), name);
   }
 
-  static struct(name: string, s: Struct, typeQualifiers?: TypeQualifier[]) {
+  static struct(s: Struct, name: string, typeQualifiers?: TypeQualifier[]) {
     return Var.new(s.type(typeQualifiers), name);
   }
 
   static structPointer(
-    name: string,
     s: Struct,
+    name: string,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {

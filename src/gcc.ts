@@ -1,49 +1,72 @@
-import { emptyFalsy, join, joinArgs, joinWithPrefix } from "./utils";
+import { join, joinArgs, joinWithPrefix } from "./utils";
 
 /**
  * Helper to generate a gcc compiler command.
  */
-export const gcc = ({
-  path,
-  output,
-  includeSearchPaths,
-  autoIncludePaths,
-  systemIncludePaths,
-  libs,
-  libSearchPaths,
-  allWarnings = false,
-  allWarningsAreErrors = false,
-  stoppingStage,
-  saveTempFiles = false,
-  verbose = false,
-  isStatic = false,
-  linkerOptions,
-  optimizationLevel,
-}: GccOptions) => {
+export const gcc = (options: GccOptions) => {
   return join([
-    `gcc`,
-    path,
-    emptyFalsy(stoppingStage, (s) => {
-      if (s === "preprocessing") return "-E";
-      if (s === "compilation") return "-S";
-      if (s === "assembly") return "-c";
-      return "";
-    }),
-    emptyFalsy(optimizationLevel, (s) => `-O${s}`),
-    emptyFalsy(linkerOptions, (arr) =>
-      emptyFalsy(arr, () => `-Wl,${joinArgs(arr)}`)
-    ),
-    emptyFalsy(saveTempFiles, () => `-save-temps`),
-    emptyFalsy(allWarnings, () => `-Wall`),
-    emptyFalsy(allWarningsAreErrors, () => `-Werror`),
-    emptyFalsy(verbose, () => `-v`),
-    emptyFalsy(autoIncludePaths, (p) => joinWithPrefix(p, "-include")),
-    emptyFalsy(includeSearchPaths, (p) => joinWithPrefix(p, "-I")),
-    emptyFalsy(systemIncludePaths, (p) => joinWithPrefix(p, "-isystem")),
-    emptyFalsy(libSearchPaths, (p) => joinWithPrefix(p, "-L")),
-    emptyFalsy(libs, (p) => joinWithPrefix(p, "-l")),
-    emptyFalsy(isStatic, () => `-static`),
-    emptyFalsy(output, (s) => `-o ${s}`),
+    "gcc",
+    ...(Object.entries(options)
+      .map(([key, value]) => {
+        if (
+          value == null ||
+          value === false ||
+          (Array.isArray(value) && value.length === 0)
+        )
+          return null;
+
+        switch (key) {
+          case "path": {
+            return value;
+          }
+          case "stoppingStage": {
+            if (value === "preprocessing") return "-E";
+            if (value === "compilation") return "-S";
+            if (value === "assembly") return "-c";
+            return "";
+          }
+          case "optimizationLevel": {
+            return `-O${value}`;
+          }
+          case "linkerOptions": {
+            return `-Wl,${joinArgs(value as any[])}`;
+          }
+          case "saveTempFiles": {
+            return `-save-temps`;
+          }
+          case "allWarnings": {
+            return `-Wall`;
+          }
+          case "allWarningsAreErrors": {
+            return `-Werror`;
+          }
+          case "verbose": {
+            return `-v`;
+          }
+          case "autoIncludePaths": {
+            return joinWithPrefix(value as any[], "-include");
+          }
+          case "includeSearchPaths": {
+            return joinWithPrefix(value as any[], "-I");
+          }
+          case "systemIncludePaths": {
+            return joinWithPrefix(value as any[], "-isystem");
+          }
+          case "libSearchPaths": {
+            return joinWithPrefix(value as any[], "-L");
+          }
+          case "libs": {
+            return joinWithPrefix(value as any[], "-l");
+          }
+          case "isStatic": {
+            return `-static`;
+          }
+          case "output": {
+            return `-o ${value}`;
+          }
+        }
+      })
+      .filter(Boolean) as string[]),
   ]);
 };
 
