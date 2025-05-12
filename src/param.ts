@@ -39,6 +39,13 @@ export class Param<Name extends string = any> extends Var {
     return Param.new(Type.float(typeQualifiers), name);
   }
 
+  static double<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[]
+  ) {
+    return Param.new(Type.double(typeQualifiers), name);
+  }
+
   static new<Name extends string = any>(type: Type, name: Name) {
     return new Param(type, name);
   }

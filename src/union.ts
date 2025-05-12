@@ -22,16 +22,6 @@ export class Union {
     return Type.union(this.name, this.members, qualifiers);
   }
 
-  /** Get a union pointer var type for this Union. */
-  pointerType(
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Type.union(this.name, this.members, typeQualifiers).pointer(
-      pointerQualifiers
-    );
-  }
-
   var(name: string, typeQualifiers?: TypeQualifier[]) {
     return Var.new(this.type(typeQualifiers), name);
   }
@@ -41,7 +31,7 @@ export class Union {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
+    return Var.new(this.type(typeQualifiers).pointer(pointerQualifiers), name);
   }
 
   param<Name extends string>(name: Name, typeQualifiers?: TypeQualifier[]) {
@@ -53,7 +43,10 @@ export class Union {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Param.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
+    return Param.new(
+      this.type(typeQualifiers).pointer(pointerQualifiers),
+      name
+    );
   }
 
   /** Create a named union. */

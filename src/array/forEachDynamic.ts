@@ -17,7 +17,7 @@ export const forEachDynamicCallback = (
   name: string,
   body: BodyFn<typeof forEachDynamicParams>
 ) => {
-  return Func.new(Type.void(), name, forEachDynamicParams, body);
+  return Func.void(name, forEachDynamicParams, body);
 };
 
 export const forEachDynamic = Func.void(

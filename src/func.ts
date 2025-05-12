@@ -2,7 +2,7 @@ import { Block } from "./chunk";
 import { Operator } from "./operators";
 import type { Param } from "./param";
 import { Type } from "./type";
-import { type CodeLike } from "./types";
+import { type CodeLike, type FuncArgsFromParams } from "./types";
 
 /** Used for creating and using functions or just declaring and using their api if they come from C libraries. */
 export class Func<
@@ -97,6 +97,45 @@ export class Func<
     return new Func(Type.void(), name, params, body, options);
   }
 
+  /** Shortcut for the `bool` return type. */
+  static bool<
+    const Params extends readonly Param[],
+    VarArgs extends boolean = false
+  >(
+    name: string,
+    params: Params,
+    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    options?: FuncOptions<VarArgs>
+  ) {
+    return new Func(Type.bool(), name, params, body, options);
+  }
+
+  /** Shortcut for the `int` return type. */
+  static int<
+    const Params extends readonly Param[],
+    VarArgs extends boolean = false
+  >(
+    name: string,
+    params: Params,
+    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    options?: FuncOptions<VarArgs>
+  ) {
+    return new Func(Type.int(), name, params, body, options);
+  }
+
+  /** Shortcut for the `double` return type. */
+  static double<
+    const Params extends readonly Param[],
+    VarArgs extends boolean = false
+  >(
+    name: string,
+    params: Params,
+    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    options?: FuncOptions<VarArgs>
+  ) {
+    return new Func(Type.double(), name, params, body, options);
+  }
+
   static new<
     const Params extends readonly Param[],
     VarArgs extends boolean = false
@@ -121,10 +160,6 @@ export type FuncArgs<
 > = VarArgs extends false
   ? FuncArgsFromParams<Params>
   : [...FuncArgsFromParams<Params>, ...CodeLike[]];
-
-type FuncArgsFromParams<Params extends readonly Param[]> = {
-  [index in keyof Params]: CodeLike;
-};
 
 export type FuncParamsByName<Params extends readonly Param[]> =
   Params extends []

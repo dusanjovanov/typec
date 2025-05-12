@@ -5,7 +5,7 @@ import { Type } from "../type";
 import { Var } from "../variable";
 import { DynamicArray } from "./types";
 
-export const insert = Func.void(
+export const insertDynamic = Func.void(
   "tc_array_dynamic_insert",
   [
     DynamicArray.pointerParam("array"),

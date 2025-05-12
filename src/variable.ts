@@ -7,7 +7,7 @@ import { Type } from "./type";
 import type { CodeLike, PointerQualifier, TypeQualifier } from "./types";
 import { Value } from "./value";
 
-/** Used for working with simple and pointer variables. */
+/** Used for working with variables. */
 export class Var extends RValue {
   constructor(type: Type, name: string) {
     super(name);
@@ -76,9 +76,9 @@ export class Var extends RValue {
     );
   }
 
-  /** Simple member initializer. */
-  initSimple(value: CodeLike) {
-    return Operator.assign(this.declare(), Lit.simpleMember(value));
+  /** Single value initializer. */
+  initSingleMember(value: CodeLike) {
+    return Operator.assign(this.declare(), Lit.singleMemberInit(value));
   }
 
   static new(type: Type, name: string) {

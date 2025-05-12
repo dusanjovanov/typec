@@ -8,6 +8,7 @@ import type {
   TypeQualifier,
 } from "./types";
 import { emptyFalsy, join, joinArgs, stringSplice } from "./utils";
+import { Var } from "./variable";
 
 /** Used for generating C type syntax. */
 export class Type {
@@ -17,6 +18,10 @@ export class Type {
   }
   desc;
   str: string;
+
+  var(name: string) {
+    return Var.new(this, name);
+  }
 
   /** Create a pointer type to this type. */
   pointer(qualifiers?: PointerQualifier[]) {

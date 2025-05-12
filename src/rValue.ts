@@ -182,7 +182,7 @@ export class RValue {
 
   /** Returns a Value for an index accessor `arr[3]`. */
   at(index: CodeLike) {
-    return Operator.itemAt(this, index);
+    return Operator.subscript(this, index);
   }
 
   /** Access a member of the struct directly. */
@@ -200,6 +200,16 @@ export class RValue {
     return Operator.ref(this);
   }
 
+  /** Returns assignments to multiple struct members by value ( dot ). */
+  assignMultipleDot(values: Record<string, CodeLike>) {
+    return Chunk.new(
+      ...Object.entries(values).map(([key, value]) => {
+        return this.dot(key).assign(value);
+      })
+    );
+  }
+
+  /** Returns assignments to multiple struct members by reference ( arrow ). */
   assignMultipleArrow(values: Record<string, CodeLike>) {
     return Chunk.new(
       ...Object.entries(values).map(([key, value]) => {
@@ -243,22 +253,27 @@ export class RValue {
     return Operator.parens(this);
   }
 
+  /** `a++` */
   postInc() {
     return Operator.postInc(this);
   }
 
+  /** `a--` */
   postDec() {
     return Operator.postDec(this);
   }
 
+  /** `++a` */
   preInc() {
     return Operator.preInc(this);
   }
 
+  /** `--a` */
   preDec() {
     return Operator.preDec(this);
   }
 
+  /** Returns a function call expression. */
   call(...args: CodeLike[]) {
     return Operator.call(this, args);
   }

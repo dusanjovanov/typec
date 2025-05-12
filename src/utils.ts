@@ -1,5 +1,7 @@
+import type { Func } from "./func";
 import { Operator } from "./operators";
-import type { CodeLike } from "./types";
+import type { Param } from "./param";
+import type { CodeLike, FuncArgsFromParams } from "./types";
 
 /**
  * Returns an empty string when the value is falsy or an empty array.
@@ -61,28 +63,6 @@ export const joinArgs = (args: CodeLike[]) => {
   return join(args, ",");
 };
 
-export const valueOfFull = (pointerType: string, pointerName: string) => {
-  const stars = starRegex.exec(pointerType)?.[0];
-
-  return `${stars}${pointerName}`;
-};
-
-export const getPointerTypeLevel = (pointerType: string) => {
-  return starRegex.exec(pointerType)?.[0];
-};
-
-export const increasePointerTypeLevel = (pointerType: string) => {
-  return pointerType.replaceAll(starRegex, (found) => {
-    return found + "*";
-  });
-};
-
-export const removePointerStars = (pointerType: string) => {
-  return pointerType.replaceAll(starRegex, "");
-};
-
-const starRegex = /\*+/g;
-
 export const stringSplice = (
   str: string,
   offset: number,
@@ -101,7 +81,7 @@ export const unique = <T>(arr: T[]) => {
   return Array.from(new Set(arr));
 };
 
-/** Various utils that are elementary, but not part of standard C syntax. */
+/** Various useful utils. */
 export class Utils {
   static min(left: CodeLike, right: CodeLike) {
     return Operator.ternary(Operator.lt(left, right), left, right);
@@ -118,4 +98,29 @@ export class Utils {
       Operator.ternary(Operator.gt(value, maxVal), maxVal, value)
     );
   }
+
+  /**
+   * Takes in an expression and a dictionary of Func objects
+   * and returns corresponding functions that return the `.call()` result
+   * with the first parameter of all the Funcs bound to the expression.
+   */
+  static bindFuncs<Funcs extends Record<string, Func<any, any>>>(
+    expression: CodeLike,
+    funcs: Funcs
+  ) {
+    const bound: Record<string, any> = {};
+    Object.entries(funcs).forEach(([key, fn]) => {
+      bound[key] = (...args: any[]) => fn.call(expression, ...args);
+    });
+    return bound as {
+      [key in keyof Funcs]: (...args: BoundArgs<Funcs[key]["_params"]>) => void;
+    };
+  }
 }
+
+type BoundArgs<T extends readonly Param[]> = T extends readonly [
+  infer _ extends Param,
+  ...infer Rest extends readonly Param[]
+]
+  ? FuncArgsFromParams<Rest>
+  : [];

@@ -1,4 +1,5 @@
 // import type { RValue } from "./rValue";
+import type { Param } from "./param";
 import type { Type } from "./type";
 
 export const INTEGER_TYPES = [
@@ -76,6 +77,13 @@ export type Numberish = number | string;
 /** `string`, `number`, `boolean`, or a tc object with `toString()` implemented. */
 export type CodeLike = TextLike | { toString(): string };
 
+/** same as CodeLike, but has a generic string argument so that Func call arguments can be "named". */
+export type FuncArg<_ extends string> = TextLike | { toString(): string };
+
 export type Members = {
   [Key: string]: Type;
+};
+
+export type FuncArgsFromParams<Params extends readonly Param[]> = {
+  [index in keyof Params]: FuncArg<Params[index]["name"]>;
 };

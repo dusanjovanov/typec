@@ -117,10 +117,6 @@ export class Operator {
     return Value.new(`-(${exp})`);
   }
 
-  static itemAt(exp: CodeLike, index: CodeLike) {
-    return Value.new(`${exp}[${index}]`);
-  }
-
   /** Returns a return statement expression. */
   static return(value?: CodeLike) {
     return Value.new(`return${emptyNotFalse(value, (v) => ` ${v}`)}`);
@@ -131,6 +127,7 @@ export class Operator {
     return Value.new(`${fnName}(${emptyFalsy(args, joinArgs)})`);
   }
 
+  /** Adds parenthesis around the expression. */
   static parens(exp: CodeLike) {
     return Value.new(`(${exp})`);
   }

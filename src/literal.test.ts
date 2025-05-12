@@ -61,7 +61,7 @@ describe("literal", () => {
   });
 
   test("simpleMember", () => {
-    expect(Lit.simpleMember(123)).toBe(`{123}`);
-    expect(Lit.simpleMember(Lit.string("abc"))).toBe(`{"abc"}`);
+    expect(Lit.singleMemberInit(123)).toBe(`{123}`);
+    expect(Lit.singleMemberInit(Lit.string("abc"))).toBe(`{"abc"}`);
   });
 });

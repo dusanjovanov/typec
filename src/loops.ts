@@ -9,6 +9,9 @@ export class Loop {
     return `while(${condition})${Block.new(...body)}`;
   }
 
+  /**
+   * Returns a for loop statement.
+   */
   static for(
     init: CodeLike,
     condition: CodeLike,
