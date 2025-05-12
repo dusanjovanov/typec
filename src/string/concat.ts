@@ -21,7 +21,7 @@ export const concat = Func.new(
 
     return [
       // Return NULL if the initial string is NULL
-      str.equalReturn(NULL),
+      str.equalReturn(NULL, NULL),
       // Start with the length of the first string
       totalLen.init(stdstring.strlen.call(str)),
       varArgs.declare(),
@@ -36,7 +36,7 @@ export const concat = Func.new(
       varArgs.end(),
       // Allocate memory for the result (+1 for null terminator)
       result.init(stdlib.malloc.call(totalLen.plus(1))),
-      result.equalReturn(NULL),
+      result.equalReturn(NULL, NULL),
       // Copy the first string
       stdstring.strcpy.call(result, str),
       // Second pass: Concatenate all additional strings

@@ -20,7 +20,7 @@ export const slice = Func.new(
 
     return [
       // Return NULL if input string is NULL
-      str.equalReturn(NULL),
+      str.equalReturn(NULL, NULL),
       // Get the length of the input string
       len.init(stdstring.strlen.call(str)),
       // Clamp start index: ensure it's within [0, len]
@@ -36,12 +36,12 @@ export const slice = Func.new(
       // Allocate memory for the sliced string (+1 for null terminator)
       result.init(stdlib.malloc.call(len.plus(1)).cast(result.type)),
       // Return NULL if allocation fails
-      result.equalReturn(NULL),
+      result.equalReturn(NULL, NULL),
       // Copy the substring
       stdstring.strncpy.call(result, str.plus(start), sliceLen),
       // Ensure null termination
       result.subAssign(sliceLen, NULL_TERM),
-      Func.return(result),
+      result.return(),
     ];
   }
 );

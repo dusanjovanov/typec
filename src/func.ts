@@ -20,7 +20,9 @@ export class Func<
     this.name = name;
     this._params = params;
     this.body = body;
-    this.hasVarArgs = options?.hasVarArgs;
+    this.hasVarArgs = options?.hasVarArgs as VarArgs extends void
+      ? false
+      : VarArgs;
 
     this.type = Type.func(
       returnType,

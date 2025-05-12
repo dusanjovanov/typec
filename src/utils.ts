@@ -113,12 +113,16 @@ export class Utils {
       bound[key] = (...args: any[]) => fn.call(expression, ...args);
     });
     return bound as {
-      [key in keyof Funcs]: (...args: BoundArgs<Funcs[key]["_params"]>) => void;
+      [key in keyof Funcs]: (
+        ...args: Funcs[key]["hasVarArgs"] extends false
+          ? BoundArgs<Funcs[key]["_params"]>
+          : [...BoundArgs<Funcs[key]["_params"]>, ...CodeLike[]]
+      ) => void;
     };
   }
 }
 
-type BoundArgs<T extends readonly Param[]> = T extends readonly [
+type BoundArgs<Params extends readonly Param[]> = Params extends readonly [
   infer _ extends Param,
   ...infer Rest extends readonly Param[]
 ]
