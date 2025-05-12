@@ -67,7 +67,7 @@ export class Enum<Values extends Record<string, string | number | null>> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.enumPointer(this.name, typeQualifiers, pointerQualifiers);
+    return this.type(typeQualifiers).pointer(pointerQualifiers);
   }
 
   /** Returns a Var to hold a value of this enum. */

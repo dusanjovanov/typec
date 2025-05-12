@@ -262,4 +262,9 @@ export class RValue {
   call(...args: CodeLike[]) {
     return Operator.call(this, args);
   }
+
+  /** Returns the function return expression that returns this value. */
+  return() {
+    return Operator.return(this);
+  }
 }

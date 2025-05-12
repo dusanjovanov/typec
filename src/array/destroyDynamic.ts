@@ -2,13 +2,11 @@ import { NULL } from "../constants";
 import { Func } from "../func";
 import { Param } from "../param";
 import { stdlib } from "../std";
-import { Type } from "../type";
 import { DynamicArray } from "./types";
 
-export const destroyDynamic = Func.new(
-  Type.void(),
+export const destroyDynamic = Func.void(
   "tc_array_dynamic_destroy",
-  [Param.new(DynamicArray.pointerType(), "array")],
+  [Param.new(DynamicArray.type().pointer(), "array")],
   ({ params }) => {
     const { array } = params;
     return [

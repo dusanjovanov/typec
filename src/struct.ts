@@ -1,12 +1,11 @@
-import { Block } from "./chunk";
 import { Param } from "./param";
 import { RValue } from "./rValue";
 import { Type } from "./type";
-import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
+import type { Members, PointerQualifier, TypeQualifier } from "./types";
 import { Var } from "./variable";
 
 /** Used for declaring and working with structs. */
-export class Struct<Members extends GenericMembers = any> extends RValue {
+export class Struct extends RValue {
   constructor(members: Members, name: string | null = null) {
     super(`struct ${name}`);
     this.name = name;
@@ -17,9 +16,7 @@ export class Struct<Members extends GenericMembers = any> extends RValue {
 
   /** Returns the struct declaration ( definition ). */
   declare() {
-    return `struct ${this.name}${Block.new(
-      ...Object.entries(this.members).map(([name, type]) => `${type} ${name}`)
-    )};`;
+    return `struct ${this.name}${Type.membersBlock(this.members)};`;
   }
 
   embed() {
@@ -31,14 +28,6 @@ export class Struct<Members extends GenericMembers = any> extends RValue {
     return Type.struct(this.name, qualifiers);
   }
 
-  /** Get a struct pointer var type for this struct. */
-  pointerType(
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Type.structPointer(this.name, typeQualifiers, pointerQualifiers);
-  }
-
   var(name: string, typeQualifiers?: TypeQualifier[]) {
     return Var.new(this.type(typeQualifiers), name);
   }
@@ -48,7 +37,7 @@ export class Struct<Members extends GenericMembers = any> extends RValue {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
+    return Var.new(this.type(typeQualifiers).pointer(pointerQualifiers), name);
   }
 
   param<Name extends string>(name: Name, typeQualifiers?: TypeQualifier[]) {
@@ -60,15 +49,18 @@ export class Struct<Members extends GenericMembers = any> extends RValue {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Param.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
+    return Param.new(
+      this.type(typeQualifiers).pointer(pointerQualifiers),
+      name
+    );
   }
 
-  static new<Members extends GenericMembers>(name: string, members: Members) {
+  static new(name: string, members: Members) {
     return new Struct(members, name);
   }
 
   /** Create an anonymous Struct. */
-  static anon<Members extends GenericMembers>(members: Members) {
+  static anon(members: Members) {
     return new Struct(members);
   }
 }

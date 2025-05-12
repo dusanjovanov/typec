@@ -58,7 +58,7 @@ export type NumberType = (typeof NUMBER_TYPES)[number];
 
 export type IntegerType = (typeof INTEGER_TYPES)[number];
 
-export type TypeQualifier = "const" | "volatile";
+export type TypeQualifier = "const" | "volatile" | "static" | "inline";
 
 export type PointerQualifier = TypeQualifier | "restrict";
 
@@ -73,13 +73,9 @@ export type TextLike = string | number | boolean;
 
 export type Numberish = number | string;
 
-/** `string`, `number` or a typec object with `toString()` implemented. */
+/** `string`, `number`, `boolean`, or a tc object with `toString()` implemented. */
 export type CodeLike = TextLike | { toString(): string };
 
-export type GenericMembers = {
+export type Members = {
   [Key: string]: Type;
-};
-
-export type StructDesignatedInitValues<Members extends GenericMembers> = {
-  [Key in keyof Members]?: CodeLike;
 };

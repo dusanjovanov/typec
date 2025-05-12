@@ -1,9 +1,10 @@
-import { Block } from "./chunk";
+import { Param } from "./param";
 import { Type } from "./type";
-import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
+import type { Members, PointerQualifier, TypeQualifier } from "./types";
+import { Var } from "./variable";
 
 /** Used for declaring and working with unions. */
-export class Union<Members extends GenericMembers = any> {
+export class Union {
   constructor(members: Members, name: string | null = null) {
     this.name = name;
     this.members = members;
@@ -13,7 +14,7 @@ export class Union<Members extends GenericMembers = any> {
 
   /** Returns the union declaration ( definition ). */
   declare() {
-    return `union ${this.name}${Union.membersBlock(this.members)};`;
+    return `union ${this.name}${Type.membersBlock(this.members)};`;
   }
 
   /** Get a union var type for this Union. */
@@ -26,28 +27,42 @@ export class Union<Members extends GenericMembers = any> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.unionPointer(
-      this.name,
-      this.members,
-      typeQualifiers,
+    return Type.union(this.name, this.members, typeQualifiers).pointer(
       pointerQualifiers
     );
   }
 
-  /** Generates a block of union members. */
-  static membersBlock(members: GenericMembers) {
-    return Block.new(
-      ...Object.entries(members).map(([name, type]) => `${type} ${name}`)
-    );
+  var(name: string, typeQualifiers?: TypeQualifier[]) {
+    return Var.new(this.type(typeQualifiers), name);
+  }
+
+  pointer(
+    name: string,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Var.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
+  }
+
+  param<Name extends string>(name: Name, typeQualifiers?: TypeQualifier[]) {
+    return Param.new(this.type(typeQualifiers), name);
+  }
+
+  pointerParam<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Param.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
   }
 
   /** Create a named union. */
-  static new<Members extends GenericMembers>(name: string, members: Members) {
+  static new(name: string, members: Members) {
     return new Union(members, name);
   }
 
   /** Create an anonymous Union. */
-  static anon<Members extends GenericMembers>(members: Members) {
+  static anon(members: Members) {
     return new Union(members);
   }
 }

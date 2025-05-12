@@ -5,11 +5,10 @@ import { Type } from "../type";
 import { Var } from "../variable";
 import { DynamicArray } from "./types";
 
-export const insert = Func.new(
-  Type.void(),
+export const insert = Func.void(
   "tc_array_dynamic_insert",
   [
-    Param.new(DynamicArray.pointerType(), "array"),
+    DynamicArray.pointerParam("array"),
     Param.new(Type.void().pointer(), "item"),
   ],
   ({ params }) => {

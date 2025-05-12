@@ -1,11 +1,12 @@
+import { Block } from "./chunk";
 import { Operator } from "./operators";
+import { Param } from "./param";
 import type {
   AutoSimpleType,
-  GenericMembers,
+  Members,
   PointerQualifier,
   TypeQualifier,
 } from "./types";
-import { Union } from "./union";
 import { emptyFalsy, join, joinArgs, stringSplice } from "./utils";
 
 /** Used for generating C type syntax. */
@@ -17,12 +18,12 @@ export class Type {
   desc;
   str: string;
 
-  /** Create a pointer to this type. */
+  /** Create a pointer type to this type. */
   pointer(qualifiers?: PointerQualifier[]) {
     return Type.pointer(this, qualifiers);
   }
 
-  /** Add the `const` modifier to the type. */
+  /** Returns a new Type with the `const` modifier added to the type. */
   const() {
     if ("qualifiers" in this.desc) {
       return Type.new({
@@ -37,11 +38,27 @@ export class Type {
     return Operator.sizeOf(this);
   }
 
+  param<Name extends string>(name: Name) {
+    return Param.new(this, name);
+  }
+
+  /**
+   * Returns a variable / parameter named declaration.
+   */
+  declare(name: string): string {
+    return this.createTypeStr(name);
+  }
+
   toString() {
     return this.str;
   }
 
   static simple(specifier: AutoSimpleType, qualifiers: TypeQualifier[] = []) {
+    return Type.new({ kind: "simple", specifier, qualifiers });
+  }
+
+  /** Used for creating an api for a c library type alias. */
+  static alias(specifier: AutoSimpleType, qualifiers: TypeQualifier[] = []) {
     return Type.new({ kind: "simple", specifier, qualifiers });
   }
 
@@ -61,7 +78,6 @@ export class Type {
     return Type.simple("char", qualifiers);
   }
 
-  /** integer type `ptrdiff_t` */
   static ptrdiff_t(qualifiers?: TypeQualifier[]) {
     return Type.simple("ptrdiff_t", qualifiers);
   }
@@ -86,56 +102,12 @@ export class Type {
     return Type.new({ kind: "pointer", type, qualifiers });
   }
 
-  static simplePointer(
-    specifier: AutoSimpleType,
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Type.pointer(
-      Type.simple(specifier, typeQualifiers),
-      pointerQualifiers
-    );
-  }
-
   /** `char*` */
   static string(
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.simplePointer("char", typeQualifiers, pointerQualifiers);
-  }
-
-  /** `const char*` */
-  static constString(
-    typeQualifiers: TypeQualifier[] = [],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Type.simplePointer(
-      "char",
-      ["const", ...typeQualifiers],
-      pointerQualifiers
-    );
-  }
-
-  static intPointer(
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Type.simplePointer("int", typeQualifiers, pointerQualifiers);
-  }
-
-  static voidPointer(
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Type.simplePointer("void", typeQualifiers, pointerQualifiers);
-  }
-
-  static floatPointer(
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Type.simplePointer("float", typeQualifiers, pointerQualifiers);
+    return Type.char(typeQualifiers).pointer(pointerQualifiers);
   }
 
   static array(
@@ -145,56 +117,35 @@ export class Type {
     return Type.new({ kind: "array", elementType, length });
   }
 
-  static func(returnType: Type, paramTypes: Type[], hasVarArgs = false) {
-    return Type.new({ kind: "func", returnType, paramTypes, hasVarArgs });
+  static func(returnType: Type, params: Param[], hasVarArgs = false) {
+    return Type.new({ kind: "func", returnType, params, hasVarArgs });
   }
 
   static struct(name: string | null, qualifiers: TypeQualifier[] = []) {
     return Type.new({ kind: "struct", name, qualifiers });
   }
 
-  static structPointer(
-    name: string | null,
-    typeQualifiers: TypeQualifier[] = [],
-    pointerQualifiers: PointerQualifier[] = []
-  ) {
-    return Type.pointer(Type.struct(name, typeQualifiers), pointerQualifiers);
-  }
-
   static union(
     name: string | null,
-    members: GenericMembers,
+    members: Members,
     qualifiers: TypeQualifier[] = []
   ) {
     return Type.new({ kind: "union", name, members, qualifiers });
-  }
-
-  static unionPointer(
-    name: string | null,
-    members: GenericMembers,
-    typeQualifiers: TypeQualifier[] = [],
-    pointerQualifiers: PointerQualifier[] = []
-  ) {
-    return Type.pointer(
-      Type.union(name, members, typeQualifiers),
-      pointerQualifiers
-    );
   }
 
   static enum(name: string, qualifiers: TypeQualifier[] = []) {
     return Type.new({ kind: "enum", name, qualifiers });
   }
 
-  static enumPointer(
-    name: string,
-    typeQualifiers: TypeQualifier[] = [],
-    pointerQualifiers: PointerQualifier[] = []
-  ) {
-    return Type.pointer(Type.enum(name, typeQualifiers), pointerQualifiers);
-  }
-
   static new(desc: TypeDescription) {
     return new Type(desc);
+  }
+
+  /** Generates a block of struct or union members. */
+  static membersBlock(members: Members) {
+    return Block.new(
+      ...Object.entries(members).map(([name, type]) => `${type} ${name}`)
+    );
   }
 
   private qualifiersBefore(
@@ -203,41 +154,69 @@ export class Type {
     return emptyFalsy(desc.qualifiers, (q) => `${join(q)} `);
   }
 
-  private createTypeStr() {
+  private nameAfter(name?: string) {
+    return emptyFalsy(name, (n) => ` ${n}`);
+  }
+
+  private createTypeStr(name?: string) {
     const desc = this.desc;
 
     switch (desc.kind) {
       case "simple": {
-        return `${this.qualifiersBefore(desc)}${desc.specifier}`;
+        return `${this.qualifiersBefore(desc)}${desc.specifier}${this.nameAfter(
+          name
+        )}`;
       }
       case "array": {
-        return `${desc.elementType.str} [${desc.length}]`;
+        let str = `${desc.elementType}${this.nameAfter(name)}`;
+
+        if (desc.length == null) {
+          str += "[]";
+        }
+        //
+        else if (Array.isArray(desc.length)) {
+          str += desc.length.map((l) => `[${l}]`).join("");
+        }
+        //
+        else {
+          str += `[${desc.length}]`;
+        }
+
+        return str;
       }
       case "func": {
         const retStr = desc.returnType.str;
 
-        if (desc.paramTypes.length === 0) {
+        if (desc.params.length === 0) {
           return `${retStr} (void)`;
         }
         //
         else {
-          return `${retStr} (${joinArgs(desc.paramTypes)}${emptyFalsy(
+          return `${retStr}${this.nameAfter(name)}(${joinArgs(
+            desc.params.map((p) => p.declare())
+          )}${emptyFalsy(
             desc.hasVarArgs === false ? null : desc.hasVarArgs,
             () => `,...`
           )})`;
         }
       }
       case "struct": {
-        return `${emptyFalsy(this.qualifiersBefore(desc))}struct ${desc.name}`;
+        return `${this.qualifiersBefore(desc)}struct ${
+          desc.name
+        }${this.nameAfter(name)}`;
       }
       case "union": {
         if (desc.name == null) {
-          return `union ${Union.membersBlock(desc.members)}`;
+          return `union ${Type.membersBlock(desc.members)}`;
         }
-        return `${emptyFalsy(this.qualifiersBefore(desc))}union ${desc.name}`;
+        return `${this.qualifiersBefore(desc)}union ${
+          desc.name
+        }${this.nameAfter(name)}`;
       }
       case "enum": {
-        return `${this.qualifiersBefore(desc)}enum ${desc.name}`;
+        return `${this.qualifiersBefore(desc)}enum ${desc.name}${this.nameAfter(
+          name
+        )}`;
       }
       case "pointer": {
         switch (desc.type.desc.kind) {
@@ -248,20 +227,26 @@ export class Type {
             return `${desc.type.str}*${emptyFalsy(
               desc.qualifiers,
               (q) => ` ${join(q)}`
-            )}`;
+            )}${this.nameAfter(name)}`;
           }
           case "array": {
             return stringSplice(
               desc.type.str,
               desc.type.str.indexOf("["),
-              `(*${emptyFalsy(desc.qualifiers, (q) => `${join(q)}`)})`
+              `(*${emptyFalsy(
+                desc.qualifiers,
+                (q) => `${join(q)}`
+              )}${this.nameAfter(name)})`
             );
           }
           case "func": {
             return stringSplice(
               desc.type.str,
               desc.type.str.indexOf("("),
-              `(*${emptyFalsy(desc.qualifiers, (q) => `${join(q)}`)})`
+              `(*${emptyFalsy(
+                desc.qualifiers,
+                (q) => `${join(q)}`
+              )}${this.nameAfter(name)})`
             );
           }
           case "pointer": {
@@ -281,7 +266,10 @@ export class Type {
             return stringSplice(
               desc.type.str,
               index,
-              `*${emptyFalsy(desc.qualifiers, (q) => `${join(q)}`)}`
+              `*${emptyFalsy(
+                desc.qualifiers,
+                (q) => `${join(q)}`
+              )}${this.nameAfter(name)}`
             );
           }
         }
@@ -320,7 +308,7 @@ export type ArrayType = {
 export type FuncType = {
   kind: "func";
   returnType: Type;
-  paramTypes: Type[];
+  params: Param[];
   hasVarArgs: boolean;
 };
 
@@ -333,7 +321,7 @@ export type StructType = {
 export type UnionType = {
   kind: "union";
   name: string | null;
-  members: GenericMembers;
+  members: Members;
   qualifiers: TypeQualifier[];
 };
 

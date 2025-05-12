@@ -3,7 +3,7 @@ import { Lit } from "./literal";
 import { Operator } from "./operators";
 import { RValue } from "./rValue";
 import type { Struct } from "./struct";
-import { Type, type ArrayType } from "./type";
+import { Type } from "./type";
 import type { CodeLike, PointerQualifier, TypeQualifier } from "./types";
 import { Value } from "./value";
 
@@ -18,34 +18,13 @@ export class Var extends RValue {
   type;
   name;
 
-  private declareArray(type: ArrayType) {
-    let str = `${type.elementType} ${this.name}`;
-
-    if (type.length == null) {
-      str += "[]";
-    }
-    //
-    else if (Array.isArray(type.length)) {
-      str += type.length.map((l) => `[${l}]`).join("");
-    }
-    //
-    else {
-      str += `[${type.length}]`;
-    }
-
-    return str;
-  }
-
   isArray() {
     return this.type.desc.kind === "array";
   }
 
   /** Returns the variable declaration statement. */
   declare() {
-    if (this.isArray()) {
-      return this.declareArray(this.type.desc as ArrayType);
-    }
-    return `${this.type} ${this.name}`;
+    return this.type.declare(this.name);
   }
 
   /**
@@ -142,15 +121,6 @@ export class Var extends RValue {
     return Var.new(s.type(typeQualifiers), name);
   }
 
-  static structPointer(
-    s: Struct,
-    name: string,
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Var.new(s.pointerType(typeQualifiers, pointerQualifiers), name);
-  }
-
   /** Pointer variable for char*. */
   static string(
     name: string,
@@ -158,21 +128,5 @@ export class Var extends RValue {
     pointerQualifiers?: PointerQualifier[]
   ) {
     return Var.new(Type.string(typeQualifiers, pointerQualifiers), name);
-  }
-
-  static pointerVoid(
-    name: string,
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Var.new(Type.voidPointer(typeQualifiers, pointerQualifiers), name);
-  }
-
-  static pointerInt(
-    name: string,
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Var.new(Type.intPointer(typeQualifiers, pointerQualifiers), name);
   }
 }

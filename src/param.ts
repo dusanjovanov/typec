@@ -37,7 +37,14 @@ export class Param<Name extends string = any> extends Var {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Param.new(Type.intPointer(typeQualifiers, pointerQualifiers), name);
+    return Param.new(Type.int(typeQualifiers).pointer(pointerQualifiers), name);
+  }
+
+  static float<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[]
+  ) {
+    return Param.new(Type.float(typeQualifiers), name);
   }
 
   static new<Name extends string = any>(type: Type, name: Name) {

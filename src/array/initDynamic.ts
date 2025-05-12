@@ -4,13 +4,9 @@ import { stdlib } from "../std";
 import { Type } from "../type";
 import { DynamicArray } from "./types";
 
-export const initDynamic = Func.new(
-  Type.void(),
+export const initDynamic = Func.void(
   "tc_array_dynamic_init",
-  [
-    Param.new(DynamicArray.pointerType(), "array"),
-    Param.new(Type.size_t(), "size"),
-  ],
+  [DynamicArray.pointerParam("array"), Param.new(Type.size_t(), "size")],
   ({ params }) => {
     const { array, size } = params;
     return [
