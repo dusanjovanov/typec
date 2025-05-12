@@ -1,4 +1,3 @@
-import { Condition } from "../condition";
 import { NULL } from "../constants";
 import { Func } from "../func";
 import { Loop } from "../loops";
@@ -30,9 +29,9 @@ export const concat = Func.new(
       nextStr.declare(),
       Loop.while(nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(NULL), [
         // Double-check to avoid issues with NULL in list
-        Condition.if(nextStr.notEqual(NULL), [
-          totalLen.plusAssign(stdstring.strlen.call(nextStr)),
-        ]),
+        nextStr
+          .notEqual(NULL)
+          .then([totalLen.plusAssign(stdstring.strlen.call(nextStr))]),
       ]),
       varArgs.end(),
       // Allocate memory for the result (+1 for null terminator)
@@ -43,9 +42,7 @@ export const concat = Func.new(
       // Second pass: Concatenate all additional strings
       varArgs.start(str),
       Loop.while(nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(NULL), [
-        Condition.if(nextStr.notEqual(NULL), [
-          stdstring.strcat.call(result, nextStr),
-        ]),
+        nextStr.notEqual(NULL).then([stdstring.strcat.call(result, nextStr)]),
       ]),
       varArgs.end(),
       Func.return(result),

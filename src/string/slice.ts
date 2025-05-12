@@ -1,4 +1,3 @@
-import { Condition } from "../condition";
 import { NULL, NULL_TERM } from "../constants";
 import { Func } from "../func";
 import { Param } from "../param";
@@ -10,11 +9,7 @@ import { Var } from "../variable";
 export const slice = Func.new(
   Type.string(),
   "str_slice",
-  [
-    Param.string("str", ["const"]),
-    Param.size_t("start"),
-    Param.new(Type.size_t(), "end"),
-  ],
+  [Param.string("str", ["const"]), Param.size_t("start"), Param.size_t("end")],
   ({ params }) => {
     const len = Var.size_t("len");
     const sliceLen = Var.size_t("copyLen");
@@ -32,10 +27,10 @@ export const slice = Func.new(
       start.clamp(0, len),
       // Determine end index: use string length if end is NULL, otherwise clamp
       endIdx.declare(),
-      Condition.if(end.equal(NULL), [endIdx.assign(len)]).else([
-        endIdx.assign(end.deRef()),
-        endIdx.clamp(start, len),
-      ]),
+      end
+        .equal(NULL)
+        .then([endIdx.assign(len)])
+        .else([endIdx.assign(end.deRef()), endIdx.clamp(start, len)]),
       // calculate length to copy
       sliceLen.init(end.minus(start)),
       // Allocate memory for the sliced string (+1 for null terminator)

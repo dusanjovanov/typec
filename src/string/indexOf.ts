@@ -1,4 +1,3 @@
-import { Condition } from "../condition";
 import { NULL } from "../constants";
 import { Func } from "../func";
 import { Loop } from "../loops";
@@ -14,48 +13,44 @@ export const indexOf = Func.new(
   [
     Param.string("str", ["const"]),
     Param.string("search", ["const"]),
-    Param.pointerInt("fromIndex"),
+    Param.new(Type.int().pointer(), "fromIndex"),
   ],
   ({ params }) => {
-    const strLen = Var.new(Type.size_t(), "str_len");
-    const searchLen = Var.new(Type.size_t(), "search_len");
-    const start = Var.new(Type.int(), "start");
-    const i = Var.new(Type.int(), "i");
+    const strLen = Var.size_t("str_len");
+    const searchLen = Var.size_t("search_len");
+    const start = Var.int("start");
+    const i = Var.int("i");
 
     const { str, search, fromIndex } = params;
 
     return [
       // Handle NULL inputs
-      Condition.if(str.equal(NULL).or(search.equal(NULL)), [Func.return(-1)]),
+      str.equal(NULL).or(search.equal(NULL)).thenReturn(-1),
       // Get lengths
       strLen.init(stdstring.strlen.call(str)),
       searchLen.init(stdstring.strlen.call(search)),
       // If search string is empty or longer than str, it can't be found
-      Condition.if(searchLen.equal(0).or(searchLen.gt(strLen)), [
-        Func.return(-1),
-      ]),
+      searchLen.equal(0).or(searchLen.gt(strLen)).thenReturn(-1),
       // Determine starting index
       start.init(fromIndex.notEqual(NULL).ternary(fromIndex.deRef(), 0)),
       // Clamp start to valid range [0, str_len]
-      Condition.if(start.lt(0), [start.assign(0)]).elseif(
-        start.gt(strLen.cast(start.type)),
-        [Func.return(-1)]
-      ),
+      start
+        .lt(0)
+        .then([start.assign(0)])
+        .elseif(start.gt(strLen.cast(start.type)), [Func.return(-1)]),
       // If remaining length is less than search length, it can't be found
-      Condition.if(strLen.minus(start).lt(searchLen), [Func.return(-1)]),
+      strLen.minus(start).lt(searchLen).thenReturn(-1),
       // Search for the substring
       Loop.for(
         i.init(start),
         i.lte(strLen.min(searchLen).cast(i.type)),
         i.postInc(),
         [
-          Condition.if(
-            stdstring.strncmp.call(str.plus(i), search, searchLen).equal(0),
-            [
-              // Found at index i
-              Func.return(i),
-            ]
-          ),
+          stdstring.strncmp
+            .call(str.plus(i), search, searchLen)
+            .equal(0)
+            // Found at index i
+            .thenReturn(i),
         ]
       ),
       // Not found
