@@ -1,10 +1,9 @@
 import { Chunk } from "./chunk";
 import { Condition } from "./condition";
 import { Operator } from "./operators";
-import type { Type } from "./type";
+import { Type } from "./type";
 import type { CodeLike } from "./types";
 import { Utils } from "./utils";
-import { Value } from "./value";
 
 /** Base class for `rvalue` expressions. */
 export class RValue {
@@ -12,6 +11,10 @@ export class RValue {
     this.value = String(valueExp);
   }
   value;
+
+  static new(type: Type<any>, valueExp: CodeLike) {
+    return new RValue(valueExp);
+  }
 
   toString() {
     return String(this.value);
@@ -299,8 +302,10 @@ export class RValue {
 
   /** Accepts an array of member names and returns an array of Values with an arrow access operator expression for each member. */
   arrowMulti<const Names extends string[]>(...memberNames: Names) {
-    return memberNames.map((m) => Value.new(this.arrow(m))) as {
-      [index in keyof Names]: Value;
+    return memberNames.map((m) =>
+      RValue.new(Type.simple("any"), this.arrow(m))
+    ) as {
+      [index in keyof Names]: RValue;
     };
   }
 }

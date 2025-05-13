@@ -1,6 +1,6 @@
 import { Block } from "./chunk";
 import { Operator } from "./operators";
-import { Param } from "./param";
+import type { Param } from "./param";
 import type {
   AutoSimpleType,
   GenericMembers,
@@ -15,7 +15,6 @@ import {
   stringSplice,
   typeArgToType,
 } from "./utils";
-import { Var } from "./variable";
 
 /** Used for generating C type syntax. */
 export class Type<S extends string> {
@@ -26,10 +25,6 @@ export class Type<S extends string> {
   kind = "type" as const;
   desc;
   str: string;
-
-  var(name: string) {
-    return Var.new(this, name);
-  }
 
   /** Create a pointer type to this type. */
   pointer(qualifiers?: PointerQualifier[]) {
@@ -49,17 +44,6 @@ export class Type<S extends string> {
 
   sizeOf() {
     return Operator.sizeOf(this);
-  }
-
-  param<Name extends string>(name: Name) {
-    return Param.new(this, name);
-  }
-
-  pointerParam<Name extends string>(
-    name: Name,
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Param.new(this.pointer(pointerQualifiers), name);
   }
 
   /**

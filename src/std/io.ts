@@ -84,6 +84,6 @@ export const stdio = {
     Param.string("filename", ["const"]),
     Param.string("_Mode", ["const"]),
   ]),
-  fclose: Func.int("fclose", [FILE.pointerParam("stream")]),
+  fclose: Func.int("fclose", [Param.new(FILE.pointer(), "stream")]),
   puts: Func.int("puts", [Param.string("str", ["const"])]),
 };

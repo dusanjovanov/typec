@@ -2,8 +2,10 @@ import { Chunk } from "../chunk";
 import { MACRO_TYPE } from "../constants";
 import { Directive } from "../directive";
 import { Func } from "../func";
+import { Param } from "../param";
 import { Type } from "../type";
 import type { CodeLike } from "../types";
+import { Var } from "../variable";
 
 const va_list = Type.alias("va_list");
 
@@ -11,15 +13,18 @@ export const stdarg = {
   include: Directive.includeSystem("stdarg.h"),
   va_list,
   va_start: Func.void("va_start", [
-    va_list.param("ap"),
-    MACRO_TYPE.param("parmN"),
+    Param.new(va_list, "ap"),
+    Param.new(MACRO_TYPE, "parmN"),
   ]),
   va_arg: Func.new(MACRO_TYPE, "va_arg", [
-    va_list.param("ap"),
-    MACRO_TYPE.param("T"),
+    Param.new(va_list, "ap"),
+    Param.new(MACRO_TYPE, "T"),
   ]),
-  va_end: Func.void("ap", [va_list.param("ap")]),
-  va_copy: Func.void("va_copy", [va_list.param("dest"), va_list.param("src")]),
+  va_end: Func.void("ap", [Param.new(va_list, "ap")]),
+  va_copy: Func.void("va_copy", [
+    Param.new(va_list, "dest"),
+    Param.new(va_list, "src"),
+  ]),
 };
 
 /**
@@ -28,7 +33,7 @@ export const stdarg = {
  */
 export class VarArgs {
   constructor(argsName = "args") {
-    this.args = va_list.var(argsName);
+    this.args = Var.new(va_list, argsName);
   }
   args;
 

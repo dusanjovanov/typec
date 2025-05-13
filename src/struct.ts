@@ -1,5 +1,4 @@
 import { Param } from "./param";
-import { RValue } from "./rValue";
 import { Type } from "./type";
 import type {
   GenericApi,
@@ -10,12 +9,8 @@ import type {
 import { Var } from "./variable";
 
 /** Used for declaring and working with structs. */
-export class Struct<
-  Name extends string,
-  Members extends GenericMembers
-> extends RValue {
+export class Struct<Name extends string, Members extends GenericMembers> {
   constructor(members: Members, name: Name = null as unknown as Name) {
-    super(`struct ${name}`);
     this.name = name;
     this.members = members;
   }
