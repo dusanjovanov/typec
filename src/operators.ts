@@ -83,7 +83,7 @@ export class Operator {
   /**
    * Returns a type cast expression.
    */
-  static cast(type: Type, exp: CodeLike) {
+  static cast(type: Type<any>, exp: CodeLike) {
     return Value.new(`(${type})${exp}`);
   }
 

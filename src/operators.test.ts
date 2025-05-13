@@ -78,7 +78,7 @@ describe("operators", () => {
 
   test("subscript", () => {
     expect(Operator.subscript("arr", 3).toString()).toBe(`arr[3]`);
-    expect(Operator.subscript(Lit.string("abc"), 3).toString()).toBe(
+    expect(Operator.subscript(Lit.str("abc"), 3).toString()).toBe(
       `"abc"[3]`
     );
   });

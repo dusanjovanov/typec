@@ -3,19 +3,27 @@ import { Operator } from "./operators";
 import { Param } from "./param";
 import type {
   AutoSimpleType,
-  Members,
+  GenericMembers,
   PointerQualifier,
+  TypeArg,
   TypeQualifier,
 } from "./types";
-import { emptyFalsy, join, joinArgs, stringSplice } from "./utils";
+import {
+  emptyFalsy,
+  join,
+  joinArgs,
+  stringSplice,
+  typeArgToType,
+} from "./utils";
 import { Var } from "./variable";
 
 /** Used for generating C type syntax. */
-export class Type {
-  constructor(desc: TypeDescription) {
+export class Type<S extends string> {
+  constructor(desc: TypeDescription<S>) {
     this.desc = desc;
-    this.str = this.createTypeStr();
+    this.str = this.createTypeStr() as any;
   }
+  kind = "type" as const;
   desc;
   str: string;
 
@@ -25,7 +33,7 @@ export class Type {
 
   /** Create a pointer type to this type. */
   pointer(qualifiers?: PointerQualifier[]) {
-    return Type.pointer(this, qualifiers);
+    return Type.pointer(this, qualifiers) as unknown as Type<`${S}*`>;
   }
 
   /** Returns a new Type with the `const` modifier added to the type. */
@@ -47,23 +55,36 @@ export class Type {
     return Param.new(this, name);
   }
 
+  pointerParam<Name extends string>(
+    name: Name,
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return Param.new(this.pointer(pointerQualifiers), name);
+  }
+
   /**
    * Returns a variable / parameter named declaration.
    */
   declare(name: string): string {
-    return this.createTypeStr(name);
+    return this.createTypeStr(name) as string;
   }
 
   toString() {
     return this.str;
   }
 
-  static simple(specifier: AutoSimpleType, qualifiers: TypeQualifier[] = []) {
+  static simple<S extends AutoSimpleType>(
+    specifier: S,
+    qualifiers: TypeQualifier[] = []
+  ) {
     return Type.new({ kind: "simple", specifier, qualifiers });
   }
 
   /** Used for creating an api for a c library type alias. */
-  static alias(specifier: AutoSimpleType, qualifiers: TypeQualifier[] = []) {
+  static alias<S extends AutoSimpleType>(
+    specifier: S,
+    qualifiers: TypeQualifier[] = []
+  ) {
     return Type.new({ kind: "simple", specifier, qualifiers });
   }
 
@@ -103,8 +124,15 @@ export class Type {
     return Type.simple("float", qualifiers);
   }
 
-  static pointer(type: Type, qualifiers: PointerQualifier[] = []) {
-    return Type.new({ kind: "pointer", type, qualifiers });
+  static pointer<S extends string>(
+    type: TypeArg<S>,
+    qualifiers: PointerQualifier[] = []
+  ) {
+    return Type.new({
+      kind: "pointer",
+      type: typeArgToType(type),
+      qualifiers,
+    }) as unknown as Type<`${S}*`>;
   }
 
   /** `char*` */
@@ -115,46 +143,56 @@ export class Type {
     return Type.char(typeQualifiers).pointer(pointerQualifiers);
   }
 
-  static array(
-    elementType: Type,
+  static array<S extends string>(
+    elementType: Type<S>,
     length: number | number[] | undefined = undefined
   ) {
     return Type.new({ kind: "array", elementType, length });
   }
 
-  static func(returnType: Type, params: Param[], hasVarArgs = false) {
+  static func<Return extends string>(
+    returnType: Type<Return>,
+    params: Param<any, any>[],
+    hasVarArgs = false
+  ) {
     return Type.new({ kind: "func", returnType, params, hasVarArgs });
   }
 
-  static struct(name: string | null, qualifiers: TypeQualifier[] = []) {
+  static struct<Name extends string>(
+    name: Name,
+    qualifiers: TypeQualifier[] = []
+  ) {
     return Type.new({ kind: "struct", name, qualifiers });
   }
 
-  static union(
-    name: string | null,
-    members: Members,
+  static union<Name extends string>(
+    name: Name,
+    members: GenericMembers,
     qualifiers: TypeQualifier[] = []
   ) {
     return Type.new({ kind: "union", name, members, qualifiers });
   }
 
-  static enum(name: string, qualifiers: TypeQualifier[] = []) {
+  static enum<Name extends string>(
+    name: Name,
+    qualifiers: TypeQualifier[] = []
+  ) {
     return Type.new({ kind: "enum", name, qualifiers });
   }
 
-  static new(desc: TypeDescription) {
+  static new<S extends string = any>(desc: TypeDescription<S>) {
     return new Type(desc);
   }
 
   /** Generates a block of struct or union members. */
-  static membersBlock(members: Members) {
+  static membersBlock(members: GenericMembers) {
     return Block.new(
       ...Object.entries(members).map(([name, type]) => `${type} ${name}`)
     );
   }
 
   private qualifiersBefore(
-    desc: Exclude<TypeDescription, ArrayType | FuncType>
+    desc: Exclude<TypeDescription<any>, ArrayType<any> | FuncType<any>>
   ) {
     return emptyFalsy(desc.qualifiers, (q) => `${join(q)} `);
   }
@@ -193,7 +231,7 @@ export class Type {
         const retStr = desc.returnType.str;
 
         if (desc.params.length === 0) {
-          return `${retStr} (void)`;
+          return `${retStr}${this.nameAfter(name)}(void)`;
         }
         //
         else {
@@ -268,14 +306,11 @@ export class Type {
               }
             }
 
-            return stringSplice(
+            return `${stringSplice(
               desc.type.str,
               index,
-              `*${emptyFalsy(
-                desc.qualifiers,
-                (q) => `${join(q)}`
-              )}${this.nameAfter(name)}`
-            );
+              `*${emptyFalsy(desc.qualifiers, (q) => `${join(q)}`)}`
+            )}${this.nameAfter(name)}`;
           }
         }
       }
@@ -283,55 +318,55 @@ export class Type {
   }
 }
 
-export type TypeDescription =
-  | Simple
-  | Pointer
-  | ArrayType
-  | FuncType
-  | StructType
-  | EnumType
-  | UnionType;
+export type TypeDescription<S extends string> =
+  | Simple<S>
+  | Pointer<S>
+  | ArrayType<S>
+  | FuncType<S>
+  | StructType<S>
+  | EnumType<S>
+  | UnionType<S>;
 
-export type Simple = {
+export type Simple<S extends string> = {
   kind: "simple";
-  specifier: string;
+  specifier: S;
   qualifiers: TypeQualifier[];
 };
 
-export type Pointer = {
+export type Pointer<S extends string> = {
   kind: "pointer";
-  type: Type;
+  type: Type<S>;
   qualifiers: PointerQualifier[];
 };
 
-export type ArrayType = {
+export type ArrayType<S extends string> = {
   kind: "array";
-  elementType: Type;
+  elementType: Type<S>;
   length?: number | number[];
 };
 
-export type FuncType = {
+export type FuncType<S extends string> = {
   kind: "func";
-  returnType: Type;
-  params: Param[];
+  returnType: Type<S>;
+  params: Param<any, any>[];
   hasVarArgs: boolean;
 };
 
-export type StructType = {
+export type StructType<Name extends string> = {
   kind: "struct";
-  name: string | null;
+  name: Name | null;
   qualifiers: TypeQualifier[];
 };
 
-export type UnionType = {
+export type UnionType<Name extends string> = {
   kind: "union";
-  name: string | null;
-  members: Members;
+  name: Name | null;
+  members: GenericMembers;
   qualifiers: TypeQualifier[];
 };
 
-export type EnumType = {
+export type EnumType<Name extends string> = {
   kind: "enum";
-  name: string;
+  name: Name;
   qualifiers: TypeQualifier[];
 };

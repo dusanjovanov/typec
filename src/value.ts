@@ -1,3 +1,5 @@
+import { Lit } from "./literal";
+import { Operator } from "./operators";
 import { RValue } from "./rValue";
 import type { CodeLike } from "./types";
 
@@ -11,6 +13,42 @@ export class Value extends RValue {
   /** Numeric literal values. */
   static num(n: CodeLike) {
     return Value.new(n);
+  }
+
+  /**
+   * string literal
+   *
+   * Returns the same string enclosed in double quotes with double quotes inside the string escaped.
+   *
+   * `"abc"`
+   */
+  static str(n: string) {
+    return Value.new(Lit.str(n));
+  }
+
+  /**
+   * multiline string literal
+   *
+   * Same as `string`, but for multiple strings each on a new line.
+   */
+  static strMulti(...strings: string[]) {
+    return Value.new(Lit.strMulti(...strings));
+  }
+
+  /**
+   * Returns a compound literal expression.
+   *
+   * `{ "abc", 123, &var }`
+   */
+  static compound(...values: CodeLike[]) {
+    return Value.new(Lit.compound(...values));
+  }
+
+  /**
+   * Returns the `sizeof` operator expression. `sizeof(exp)`
+   */
+  static sizeOf(exp: CodeLike) {
+    return Operator.sizeOf(exp);
   }
 
   /** Used for defining an api for using macro values. */

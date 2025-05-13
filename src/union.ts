@@ -1,14 +1,15 @@
 import { Param } from "./param";
 import { Type } from "./type";
-import type { Members, PointerQualifier, TypeQualifier } from "./types";
+import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
 import { Var } from "./variable";
 
 /** Used for declaring and working with unions. */
-export class Union {
-  constructor(members: Members, name: string | null = null) {
+export class Union<Name extends string, Members extends GenericMembers> {
+  constructor(name: Name, members: Members) {
     this.name = name;
     this.members = members;
   }
+  kind = "union" as const;
   name;
   members;
 
@@ -50,12 +51,15 @@ export class Union {
   }
 
   /** Create a named union. */
-  static new(name: string, members: Members) {
-    return new Union(members, name);
+  static new<Name extends string, Members extends GenericMembers>(
+    name: Name,
+    members: Members
+  ) {
+    return new Union(name, members);
   }
 
   /** Create an anonymous Union. */
-  static anon(members: Members) {
-    return new Union(members);
+  static anon<Members extends GenericMembers>(members: Members) {
+    return new Union(null as any, members);
   }
 }

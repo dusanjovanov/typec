@@ -1,7 +1,13 @@
-import type { Func } from "./func";
 import { Operator } from "./operators";
-import type { Param } from "./param";
-import type { CodeLike, FuncArgsFromParams } from "./types";
+import type { Type } from "./type";
+import type {
+  BoundApi,
+  BoundFunc,
+  CodeLike,
+  GenericApi,
+  GenericFunc,
+  TypeArg,
+} from "./types";
 
 /**
  * Returns an empty string when the value is falsy or an empty array.
@@ -100,11 +106,18 @@ export class Utils {
   }
 
   /**
-   * Takes in an expression and a dictionary of Func objects
-   * and returns corresponding functions that return the `.call()` result
-   * with the first parameter of all the Funcs bound to the expression.
+   * Returns a function that returns the `.call()` result for the passed Func
+   * with the first parameter of the Func bound to the expression.
    */
-  static bindFuncs<Funcs extends Record<string, Func<any, any>>>(
+  static bindFunc<Func extends GenericFunc>(expression: CodeLike, func: Func) {
+    return ((...args: any[]) =>
+      func.call(expression, ...args)) as BoundFunc<Func>;
+  }
+
+  /**
+   * Same as `bindFunc`, but for multiple Funcs.
+   */
+  static bindFuncs<Funcs extends GenericApi>(
     expression: CodeLike,
     funcs: Funcs
   ) {
@@ -112,19 +125,12 @@ export class Utils {
     Object.entries(funcs).forEach(([key, fn]) => {
       bound[key] = (...args: any[]) => fn.call(expression, ...args);
     });
-    return bound as {
-      [key in keyof Funcs]: (
-        ...args: Funcs[key]["hasVarArgs"] extends false
-          ? BoundArgs<Funcs[key]["_params"]>
-          : [...BoundArgs<Funcs[key]["_params"]>, ...CodeLike[]]
-      ) => void;
-    };
+    return bound as BoundApi<Funcs>;
   }
 }
 
-type BoundArgs<Params extends readonly Param[]> = Params extends readonly [
-  infer _ extends Param,
-  ...infer Rest extends readonly Param[]
-]
-  ? FuncArgsFromParams<Rest>
-  : [];
+export const typeArgToType = <S extends string>(type: TypeArg<S>): Type<S> => {
+  return typeof type === "object" && "kind" in type && type.kind === "type"
+    ? (type as any)
+    : ((type as any).type() as Type<S>);
+};

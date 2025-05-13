@@ -6,8 +6,11 @@ import { Value } from "./value";
 import { Var } from "./variable";
 
 /** Used for declaring and working with enums. */
-export class Enum<Values extends Record<string, string | number | null>> {
-  constructor(name: string, values: Values) {
+export class Enum<
+  Name extends string,
+  Values extends Record<string, string | number | null>
+> {
+  constructor(name: Name, values: Values) {
     this.name = name;
     this.__values = values;
 
@@ -21,6 +24,7 @@ export class Enum<Values extends Record<string, string | number | null>> {
       [key in keyof Values]: Value;
     };
   }
+  kind = "enum" as const;
   name;
   __values;
   /**
@@ -84,15 +88,18 @@ export class Enum<Values extends Record<string, string | number | null>> {
     return Var.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
   }
 
-  static new<Values extends Record<string, string | number | null>>(
-    name: string,
-    values: Values
-  ) {
-    return new Enum<Values>(name, values);
+  static new<
+    Name extends string,
+    Values extends Record<string, string | number | null>
+  >(name: Name, values: Values) {
+    return new Enum(name, values);
   }
 
   /** Api-only Enum that comes from an external library. */
-  static api<const Keys extends readonly string[]>(name: string, keys: Keys) {
+  static api<Name extends string, const Keys extends readonly string[]>(
+    name: Name,
+    keys: Keys
+  ) {
     return new Enum(
       name,
       keys.reduce((prev, key) => {

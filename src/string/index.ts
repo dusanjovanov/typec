@@ -3,4 +3,9 @@ import { indexOf } from "./indexOf";
 import { slice } from "./slice";
 
 /** tc equivalent of the JS String class. */
-export const tcstring = { concat, indexOf, slice };
+export const tcstring = {
+  concat,
+  indexOf,
+  slice,
+  stringApi: { concat, indexOf, slice },
+};

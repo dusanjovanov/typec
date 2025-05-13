@@ -1,6 +1,5 @@
 import { Chunk } from "./chunk";
 import { Func } from "./func";
-import { Type } from "./type";
 import type { CodeLike } from "./types";
 import { unique } from "./utils";
 
@@ -16,7 +15,7 @@ export class App {
 
   /** Returns the entire main .c file code in a string. */
   create() {
-    const mainFn = Func.new(Type.int(), "main", [], () => {
+    const mainFn = Func.int("main", [], () => {
       return this.main();
     });
 

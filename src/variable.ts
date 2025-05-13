@@ -4,14 +4,21 @@ import { Operator } from "./operators";
 import { RValue } from "./rValue";
 import type { Struct } from "./struct";
 import { Type } from "./type";
-import type { CodeLike, PointerQualifier, TypeQualifier } from "./types";
+import type {
+  CodeLike,
+  GenericApi,
+  PointerQualifier,
+  TypeArg,
+  TypeQualifier,
+} from "./types";
+import { typeArgToType, Utils } from "./utils";
 import { Value } from "./value";
 
 /** Used for working with variables. */
-export class Var extends RValue {
-  constructor(type: Type, name: string) {
+export class Var<S extends string> extends RValue {
+  constructor(type: TypeArg<S>, name: string) {
     super(name);
-    this.type = type;
+    this.type = typeArgToType(type);
     this.name = name;
   }
   kind = "variable" as const;
@@ -81,8 +88,22 @@ export class Var extends RValue {
     return Operator.assign(this.declare(), Lit.singleMemberInit(value));
   }
 
-  static new(type: Type, name: string) {
+  /**
+   * Returns a `VarApi` object for this `Var` with bound functions.
+   */
+  api<Api extends GenericApi>(funcs: Api) {
+    return new VarApi(this.type, this.name, funcs);
+  }
+
+  static new<S extends string>(type: TypeArg<S>, name: string) {
     return new Var(type, name);
+  }
+
+  /**
+   * Returns a `VarApi` object with bound functions.
+   */
+  static api<Api extends GenericApi>(type: TypeArg, name: string, funcs: Api) {
+    return new VarApi(type, name, funcs);
   }
 
   static void(name: string, typeQualifiers?: TypeQualifier[]) {
@@ -109,16 +130,20 @@ export class Var extends RValue {
     return Var.new(Type.float(typeQualifiers), name);
   }
 
-  static array(
-    elementType: Type,
+  static array<S extends string>(
+    elementType: Type<S>,
     name: string,
     length: number | number[] | undefined = undefined
   ) {
     return Var.new(Type.array(elementType, length), name);
   }
 
-  static struct(s: Struct, name: string, typeQualifiers?: TypeQualifier[]) {
-    return Var.new(s.type(typeQualifiers), name);
+  static struct<Name extends string>(
+    struct: Struct<Name, any>,
+    name: string,
+    typeQualifiers?: TypeQualifier[]
+  ) {
+    return Var.new(struct.type(typeQualifiers), name);
   }
 
   /** Pointer variable for char*. */
@@ -129,4 +154,13 @@ export class Var extends RValue {
   ) {
     return Var.new(Type.string(typeQualifiers, pointerQualifiers), name);
   }
+}
+
+/** tc equivalent of a class based api. */
+export class VarApi<S extends string, Api extends GenericApi> extends Var<S> {
+  constructor(type: TypeArg<S>, name: string, api: Api) {
+    super(type, name);
+    this._ = Utils.bindFuncs(this.ref(), api);
+  }
+  _;
 }

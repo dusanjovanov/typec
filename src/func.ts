@@ -6,11 +6,12 @@ import { type CodeLike, type FuncArgsFromParams } from "./types";
 
 /** Used for creating and using functions or just declaring and using their api if they come from C libraries. */
 export class Func<
-  const Params extends readonly Param[] = any,
+  Return extends string,
+  const Params extends readonly Param<any, any>[],
   VarArgs extends boolean = false
 > {
   constructor(
-    returnType: Type,
+    returnType: Type<Return>,
     name: string,
     params: Params,
     body?: BodyFn<Params>,
@@ -26,7 +27,7 @@ export class Func<
 
     this.type = Type.func(
       returnType,
-      this._params as unknown as Param[],
+      this._params as unknown as Param<any, any>[],
       this.hasVarArgs
     );
 
@@ -36,6 +37,7 @@ export class Func<
     });
     this.params = paramsByName as FuncParamsByName<Params>;
   }
+  kind = "func" as const;
   returnType;
   name;
   /** Params by name */
@@ -88,7 +90,7 @@ export class Func<
 
   /** Shortcut for the `void` return type. */
   static void<
-    const Params extends readonly Param[],
+    const Params extends readonly Param<any, any>[],
     VarArgs extends boolean = false
   >(
     name: string,
@@ -101,7 +103,7 @@ export class Func<
 
   /** Shortcut for the `bool` return type. */
   static bool<
-    const Params extends readonly Param[],
+    const Params extends readonly Param<any, any>[],
     VarArgs extends boolean = false
   >(
     name: string,
@@ -114,7 +116,7 @@ export class Func<
 
   /** Shortcut for the `int` return type. */
   static int<
-    const Params extends readonly Param[],
+    const Params extends readonly Param<any, any>[],
     VarArgs extends boolean = false
   >(
     name: string,
@@ -127,7 +129,7 @@ export class Func<
 
   /** Shortcut for the `double` return type. */
   static double<
-    const Params extends readonly Param[],
+    const Params extends readonly Param<any, any>[],
     VarArgs extends boolean = false
   >(
     name: string,
@@ -138,11 +140,25 @@ export class Func<
     return new Func(Type.double(), name, params, body, options);
   }
 
-  static new<
-    const Params extends readonly Param[],
+  /** Shortcut for the `char*` return type. */
+  static string<
+    const Params extends readonly Param<any, any>[],
     VarArgs extends boolean = false
   >(
-    returnType: Type,
+    name: string,
+    params: Params,
+    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    options?: FuncOptions<VarArgs>
+  ) {
+    return new Func(Type.string(), name, params, body, options);
+  }
+
+  static new<
+    Return extends string,
+    const Params extends readonly Param<any, any>[],
+    VarArgs extends boolean = false
+  >(
+    returnType: Type<Return>,
     name: string,
     params: Params,
     body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
@@ -157,24 +173,24 @@ type FuncOptions<VarArgs extends boolean> = {
 };
 
 export type FuncArgs<
-  Params extends readonly Param[],
+  Params extends readonly Param<any, any>[],
   VarArgs extends boolean
 > = VarArgs extends false
   ? FuncArgsFromParams<Params>
   : [...FuncArgsFromParams<Params>, ...CodeLike[]];
 
-export type FuncParamsByName<Params extends readonly Param[]> =
+export type FuncParamsByName<Params extends readonly Param<any, any>[]> =
   Params extends []
     ? {}
     : Params extends readonly [
-        infer First extends Param,
-        ...infer Rest extends Param[]
+        infer First extends Param<any, any>,
+        ...infer Rest extends Param<any, any>[]
       ]
-    ? Rest extends readonly Param[]
+    ? Rest extends readonly Param<any, any>[]
       ? Record<First["name"], First> & FuncParamsByName<Rest>
       : Record<First["name"], First>
     : {};
 
-export type BodyFn<Params extends readonly Param[]> = (arg: {
+export type BodyFn<Params extends readonly Param<any, any>[]> = (arg: {
   params: FuncParamsByName<Params>;
 }) => CodeLike[];

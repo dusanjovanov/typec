@@ -1,9 +1,13 @@
 import { Type } from "./type";
-import { type PointerQualifier, type TypeQualifier } from "./types";
+import {
+  type PointerQualifier,
+  type TypeArg,
+  type TypeQualifier,
+} from "./types";
 import { Var } from "./variable";
 
-export class Param<Name extends string = any> extends Var {
-  constructor(type: Type, name: Name) {
+export class Param<S extends string, Name extends string> extends Var<S> {
+  constructor(type: TypeArg<S>, name: Name) {
     super(type, name);
     this.name = name;
   }
@@ -46,7 +50,10 @@ export class Param<Name extends string = any> extends Var {
     return Param.new(Type.double(typeQualifiers), name);
   }
 
-  static new<Name extends string = any>(type: Type, name: Name) {
+  static new<S extends string, Name extends string>(
+    type: TypeArg<S>,
+    name: Name
+  ) {
     return new Param(type, name);
   }
 }

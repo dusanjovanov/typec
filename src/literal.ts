@@ -11,7 +11,7 @@ export class Lit {
    *
    * `"abc"`
    */
-  static string(str: string) {
+  static str(str: string) {
     return `"${str.replaceAll(/"/g, `\\"`)}"`;
   }
 
@@ -20,8 +20,8 @@ export class Lit {
    *
    * Same as `string`, but for multiple strings each on a new line.
    */
-  static multilineString(...strings: string[]) {
-    return strings.map((s) => Lit.string(s)).join("\n");
+  static strMulti(...strings: string[]) {
+    return strings.map((s) => Lit.str(s)).join("\n");
   }
 
   /**

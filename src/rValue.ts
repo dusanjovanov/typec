@@ -4,6 +4,7 @@ import { Operator } from "./operators";
 import type { Type } from "./type";
 import type { CodeLike } from "./types";
 import { Utils } from "./utils";
+import { Value } from "./value";
 
 /** Base class for `rvalue` expressions. */
 export class RValue {
@@ -82,7 +83,7 @@ export class RValue {
   }
 
   /** Returns a Value for the cast `(type)exp` expression of this expression to the passed Type.  */
-  cast(type: Type) {
+  cast(type: Type<any>) {
     return Operator.cast(type, this);
   }
 
@@ -200,8 +201,13 @@ export class RValue {
     return Operator.ref(this);
   }
 
+  /** Returns the dereference expression for this value. `*expression`. */
+  deRef() {
+    return Operator.deRef(this);
+  }
+
   /** Returns assignments to multiple struct members by value ( dot ). */
-  assignMultipleDot(values: Record<string, CodeLike>) {
+  assignDotMulti(values: Record<string, CodeLike>) {
     return Chunk.new(
       ...Object.entries(values).map(([key, value]) => {
         return this.dot(key).assign(value);
@@ -210,7 +216,7 @@ export class RValue {
   }
 
   /** Returns assignments to multiple struct members by reference ( arrow ). */
-  assignMultipleArrow(values: Record<string, CodeLike>) {
+  assignArrowMulti(values: Record<string, CodeLike>) {
     return Chunk.new(
       ...Object.entries(values).map(([key, value]) => {
         return this.arrow(key).assign(value);
@@ -221,6 +227,14 @@ export class RValue {
   /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
   subAssign(index: CodeLike, value: CodeLike) {
     return Operator.assign(Operator.subscript(this, index), value);
+  }
+
+  /**
+   * Returns a Chunk of subscript assignment statements
+   * for each of the values passed starting from index 0 in increments of 1.
+   */
+  subAssignMulti(...values: CodeLike[]) {
+    return Chunk.new(...values.map((v, i) => this.subAssign(i, v)));
   }
 
   /** `+=` */
@@ -281,5 +295,12 @@ export class RValue {
   /** Returns the function return expression that returns this value. */
   return() {
     return Operator.return(this);
+  }
+
+  /** Accepts an array of member names and returns an array of Values with an arrow access operator expression for each member. */
+  arrowMulti<const Names extends string[]>(...memberNames: Names) {
+    return memberNames.map((m) => Value.new(this.arrow(m))) as {
+      [index in keyof Names]: Value;
+    };
   }
 }

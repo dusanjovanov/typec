@@ -3,11 +3,11 @@ import { Lit } from "./literal";
 
 describe("literal", () => {
   test(`string "abc"`, () => {
-    expect(Lit.string("abc")).toBe(`"abc"`);
+    expect(Lit.str("abc")).toBe(`"abc"`);
   });
 
   test('string `a"b"c`', () => {
-    expect(Lit.string(`a"b"c`)).toBe(`"a\\"b\\"c"`);
+    expect(Lit.str(`a"b"c`)).toBe(`"a\\"b\\"c"`);
   });
 
   test(`char 'a'`, () => {
@@ -55,13 +55,13 @@ describe("literal", () => {
   });
 
   test("compound", () => {
-    expect(Lit.compound(Lit.string("abc"), 123, "&var")).toBe(
+    expect(Lit.compound(Lit.str("abc"), 123, "&var")).toBe(
       `{"abc",123,&var}`
     );
   });
 
   test("simpleMember", () => {
     expect(Lit.singleMemberInit(123)).toBe(`{123}`);
-    expect(Lit.singleMemberInit(Lit.string("abc"))).toBe(`{"abc"}`);
+    expect(Lit.singleMemberInit(Lit.str("abc"))).toBe(`{"abc"}`);
   });
 });

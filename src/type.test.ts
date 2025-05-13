@@ -179,4 +179,9 @@ describe("Pointer", () => {
       .const();
     expect(type.toString()).toBe(`const int(*const*const)[3]`);
   });
+
+  test("Double pointer", () => {
+    const type = Type.void().pointer().pointer();
+    expect(type.declare("test")).toBe(`void** test`);
+  });
 });

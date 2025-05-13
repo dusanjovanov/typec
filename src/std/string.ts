@@ -10,24 +10,24 @@ export const stdstring = {
     Param.string("str"),
     Param.size_t("strsz"),
   ]),
-  strcat: Func.new(Type.string(), "strcat", [
+  strcat: Func.string("strcat", [
     Param.string("dest"),
     Param.string("src", ["const"]),
   ]),
-  strstr: Func.new(Type.string(), "strstr", [
+  strstr: Func.string("strstr", [
     Param.string("str", ["const"]),
     Param.string("substr", ["const"]),
   ]),
-  strcpy: Func.new(Type.string(), "strcpy", [
+  strcpy: Func.string("strcpy", [
     Param.string("dest", [], ["restrict"]),
     Param.string("src", [], ["restrict"]),
   ]),
-  strncpy: Func.new(Type.string(), "strncpy", [
+  strncpy: Func.string("strncpy", [
     Param.string("dest", [], ["restrict"]),
     Param.string("src", [], ["restrict"]),
     Param.size_t("count"),
   ]),
-  strncmp: Func.new(Type.int(), "strncmp", [
+  strncmp: Func.int("strncmp", [
     Param.string("lhs", ["const"]),
     Param.string("rhs", ["const"]),
     Param.size_t("count"),
