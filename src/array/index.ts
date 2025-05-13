@@ -18,5 +18,7 @@ export const array = {
   dynamicArrayApi: {
     init: initDynamic,
     push: pushDynamic,
+    forEach: forEachDynamic,
+    destroy: destroyDynamic,
   },
 };
