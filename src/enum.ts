@@ -1,6 +1,6 @@
 import { curly } from "./chunk";
 import { Type } from "./type";
-import type { PointerQualifier, TypeQualifier } from "./types";
+import type { Embeddable, PointerQualifier, TypeQualifier } from "./types";
 import { join } from "./utils";
 import { Val } from "./value";
 import { Var } from "./variable";
@@ -9,7 +9,8 @@ import { Var } from "./variable";
 export class Enum<
   Name extends string,
   Values extends Record<string, string | number | null>
-> {
+> implements Embeddable
+{
   constructor(name: Name, values: Values) {
     this.name = name;
     this.__values = values;

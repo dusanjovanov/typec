@@ -2,14 +2,19 @@ import { Block } from "./chunk";
 import { Op } from "./operators";
 import type { Par } from "./param";
 import { Type } from "./type";
-import { type CodeLike, type FuncArgsFromParams } from "./types";
+import {
+  type CodeLike,
+  type Embeddable,
+  type FuncArgsFromParams,
+} from "./types";
 
 /** Used for creating and using functions or just declaring and using their api if they come from C libraries. */
 export class Func<
   Return extends string,
   const Params extends readonly Par<any, any>[],
   VarArgs extends boolean = false
-> {
+> implements Embeddable
+{
   constructor(
     returnType: Type<Return>,
     name: string,

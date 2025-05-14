@@ -1,10 +1,17 @@
 import { Par } from "./param";
 import { Type } from "./type";
-import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
+import type {
+  Embeddable,
+  GenericMembers,
+  PointerQualifier,
+  TypeQualifier,
+} from "./types";
 import { Var } from "./variable";
 
 /** Used for declaring and working with unions. */
-export class Union<Name extends string, Members extends GenericMembers> {
+export class Union<Name extends string, Members extends GenericMembers>
+  implements Embeddable
+{
   constructor(name: Name, members: Members) {
     this.name = name;
     this.members = members;
@@ -48,6 +55,10 @@ export class Union<Name extends string, Members extends GenericMembers> {
     pointerQualifiers?: PointerQualifier[]
   ) {
     return Par.new(this.type(typeQualifiers).ptr(pointerQualifiers), name);
+  }
+
+  embed() {
+    return this.declare();
   }
 
   /** Create a named union. */

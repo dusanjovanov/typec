@@ -1,6 +1,6 @@
 import { Chunk } from "./chunk";
 import { Func } from "./func";
-import type { CodeLike } from "./types";
+import type { CodeLike, Embeddable } from "./types";
 import { unique } from "./utils";
 
 export class App {
@@ -24,18 +24,9 @@ export class App {
     return Chunk.new(
       ...unique(this.includes.map((i) => i.toString())),
       ...unique(
-        this.embeds
-          .filter((e) => {
-            return (
-              typeof e === "object" &&
-              "embed" in e &&
-              typeof e.embed === "function"
-            );
-          })
-          .map((e) => {
-            // @ts-ignore
-            return e.embed();
-          })
+        this.embeds.map((e) => {
+          return e.embed();
+        })
       ),
       mainDef
     ).toString();
@@ -47,9 +38,10 @@ export class App {
 }
 
 export type AppOptions = {
-  /** To manually add include directives. */
+  /** Add include directives. */
   includes?: CodeLike[];
-  embeds?: CodeLike[];
+  /** Embed code between include directives and the main function. */
+  embeds?: Embeddable[];
   /** The app's main function */
   main: () => CodeLike[];
 };

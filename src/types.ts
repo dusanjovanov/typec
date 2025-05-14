@@ -118,3 +118,7 @@ export type TypeArg<S extends string = any> =
   | Struct<S, any>
   | Union<S, any>
   | Enum<S, any>;
+
+export type Embeddable = {
+  embed(): string;
+};

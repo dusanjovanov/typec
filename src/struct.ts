@@ -1,6 +1,7 @@
 import { Par } from "./param";
 import { Type } from "./type";
 import type {
+  Embeddable,
   GenericApi,
   GenericMembers,
   PointerQualifier,
@@ -9,7 +10,9 @@ import type {
 import { Var } from "./variable";
 
 /** Used for declaring and working with structs. */
-export class Struct<Name extends string, Members extends GenericMembers> {
+export class Struct<Name extends string, Members extends GenericMembers>
+  implements Embeddable
+{
   constructor(members: Members, name: Name = null as unknown as Name) {
     this.name = name;
     this.members = members;
