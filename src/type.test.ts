@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Param } from "./param";
+import { Par } from "./param";
 import { Type } from "./type";
 import { NUMBER_TYPES, type SimpleType } from "./types";
 
@@ -64,29 +64,29 @@ describe("Array", () => {
   });
 
   test("Pointer element", () => {
-    const type = Type.array(Type.int().pointer(), 3);
+    const type = Type.array(Type.int().ptr(), 3);
     expect(type.toString()).toBe(`int*[3]`);
   });
 });
 
 describe("Func", () => {
   test("Simple", () => {
-    const type = Type.func(Type.void(), [Param.char("a"), Param.int("b")]);
+    const type = Type.func(Type.void(), [Par.char("a"), Par.int("b")]);
     expect(type.toString()).toBe(`void(char a,int b)`);
   });
 
   test("Simple with const", () => {
     const type = Type.func(Type.void().const(), [
-      Param.new(Type.char().const(), "a"),
-      Param.new(Type.int().const(), "b"),
+      Par.new(Type.char().const(), "a"),
+      Par.new(Type.int().const(), "b"),
     ]);
     expect(type.toString()).toBe(`const void(const char a,const int b)`);
   });
 
   test("Func with pointers complex", () => {
-    const type = Type.func(Type.void().const().pointer().const(), [
-      Param.new(Type.char().const().pointer().const(), "a"),
-      Param.new(Type.int().const().pointer().const(), "b"),
+    const type = Type.func(Type.void().const().ptr().const(), [
+      Par.new(Type.char().const().ptr().const(), "a"),
+      Par.new(Type.int().const().ptr().const(), "b"),
     ]);
     expect(type.toString()).toBe(
       `const void* const(const char* const a,const int* const b)`
@@ -120,68 +120,68 @@ describe("Union", () => {
 
 describe("Pointer", () => {
   test("Struct", () => {
-    const type = Type.struct("abc").pointer();
+    const type = Type.struct("abc").ptr();
     expect(type.toString()).toBe(`struct abc*`);
   });
 
   test("Struct complex", () => {
-    const type = Type.struct("abc").const().pointer().const();
+    const type = Type.struct("abc").const().ptr().const();
     expect(type.toString()).toBe(`const struct abc* const`);
   });
 
   test("Func", () => {
     const type = Type.func(Type.void(), [
-      Param.char("a"),
-      Param.int("b"),
-    ]).pointer();
+      Par.char("a"),
+      Par.int("b"),
+    ]).ptr();
     expect(type.toString()).toBe(`void(*)(char a,int b)`);
   });
 
   test("Pointer Func", () => {
-    const type = Type.func(Type.void(), [Param.char("a"), Param.int("b")])
-      .pointer()
-      .pointer();
+    const type = Type.func(Type.void(), [Par.char("a"), Par.int("b")])
+      .ptr()
+      .ptr();
     expect(type.toString()).toBe(`void(**)(char a,int b)`);
   });
 
   test("Pointer Func complex", () => {
     const type = Type.func(Type.void(["const"]), [
-      Param.char("a"),
-      Param.int("b"),
+      Par.char("a"),
+      Par.int("b"),
     ])
-      .pointer()
+      .ptr()
       .const()
-      .pointer()
+      .ptr()
       .const();
     expect(type.toString()).toBe(`const void(*const*const)(char a,int b)`);
   });
 
   test("Array", () => {
-    const type = Type.array(Type.int(), 3).pointer();
+    const type = Type.array(Type.int(), 3).ptr();
     expect(type.toString()).toBe(`int(*)[3]`);
   });
 
   test("Array no length", () => {
-    const type = Type.array(Type.int()).pointer();
+    const type = Type.array(Type.int()).ptr();
     expect(type.toString()).toBe(`int(*)[]`);
   });
 
   test("Pointer Array", () => {
-    const type = Type.array(Type.int(), 3).pointer().pointer();
+    const type = Type.array(Type.int(), 3).ptr().ptr();
     expect(type.toString()).toBe(`int(**)[3]`);
   });
 
   test("Pointer Array complex", () => {
     const type = Type.array(Type.int().const(), 3)
-      .pointer()
+      .ptr()
       .const()
-      .pointer()
+      .ptr()
       .const();
     expect(type.toString()).toBe(`const int(*const*const)[3]`);
   });
 
   test("Double pointer", () => {
-    const type = Type.void().pointer().pointer();
+    const type = Type.void().ptr().ptr();
     expect(type.declare("test")).toBe(`void** test`);
   });
 });

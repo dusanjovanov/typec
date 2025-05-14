@@ -2,7 +2,7 @@ import { curly } from "./chunk";
 import { Type } from "./type";
 import type { PointerQualifier, TypeQualifier } from "./types";
 import { join } from "./utils";
-import { Value } from "./value";
+import { Val } from "./value";
 import { Var } from "./variable";
 
 /** Used for declaring and working with enums. */
@@ -17,11 +17,11 @@ export class Enum<
     const keys: Record<string, any> = {};
 
     Object.keys(values).forEach((name) => {
-      keys[name] = Value.new(name);
+      keys[name] = Val.new(Type.int(), name);
     });
 
     this.keys = keys as {
-      [key in keyof Values]: Value;
+      [key in keyof Values]: Val<"int">;
     };
   }
   kind = "enum" as const;
@@ -71,7 +71,7 @@ export class Enum<
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return this.type(typeQualifiers).pointer(pointerQualifiers);
+    return this.type(typeQualifiers).ptr(pointerQualifiers);
   }
 
   /** Returns a Var to hold a value of this enum. */
@@ -80,7 +80,7 @@ export class Enum<
   }
 
   /** Returns a Var to hold a `pointer` to a value of this enum. */
-  pointer(
+  ptr(
     name: string,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]

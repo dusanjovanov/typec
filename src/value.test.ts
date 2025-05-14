@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { Type } from "./type";
 import type { SimpleType } from "./types";
-import { Value } from "./value";
+import { Val } from "./value";
 
 const types: SimpleType[] = [
   "char",
@@ -26,7 +27,7 @@ const types: SimpleType[] = [
 describe("Value.new", () => {
   types.forEach((type) => {
     test(type, () => {
-      const _t = Value.new("test");
+      const _t = Val.new(Type.any(), "test");
       expect(_t.kind).toBe("value");
       expect(_t.value).toBe("test");
       expect(_t.toString()).toBe("test");

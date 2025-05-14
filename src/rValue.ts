@@ -1,19 +1,21 @@
 import { Chunk } from "./chunk";
 import { Condition } from "./condition";
-import { Operator } from "./operators";
+import { Op } from "./operators";
 import { Type } from "./type";
-import type { CodeLike } from "./types";
-import { Utils } from "./utils";
+import type { CodeLike, TypeArg } from "./types";
+import { typeArgToType, Utils } from "./utils";
 
 /** Base class for `rvalue` expressions. */
-export class RValue {
-  constructor(valueExp: CodeLike) {
+export class RValue<S extends string> {
+  constructor(type: TypeArg<S>, valueExp: CodeLike) {
+    this.type = typeArgToType(type);
     this.value = String(valueExp);
   }
+  type;
   value;
 
   static new(type: Type<any>, valueExp: CodeLike) {
-    return new RValue(valueExp);
+    return new RValue(type, valueExp);
   }
 
   toString() {
@@ -22,77 +24,77 @@ export class RValue {
 
   /** Returns a Value for the `+` binary expression between this and another expression. */
   plus(value: CodeLike) {
-    return Operator.plus(this, value);
+    return Op.plus(Type.any(), this, value);
   }
 
   /** Returns a Value for the `-` binary expression between this and another expression. */
   minus(value: CodeLike) {
-    return Operator.minus(this, value);
+    return Op.minus(Type.any(), this, value);
   }
 
   /** Returns a Value for the `*` binary expression between this and another expression. */
   mul(value: CodeLike) {
-    return Operator.mul(this, value);
+    return Op.mul(Type.any(), this, value);
   }
 
   /** Returns a Value for the `/` binary expression between this and another expression. */
   div(value: CodeLike) {
-    return Operator.div(this, value);
+    return Op.div(Type.any(), this, value);
   }
 
   /** Returns a Value for the `%` binary expression between this and another expression. */
   modulo(value: CodeLike) {
-    return Operator.modulo(this, value);
+    return Op.modulo(Type.any(), this, value);
   }
 
   /** Returns a Value for the `>` expression between this and another expression.  */
   gt(value: CodeLike) {
-    return Operator.gt(this, value);
+    return Op.gt(this, value);
   }
 
   /** Returns a Value for the `<` expression between this and another expression.  */
   lt(value: CodeLike) {
-    return Operator.lt(this, value);
+    return Op.lt(this, value);
   }
 
   /** Returns a Value for the `>=` expression between this and another expression.  */
   gte(value: CodeLike) {
-    return Operator.gte(this, value);
+    return Op.gte(this, value);
   }
 
   /** Returns a Value for the `<=` expression between this and another expression.  */
   lte(value: CodeLike) {
-    return Operator.lte(this, value);
+    return Op.lte(this, value);
   }
 
   /** Returns a Value for the `==` expression between this and another expression.  */
   equal(value: CodeLike) {
-    return Operator.equal(this, value);
+    return Op.equal(this, value);
   }
 
   /** Returns a Value for the `!` unary expression.  */
   not() {
-    return Operator.not(this);
+    return Op.not(this);
   }
 
   /** Returns a Value for the `!=` expression between this and another expression.  */
   notEqual(value: CodeLike) {
-    return Operator.notEqual(this, value);
+    return Op.notEqual(this, value);
   }
 
   /** Returns a Value for the `||` expression between this and another expression.  */
   or(value: CodeLike) {
-    return Operator.or(this, value);
+    return Op.or(this, value);
   }
 
   /** Returns a Value for the cast `(type)exp` expression of this expression to the passed Type.  */
   cast(type: Type<any>) {
-    return Operator.cast(type, this);
+    return Op.cast(type, this);
   }
 
   /** Returns a Value for the ternary `cond?exp1:exp2` expression where the condition is this expression.  */
   ternary(exp1: CodeLike, exp2: CodeLike) {
-    return Operator.ternary(this, exp1, exp2);
+    return Op.ternary(this, exp1, exp2);
   }
 
   /**
@@ -104,7 +106,8 @@ export class RValue {
 
   /** Returns an assignment expression with a clamped value between min and max. */
   clamp(min: CodeLike, max: CodeLike) {
-    return Operator.assign(this, Utils.clamp(this, min, max));
+    // TODO: first type ?
+    return Op.assign(Type.any(), this, Utils.clamp(this, min, max));
   }
 
   /**
@@ -126,23 +129,21 @@ export class RValue {
    * ```
    */
   equalReturn(valueToCompare: CodeLike, returnValue?: CodeLike) {
-    return Condition.if(this.equal(valueToCompare), [
-      Operator.return(returnValue),
-    ]);
+    return Condition.if(this.equal(valueToCompare), [Op.return(returnValue)]);
   }
 
   /**
    * Returns an if block with the value itself as the condition and returns the expression argument.
    */
   thenReturn(returnValue?: CodeLike) {
-    return Condition.if(this, [Operator.return(returnValue)]);
+    return Condition.if(this, [Op.return(returnValue)]);
   }
 
   /**
    * Returns an if block that checks if the value is falsy using the ! unary operator and returns the expression argument.
    */
   notReturn(returnValue?: CodeLike) {
-    return Condition.if(this.not(), [Operator.return(returnValue)]);
+    return Condition.if(this.not(), [Op.return(returnValue)]);
   }
 
   /**
@@ -161,52 +162,53 @@ export class RValue {
 
   /** Returns a Value for the `|` expression between this and another expression.  */
   bitOr(value: CodeLike) {
-    return Operator.bitOr(this, value);
+    return Op.bitOr(this, value);
   }
 
   /** Returns a Value for the `&` expression between this and another expression.  */
   bitAnd(value: CodeLike) {
-    return Operator.bitAnd(this, value);
+    return Op.bitAnd(this, value);
   }
 
   /** Returns a Value for the sizeof expression.  */
   sizeOf() {
-    return Operator.sizeOf(this);
+    return Op.sizeOf(this);
   }
 
   /** Assign a value. */
   assign(value: CodeLike) {
-    return Operator.assign(this, value);
+    // TODO: value type ?
+    return Op.assign(Type.any(), this, value);
   }
 
   /** Returns a Value with the `-` in front of this Value. */
   negative() {
-    return Operator.negative(this);
+    return Op.negative(this);
   }
 
-  /** Returns a Value for an index accessor `arr[3]`. */
+  /** Returns a Value for a subscript ( index ) accessor `arr[3]`. */
   at(index: CodeLike) {
-    return Operator.subscript(this, index);
+    return Op.subscript(this, index);
   }
 
   /** Access a member of the struct directly. */
   dot(key: CodeLike) {
-    return Operator.dot(this, key);
+    return Op.dot(this, key);
   }
 
   /** Access a member of the struct through a pointer. */
   arrow(key: CodeLike) {
-    return Operator.arrow(this, key);
+    return Op.arrow(this, key);
   }
 
   /** Returns the reference expression for this value. `&expression`. */
   ref() {
-    return Operator.ref(this);
+    return Op.ref(this.type.ptr(), this);
   }
 
   /** Returns the dereference expression for this value. `*expression`. */
   deRef() {
-    return Operator.deRef(this);
+    return Op.deRef(this.type, this);
   }
 
   /** Returns assignments to multiple struct members by value ( dot ). */
@@ -229,7 +231,8 @@ export class RValue {
 
   /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
   subAssign(index: CodeLike, value: CodeLike) {
-    return Operator.assign(Operator.subscript(this, index), value);
+    // TODO: Element type of array otherwise any
+    return Op.assign(Type.any(), Op.subscript(this, index), value);
   }
 
   /**
@@ -242,70 +245,68 @@ export class RValue {
 
   /** `+=` */
   plusAssign(value: CodeLike) {
-    return Operator.plusAssign(this, value);
+    return Op.plusAssign(this.type, this, value);
   }
 
   /** `-=` */
   minusAssign(value: CodeLike) {
-    return Operator.minusAssign(this, value);
+    return Op.minusAssign(this.type, this, value);
   }
 
   /** `*=` */
   mulAssign(value: CodeLike) {
-    return Operator.mulAssign(this, value);
+    return Op.mulAssign(this.type, this, value);
   }
 
   /** `/=` */
   divAssign(value: CodeLike) {
-    return Operator.divAssign(this, value);
+    return Op.divAssign(this.type, this, value);
   }
 
   /** `%=` */
   moduloAssign(value: CodeLike) {
-    return Operator.moduloAssign(this, value);
+    return Op.moduloAssign(this.type, this, value);
   }
 
   /** Wraps the expression in parenthesis. */
   parens() {
-    return Operator.parens(this);
+    return Op.parens(this.type, this);
   }
 
   /** `a++` */
   postInc() {
-    return Operator.postInc(this);
+    return Op.postInc(this.type, this);
   }
 
   /** `a--` */
   postDec() {
-    return Operator.postDec(this);
+    return Op.postDec(this.type, this);
   }
 
   /** `++a` */
   preInc() {
-    return Operator.preInc(this);
+    return Op.preInc(this.type, this);
   }
 
   /** `--a` */
   preDec() {
-    return Operator.preDec(this);
+    return Op.preDec(this.type, this);
   }
 
   /** Returns a function call expression. */
   call(...args: CodeLike[]) {
-    return Operator.call(this, args);
+    return Op.call(this, args);
   }
 
   /** Returns the function return expression that returns this value. */
   return() {
-    return Operator.return(this);
+    return Op.return(this);
   }
 
   /** Accepts an array of member names and returns an array of Values with an arrow access operator expression for each member. */
   arrowMulti<const Names extends string[]>(...memberNames: Names) {
-    return memberNames.map((m) =>
-      RValue.new(Type.simple("any"), this.arrow(m))
-    ) as {
-      [index in keyof Names]: RValue;
+    return memberNames.map((m) => RValue.new(Type.any(), this.arrow(m))) as {
+      [index in keyof Names]: RValue<"any">;
     };
   }
 }

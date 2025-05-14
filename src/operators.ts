@@ -1,16 +1,36 @@
-import type { Type } from "./type";
-import type { CodeLike } from "./types";
-import { emptyFalsy, emptyNotFalse, joinArgs } from "./utils";
-import { Value } from "./value";
+import { Type } from "./type";
+import type { CodeLike, TypeArg } from "./types";
+import { emptyFalsy, emptyNotFalse, joinArgs, typeArgToType } from "./utils";
+import { Val } from "./value";
 
-const preUn = (op: string) => (exp: CodeLike) => Value.new(`${op}${exp}`);
-const postUn = (op: string) => (exp: CodeLike) => Value.new(`${exp}${op}`);
-
-const binOp = (op: string) => (left: CodeLike, right: CodeLike) => {
-  return Value.new(`${left}${op}${right}`);
+const preUn = (op: string) => {
+  return <S extends string>(type: TypeArg<S>, exp: CodeLike) => {
+    return Val.new(type, `${op}${exp}`);
+  };
 };
 
-export class Operator {
+const postUn = (op: string) => {
+  return <S extends string>(type: TypeArg<S>, exp: CodeLike) => {
+    return Val.new(type, `${exp}${op}`);
+  };
+};
+
+const binOp = (op: string) => {
+  return <S extends string>(
+    type: TypeArg<S>,
+    left: CodeLike,
+    right: CodeLike
+  ) => {
+    return Val.new(type, `${left}${op}${right}`);
+  };
+};
+
+const logicalBinOp = (op: string) => (left: CodeLike, right: CodeLike) => {
+  return Val.new(Type.int(), `${left}${op}${right}`);
+};
+
+/** Operators */
+export class Op {
   // Unary operators
 
   /** Prefix increment */
@@ -22,16 +42,18 @@ export class Operator {
   /** Postfix decrement */
   static postDec = postUn("--");
   /** Unary not ( ! ) */
-  static not = preUn("!");
+  static not = (exp: CodeLike) => {
+    return Val.new(Type.int(), `!${exp}`);
+  };
 
   static bitNot = preUn("~");
 
   // memory
   static sizeOf(exp: CodeLike) {
-    return Value.new(`sizeof(${exp})`);
+    return Val.new(Type.size_t(), `sizeof(${exp})`);
   }
   static alignOf(exp: CodeLike) {
-    return Value.new(`alignof(${exp})`);
+    return Val.new(Type.int(), `alignof(${exp})`);
   }
   /** Dereference operator `*`. */
   static deRef = preUn("*");
@@ -44,28 +66,6 @@ export class Operator {
   static minus = binOp("-");
   static div = binOp("/");
   static mul = binOp("*");
-
-  // Logical
-
-  // comparison
-  static equal = binOp("==");
-  static notEqual = binOp("!=");
-  static gt = binOp(">");
-  static lt = binOp("<");
-  static gte = binOp(">=");
-  static lte = binOp("<=");
-
-  static and = binOp("&&");
-  static or = binOp("||");
-
-  // Bitwise
-  static bitAnd = binOp("&");
-  static bitOr = binOp("|");
-  static bitXor = binOp("^");
-  /** Shift left */
-  static bitLeft = binOp("<<");
-  /** Shift right */
-  static bitRight = binOp(">>");
 
   // Assignment operators
   static assign = binOp("=");
@@ -80,55 +80,75 @@ export class Operator {
   static bitLeftAssign = binOp("<<=");
   static bitRightAssign = binOp(">>=");
 
+  // Logical
+  static equal = logicalBinOp("==");
+  static notEqual = logicalBinOp("!=");
+  static gt = logicalBinOp(">");
+  static lt = logicalBinOp("<");
+  static gte = logicalBinOp(">=");
+  static lte = logicalBinOp("<=");
+  static and = logicalBinOp("&&");
+  static or = logicalBinOp("||");
+
+  // Bitwise
+  static bitAnd = logicalBinOp("&");
+  static bitOr = logicalBinOp("|");
+  static bitXor = logicalBinOp("^");
+  /** Shift left */
+  static bitLeft = logicalBinOp("<<");
+  /** Shift right */
+  static bitRight = logicalBinOp(">>");
+
   /**
    * Returns a type cast expression.
    */
-  static cast(type: Type<any>, exp: CodeLike) {
-    return Value.new(`(${type})${exp}`);
+  static cast<S extends string>(type: TypeArg<S>, exp: CodeLike) {
+    const t = typeArgToType(type);
+    return Val.new(t, `(${t})${exp}`);
   }
 
   /**
    * Accesses a struct member by value (e.g., `structVar.member`).
    */
   static dot(structExp: CodeLike, key: CodeLike) {
-    return Value.new(`${structExp}.${key}`);
+    return Val.new(Type.any(), `${structExp}.${key}`);
   }
 
   /**
    * Accesses a struct member by pointer (e.g., `structVar->member`).
    */
   static arrow(structExp: CodeLike, key: CodeLike) {
-    return Value.new(`${structExp}->${key}`);
+    return Val.new(Type.any(), `${structExp}->${key}`);
   }
 
   /** Access an array element by index. (e.g. `arr[2]`) */
   static subscript(arrExp: CodeLike, index: CodeLike) {
-    return Value.new(`${arrExp}[${index}]`);
+    return Val.new(Type.any(), `${arrExp}[${index}]`);
   }
 
   /**
    * Creates a ternary expression (e.g., condition ? exp1 : exp2).
    */
   static ternary(condition: CodeLike, exp1: CodeLike, exp2: CodeLike) {
-    return Value.new(`${condition}?${exp1}:${exp2}`);
+    return Val.new(Type.any(), `${condition}?${exp1}:${exp2}`);
   }
 
   static negative(exp: CodeLike) {
-    return Value.new(`-(${exp})`);
+    return Val.new(Type.any(), `-(${exp})`);
   }
 
   /** Returns a return statement expression. */
   static return(value?: CodeLike) {
-    return Value.new(`return${emptyNotFalse(value, (v) => ` ${v}`)}`);
+    return Val.new(Type.any(), `return${emptyNotFalse(value, (v) => ` ${v}`)}`);
   }
 
   /** Returns a function call expression. */
   static call(fnName: CodeLike, args: CodeLike[]) {
-    return Value.new(`${fnName}(${emptyFalsy(args, joinArgs)})`);
+    return Val.new(Type.any(), `${fnName}(${emptyFalsy(args, joinArgs)})`);
   }
 
   /** Adds parenthesis around the expression. */
-  static parens(exp: CodeLike) {
-    return Value.new(`(${exp})`);
+  static parens<S extends string>(type: TypeArg<S>, exp: CodeLike) {
+    return Val.new(type, `(${exp})`);
   }
 }

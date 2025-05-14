@@ -1,6 +1,6 @@
 import { Block } from "./chunk";
-import { Operator } from "./operators";
-import type { Param } from "./param";
+import { Op } from "./operators";
+import type { Par } from "./param";
 import type {
   AutoSimpleType,
   GenericMembers,
@@ -27,8 +27,8 @@ export class Type<S extends string> {
   str: string;
 
   /** Create a pointer type to this type. */
-  pointer(qualifiers?: PointerQualifier[]) {
-    return Type.pointer(this, qualifiers) as unknown as Type<`${S}*`>;
+  ptr(qualifiers?: PointerQualifier[]) {
+    return Type.ptr(this, qualifiers) as unknown as Type<`${S}*`>;
   }
 
   /** Returns a new Type with the `const` modifier added to the type. */
@@ -43,7 +43,7 @@ export class Type<S extends string> {
   }
 
   sizeOf() {
-    return Operator.sizeOf(this);
+    return Op.sizeOf(this);
   }
 
   /**
@@ -70,6 +70,10 @@ export class Type<S extends string> {
     qualifiers: TypeQualifier[] = []
   ) {
     return Type.new({ kind: "simple", specifier, qualifiers });
+  }
+
+  static any(qualifiers?: TypeQualifier[]) {
+    return Type.simple("any", qualifiers);
   }
 
   static int(qualifiers?: TypeQualifier[]) {
@@ -108,7 +112,7 @@ export class Type<S extends string> {
     return Type.simple("float", qualifiers);
   }
 
-  static pointer<S extends string>(
+  static ptr<S extends string>(
     type: TypeArg<S>,
     qualifiers: PointerQualifier[] = []
   ) {
@@ -124,7 +128,7 @@ export class Type<S extends string> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.char(typeQualifiers).pointer(pointerQualifiers);
+    return Type.char(typeQualifiers).ptr(pointerQualifiers);
   }
 
   static array<S extends string>(
@@ -136,7 +140,7 @@ export class Type<S extends string> {
 
   static func<Return extends string>(
     returnType: Type<Return>,
-    params: Param<any, any>[],
+    params: Par<any, any>[],
     hasVarArgs = false
   ) {
     return Type.new({ kind: "func", returnType, params, hasVarArgs });
@@ -332,7 +336,7 @@ export type ArrayType<S extends string> = {
 export type FuncType<S extends string> = {
   kind: "func";
   returnType: Type<S>;
-  params: Param<any, any>[];
+  params: Par<any, any>[];
   hasVarArgs: boolean;
 };
 

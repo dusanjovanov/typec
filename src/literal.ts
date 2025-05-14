@@ -11,8 +11,8 @@ export class Lit {
    *
    * `"abc"`
    */
-  static str(str: string) {
-    return `"${str.replaceAll(/"/g, `\\"`)}"`;
+  static str(s: string) {
+    return `"${s.replaceAll(/"/g, `\\"`)}"`;
   }
 
   /**
@@ -29,8 +29,8 @@ export class Lit {
    *
    * `'a'`
    */
-  static char(char: string) {
-    return `'${char.replace(/'/g, `\\'`)}'`;
+  static char(c: string) {
+    return `'${c.replace(/'/g, `\\'`)}'`;
   }
 
   /**
@@ -38,8 +38,8 @@ export class Lit {
    *
    * `23U`
    */
-  static unsigned(value: Numberish) {
-    return `${value}U`;
+  static unsigned(n: Numberish) {
+    return `${n}U`;
   }
 
   /**
@@ -47,8 +47,8 @@ export class Lit {
    *
    * `23L`
    */
-  static longInt(value: Numberish) {
-    return `${value}L`;
+  static longInt(n: Numberish) {
+    return `${n}L`;
   }
 
   /**
@@ -56,8 +56,8 @@ export class Lit {
    *
    * `23UL`
    */
-  static unsignedLongInt(value: Numberish) {
-    return `${value}UL`;
+  static unsignedLongInt(n: Numberish) {
+    return `${n}UL`;
   }
 
   /**
@@ -65,8 +65,8 @@ export class Lit {
    *
    * `23LL`
    */
-  static longLongInt(value: Numberish) {
-    return `${value}LL`;
+  static longLongInt(n: Numberish) {
+    return `${n}LL`;
   }
 
   /**
@@ -74,8 +74,8 @@ export class Lit {
    *
    * `23ULL`
    */
-  static unsignedLongLongInt(value: Numberish) {
-    return `${value}ULL`;
+  static unsignedLongLongInt(n: Numberish) {
+    return `${n}ULL`;
   }
 
   /**
@@ -83,8 +83,8 @@ export class Lit {
    *
    * `23.45F`
    */
-  static float(value: Numberish) {
-    return `${value}F`;
+  static float(n: Numberish) {
+    return `${n}F`;
   }
 
   /**
@@ -92,8 +92,8 @@ export class Lit {
    *
    * `23.45L`
    */
-  static longDouble(value: Numberish) {
-    return `${value}L`;
+  static longDouble(n: Numberish) {
+    return `${n}L`;
   }
 
   /**
@@ -101,8 +101,8 @@ export class Lit {
    *
    * `L'a'`
    */
-  static wideChar(char: Numberish) {
-    return `L${Lit.char(String(char))}`;
+  static wideChar(c: Numberish) {
+    return `L${Lit.char(String(c))}`;
   }
 
   /**
@@ -115,7 +115,7 @@ export class Lit {
   }
 
   /**
-   * Returns a struct ( dot ) designated initializer expression.
+   * Returns a struct designated initializer expression.
    *
    * `{ .a = 3, .b = &var, .c = "def" }`
    */
@@ -128,7 +128,7 @@ export class Lit {
   }
 
   /**
-   * Returns an array ( subscript ) designated initializer expression.
+   * Returns an array designated initializer expression.
    *
    * `{ [1] = 2, [3] = 5 }`
    */

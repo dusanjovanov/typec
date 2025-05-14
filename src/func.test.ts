@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Func } from "./func";
-import { Param } from "./param";
+import { Par } from "./param";
 import { Type } from "./type";
 
 describe("Func", () => {
@@ -8,7 +8,7 @@ describe("Func", () => {
     const fn = Func.new(
       Type.int(),
       "sum",
-      [Param.int("a"), Param.int("b")],
+      [Par.int("a"), Par.int("b")],
       ({ params }) => {
         return [params.a.plus(params.b).return()];
       }

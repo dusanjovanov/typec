@@ -1,7 +1,7 @@
 import { NULL } from "../constants";
 import { Func } from "../func";
 import { Loop } from "../loops";
-import { Param } from "../param";
+import { Par } from "../param";
 import { stdstring } from "../std";
 import { Type } from "../type";
 import { Var } from "../variable";
@@ -11,9 +11,9 @@ export const indexOf = Func.new(
   Type.int(),
   "str_indexOf",
   [
-    Param.string("str", ["const"]),
-    Param.string("search", ["const"]),
-    Param.new(Type.int().pointer(), "fromIndex"),
+    Par.string("str", ["const"]),
+    Par.string("search", ["const"]),
+    Par.new(Type.int().ptr(), "fromIndex"),
   ],
   ({ params }) => {
     const strLen = Var.size_t("str_len");

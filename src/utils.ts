@@ -1,4 +1,4 @@
-import { Operator } from "./operators";
+import { Op } from "./operators";
 import type { Type } from "./type";
 import type {
   BoundApi,
@@ -90,18 +90,18 @@ export const unique = <T>(arr: T[]) => {
 /** Various useful utils. */
 export class Utils {
   static min(left: CodeLike, right: CodeLike) {
-    return Operator.ternary(Operator.lt(left, right), left, right);
+    return Op.ternary(Op.lt(left, right), left, right);
   }
 
   static max(left: CodeLike, right: CodeLike) {
-    return Operator.ternary(Operator.gt(left, right), left, right);
+    return Op.ternary(Op.gt(left, right), left, right);
   }
 
   static clamp(value: CodeLike, minVal: CodeLike, maxVal: CodeLike) {
-    return Operator.ternary(
-      Operator.lt(value, minVal),
+    return Op.ternary(
+      Op.lt(value, minVal),
       minVal,
-      Operator.ternary(Operator.gt(value, maxVal), maxVal, value)
+      Op.ternary(Op.gt(value, maxVal), maxVal, value)
     );
   }
 

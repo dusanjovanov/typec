@@ -1,10 +1,10 @@
 import type { Enum } from "./enum";
 import type { Func } from "./func";
-import type { Param } from "./param";
+import type { Par } from "./param";
 import type { Struct } from "./struct";
 import type { Type } from "./type";
 import type { Union } from "./union";
-import type { Value } from "./value";
+import type { Val } from "./value";
 
 export const INTEGER_TYPES = [
   "char",
@@ -88,7 +88,7 @@ export type GenericMembers = {
   [Key: string]: Type<any>;
 };
 
-export type FuncArgsFromParams<Params extends readonly Param<any, any>[]> = {
+export type FuncArgsFromParams<Params extends readonly Par<any, any>[]> = {
   [index in keyof Params]: FuncArg<Params[index]["name"]>;
 };
 
@@ -99,16 +99,16 @@ export type BoundFunc<Func extends GenericFunc> = (
   ...args: Func["hasVarArgs"] extends false
     ? BoundArgs<Func["_params"]>
     : [...BoundArgs<Func["_params"]>, ...CodeLike[]]
-) => Value;
+) => Val<"any">;
 
 export type BoundApi<Funcs extends GenericApi> = {
   [key in keyof Funcs]: BoundFunc<Funcs[key]>;
 };
 
-type BoundArgs<Params extends readonly Param<any, any>[]> =
+type BoundArgs<Params extends readonly Par<any, any>[]> =
   Params extends readonly [
-    infer _ extends Param<any, any>,
-    ...infer Rest extends readonly Param<any, any>[]
+    infer _ extends Par<any, any>,
+    ...infer Rest extends readonly Par<any, any>[]
   ]
     ? FuncArgsFromParams<Rest>
     : [];

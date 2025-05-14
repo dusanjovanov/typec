@@ -6,7 +6,7 @@ import {
 } from "./types";
 import { Var } from "./variable";
 
-export class Param<S extends string, Name extends string> extends Var<S> {
+export class Par<S extends string, Name extends string> extends Var<S> {
   constructor(type: TypeArg<S>, name: Name) {
     super(type, name);
     this.name = name;
@@ -17,14 +17,14 @@ export class Param<S extends string, Name extends string> extends Var<S> {
     name: Name,
     typeQualifiers?: TypeQualifier[]
   ) {
-    return Param.new(Type.int(typeQualifiers), name);
+    return Par.new(Type.int(typeQualifiers), name);
   }
 
   static size_t<Name extends string>(
     name: Name,
     typeQualifiers?: TypeQualifier[]
   ) {
-    return Param.new(Type.size_t(typeQualifiers), name);
+    return Par.new(Type.size_t(typeQualifiers), name);
   }
 
   /** Param for char*. */
@@ -33,27 +33,27 @@ export class Param<S extends string, Name extends string> extends Var<S> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Param.new(Type.string(typeQualifiers, pointerQualifiers), name);
+    return Par.new(Type.string(typeQualifiers, pointerQualifiers), name);
   }
 
   static float<Name extends string>(
     name: Name,
     typeQualifiers?: TypeQualifier[]
   ) {
-    return Param.new(Type.float(typeQualifiers), name);
+    return Par.new(Type.float(typeQualifiers), name);
   }
 
   static double<Name extends string>(
     name: Name,
     typeQualifiers?: TypeQualifier[]
   ) {
-    return Param.new(Type.double(typeQualifiers), name);
+    return Par.new(Type.double(typeQualifiers), name);
   }
 
   static new<S extends string, Name extends string>(
     type: TypeArg<S>,
     name: Name
   ) {
-    return new Param(type, name);
+    return new Par(type, name);
   }
 }

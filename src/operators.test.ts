@@ -1,17 +1,24 @@
 import { describe, expect, test } from "bun:test";
 import { Lit } from "./literal";
-import { Operator } from "./operators";
+import { Op } from "./operators";
 import { Type } from "./type";
 
 const testUnaryOp = (op: string, expected: string) =>
   test(op, () => {
-    expect((Operator as any)[op]("a").toString()).toBe(expected);
+    expect((Op as any)[op](Type.any(), "a").toString()).toBe(expected);
   });
 
-const testBinaryOp = (op: string, expected: string) =>
+const testBinaryOp = (op: string, expected: string) => {
   test(op, () => {
-    expect((Operator as any)[op]("a", "b").toString()).toBe(expected);
+    expect((Op as any)[op](Type.any(), "a", "b").toString()).toBe(expected);
   });
+};
+
+const testLogicalBinOp = (op: string, expected: string) => {
+  test(op, () => {
+    expect((Op as any)[op]("a", "b").toString()).toBe(expected);
+  });
+};
 
 describe("operators", () => {
   testUnaryOp("preInc", "++a");
@@ -20,19 +27,19 @@ describe("operators", () => {
   testUnaryOp("postDec", "a--");
 
   describe("memory", () => {
-    testUnaryOp("sizeOf", "sizeof(a)");
-    testUnaryOp("alignOf", "alignof(a)");
+    expect(Op.sizeOf("a").toString()).toBe("sizeof(a)");
+    expect(Op.alignOf("a").toString()).toBe("alignof(a)");
     testUnaryOp("deRef", "*a");
     testUnaryOp("ref", "&a");
   });
 
   describe("bitwise", () => {
     testUnaryOp("bitNot", "~a");
-    testBinaryOp("bitAnd", "a&b");
-    testBinaryOp("bitOr", "a|b");
-    testBinaryOp("bitXor", "a^b");
-    testBinaryOp("bitLeft", "a<<b");
-    testBinaryOp("bitRight", "a>>b");
+    testLogicalBinOp("bitAnd", "a&b");
+    testLogicalBinOp("bitOr", "a|b");
+    testLogicalBinOp("bitXor", "a^b");
+    testLogicalBinOp("bitLeft", "a<<b");
+    testLogicalBinOp("bitRight", "a>>b");
     testBinaryOp("bitAndAssign", "a&=b");
     testBinaryOp("bitOrAssign", "a|=b");
     testBinaryOp("bitXorAssign", "a^=b");
@@ -41,23 +48,23 @@ describe("operators", () => {
   });
 
   describe("logical", () => {
-    testUnaryOp("not", "!a");
-    testBinaryOp("equal", "a==b");
-    testBinaryOp("notEqual", "a!=b");
-    testBinaryOp("gt", "a>b");
-    testBinaryOp("lt", "a<b");
-    testBinaryOp("gte", "a>=b");
-    testBinaryOp("lte", "a<=b");
-    testBinaryOp("and", "a&&b");
-    testBinaryOp("or", "a||b");
+    expect(Op.not("a").toString()).toBe("!a");
+    testLogicalBinOp("equal", "a==b");
+    testLogicalBinOp("notEqual", "a!=b");
+    testLogicalBinOp("gt", "a>b");
+    testLogicalBinOp("lt", "a<b");
+    testLogicalBinOp("gte", "a>=b");
+    testLogicalBinOp("lte", "a<=b");
+    testLogicalBinOp("and", "a&&b");
+    testLogicalBinOp("or", "a||b");
   });
 
   describe("arithmetic", () => {
-    testBinaryOp("modulo", "a%b");
     testBinaryOp("plus", "a+b");
     testBinaryOp("minus", "a-b");
     testBinaryOp("div", "a/b");
     testBinaryOp("mul", "a*b");
+    testBinaryOp("modulo", "a%b");
   });
 
   describe("asignment", () => {
@@ -70,20 +77,18 @@ describe("operators", () => {
   });
 
   test("cast", () => {
-    expect(Operator.cast(Type.char(), "abc").toString()).toBe(`(char)abc`);
+    expect(Op.cast(Type.char(), "abc").toString()).toBe(`(char)abc`);
   });
 
-  testBinaryOp("dot", "a.b");
-  testBinaryOp("arrow", "a->b");
+  expect(Op.dot("a", "b").toString()).toBe("a.b");
+  expect(Op.arrow("a", "b").toString()).toBe("a->b");
 
   test("subscript", () => {
-    expect(Operator.subscript("arr", 3).toString()).toBe(`arr[3]`);
-    expect(Operator.subscript(Lit.str("abc"), 3).toString()).toBe(
-      `"abc"[3]`
-    );
+    expect(Op.subscript("arr", 3).toString()).toBe(`arr[3]`);
+    expect(Op.subscript(Lit.str("abc"), 3).toString()).toBe(`"abc"[3]`);
   });
 
   test("ternary", () => {
-    expect(Operator.ternary("a>b", "a", "b").toString()).toBe(`a>b?a:b`);
+    expect(Op.ternary("a>b", "a", "b").toString()).toBe(`a>b?a:b`);
   });
 });

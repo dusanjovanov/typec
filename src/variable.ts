@@ -1,6 +1,6 @@
 import { semicolon } from "./chunk";
 import { Lit } from "./literal";
-import { Operator } from "./operators";
+import { Op } from "./operators";
 import { RValue } from "./rValue";
 import type { Struct } from "./struct";
 import { Type } from "./type";
@@ -11,18 +11,15 @@ import type {
   TypeArg,
   TypeQualifier,
 } from "./types";
-import { typeArgToType, Utils } from "./utils";
-import { Value } from "./value";
+import { Utils } from "./utils";
 
-/** Used for working with variables. */
-export class Var<S extends string> extends RValue {
+/** Used for working with variables of any type. */
+export class Var<S extends string> extends RValue<S> {
   constructor(type: TypeArg<S>, name: string) {
-    super(name);
-    this.type = typeArgToType(type);
+    super(type, name);
     this.name = name;
   }
   kind = "variable" as const;
-  type;
   name;
 
   isArray() {
@@ -34,42 +31,24 @@ export class Var<S extends string> extends RValue {
     return this.type.declare(this.name);
   }
 
-  /**
-   * Returns the reference expression for this variable. `&name`.
-   *
-   * For arrays, it returns the array's name as a Value, which is what you usually want ( i.e. the reference to the first element of the array ).
-   *
-   * If you want the ref to the array itself - use `refArray`.
-   */
-  ref() {
-    if (this.isArray()) {
-      return Value.new(this.name);
-    }
-    return Operator.ref(this.name);
-  }
-
-  refArray() {
-    return Operator.ref(this.name);
-  }
-
-  /** Returns the dereference expression for this variable `*name`. Only works for pointers. */
-  deRef() {
-    return Operator.deRef(this.name);
-  }
-
   /** Initialize with a value. */
   init(value: CodeLike) {
-    return Operator.assign(this.declare(), value);
+    return Op.assign(this.type, this.declare(), value);
   }
 
   /** Returns the compound initialization. */
   initCompound(...values: CodeLike[]) {
-    return Operator.assign(this.declare(), semicolon(Lit.compound(...values)));
+    return Op.assign(
+      this.type,
+      this.declare(),
+      semicolon(Lit.compound(...values))
+    );
   }
 
   /** Returns the designated sub initialization. */
   initDesignatedSub(values: Record<number, CodeLike>) {
-    return Operator.assign(
+    return Op.assign(
+      this.type,
       this.declare(),
       semicolon(Lit.designatedSub(values))
     );
@@ -77,7 +56,8 @@ export class Var<S extends string> extends RValue {
 
   /** Initialize with a designated dot initializer. */
   initDesignatedDot(values: Record<string | number, CodeLike>) {
-    return Operator.assign(
+    return Op.assign(
+      this.type,
       this.declare(),
       semicolon(Lit.designatedDot(values))
     );
@@ -85,7 +65,11 @@ export class Var<S extends string> extends RValue {
 
   /** Single value initializer. */
   initSingleMember(value: CodeLike) {
-    return Operator.assign(this.declare(), Lit.singleMemberInit(value));
+    return Op.assign(
+      this.type,
+      this.declare(),
+      Lit.singleMemberInit(value)
+    );
   }
 
   /**

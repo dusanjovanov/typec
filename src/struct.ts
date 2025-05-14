@@ -1,4 +1,4 @@
-import { Param } from "./param";
+import { Par } from "./param";
 import { Type } from "./type";
 import type {
   GenericApi,
@@ -36,27 +36,27 @@ export class Struct<Name extends string, Members extends GenericMembers> {
     return Var.new(this.type(typeQualifiers), name);
   }
 
-  pointer(
+  /** Pointer Var */
+  ptr(
     name: string,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(this.type(typeQualifiers).pointer(pointerQualifiers), name);
+    return Var.new(this.type(typeQualifiers).ptr(pointerQualifiers), name);
   }
 
-  param<Name extends string>(name: Name, typeQualifiers?: TypeQualifier[]) {
-    return Param.new(this.type(typeQualifiers), name);
+  /** param */
+  par<Name extends string>(name: Name, typeQualifiers?: TypeQualifier[]) {
+    return Par.new(this.type(typeQualifiers), name);
   }
 
-  pointerParam<Name extends string>(
+  /** Pointer param */
+  ptrPar<Name extends string>(
     name: Name,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Param.new(
-      this.type(typeQualifiers).pointer(pointerQualifiers),
-      name
-    );
+    return Par.new(this.type(typeQualifiers).ptr(pointerQualifiers), name);
   }
 
   varApi<Api extends GenericApi>(name: string, api: Api) {
@@ -75,9 +75,3 @@ export class Struct<Name extends string, Members extends GenericMembers> {
     return new Struct(members);
   }
 }
-
-const Window = Struct.new("Window", {
-  a: Type.int(),
-});
-
-Window.var("var");
