@@ -3,7 +3,7 @@ import type { CodeLike } from "./types";
 import { joinArgs } from "./utils";
 
 /** C preprocessor directives. */
-export class Directive {
+export class Dir {
   static defineValue(name: string, value: CodeLike) {
     return `#define ${name} ${value}`;
   }
@@ -25,15 +25,15 @@ export class Directive {
   }
 
   static if(condition: CodeLike, body: CodeLike[]) {
-    return new ConditionDirective("if", condition, body);
+    return new ConditionalDirective("if", condition, body);
   }
 
   static ifdef(condition: CodeLike, body: CodeLike[]) {
-    return new ConditionDirective("ifdef", condition, body);
+    return new ConditionalDirective("ifdef", condition, body);
   }
 
   static ifndef(condition: CodeLike, body: CodeLike[]) {
-    return new ConditionDirective("ifndef", condition, body);
+    return new ConditionalDirective("ifndef", condition, body);
   }
 
   static pragma(directive: CodeLike) {
@@ -41,7 +41,7 @@ export class Directive {
   }
 }
 
-export class ConditionDirective {
+export class ConditionalDirective {
   constructor(
     directive: "if" | "ifdef" | "ifndef",
     condition: CodeLike,

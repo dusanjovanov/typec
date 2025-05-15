@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { Directive } from "./directive";
+import { Dir } from "./directive";
 
 describe("directive", () => {
   test("includeRelative", () => {
-    expect(Directive.includeRelative("abc.h")).toBe(`#include "abc.h"`);
+    expect(Dir.includeRelative("abc.h")).toBe(`#include "abc.h"`);
   });
 
   test("includeSystem", () => {
-    expect(Directive.includeSystem("string.h")).toBe(`#include <string.h>`);
+    expect(Dir.includeSystem("string.h")).toBe(`#include <string.h>`);
   });
 });

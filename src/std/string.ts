@@ -1,10 +1,10 @@
-import { Directive } from "../directive";
+import { Dir } from "../directive";
 import { Func } from "../func";
 import { Par } from "../param";
 import { Type } from "../type";
 
 export const stdstring = {
-  include: Directive.includeSystem("string.h"),
+  include: Dir.includeSystem("string.h"),
   strlen: Func.new(Type.size_t(), "strlen", [Par.string("str")]),
   strnlen_s: Func.new(Type.size_t(), "strnlen_s", [
     Par.string("str"),
