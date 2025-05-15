@@ -1,22 +1,24 @@
 import { Chunk } from "./chunk";
 import { Condition } from "./condition";
+import { Lit } from "./literal";
 import { Op } from "./operators";
 import { Type } from "./type";
-import type { CodeLike, TypeArg } from "./types";
+import type { CodeLike, Numberish, TypeArg } from "./types";
 import { typeArgToType, Utils } from "./utils";
 
-/** Base class for `rvalue` expressions. */
-export class RValue<S extends string> {
+/**
+ * A value container containing an `rvalue` expression with helpers for generating all C literal and initializer expressions
+ * and other, more complex, expressions that include it by chaining.
+ *
+ * This is also the base class from which `Var` ( `Par` ) inherits from.
+ */
+export class Val<S extends string> {
   constructor(type: TypeArg<S>, valueExp: CodeLike) {
     this.type = typeArgToType(type);
     this.value = String(valueExp);
   }
   type;
   value;
-
-  static new(type: Type<any>, valueExp: CodeLike) {
-    return new RValue(type, valueExp);
-  }
 
   toString() {
     return String(this.value);
@@ -305,8 +307,162 @@ export class RValue<S extends string> {
 
   /** Accepts an array of member names and returns an array of Values with an arrow access operator expression for each member. */
   arrowMulti<const Names extends string[]>(...memberNames: Names) {
-    return memberNames.map((m) => RValue.new(Type.any(), this.arrow(m))) as {
-      [index in keyof Names]: RValue<"any">;
+    return memberNames.map((m) => Val.new(Type.any(), this.arrow(m))) as {
+      [index in keyof Names]: Val<"any">;
     };
+  }
+
+  /**
+   * Returns a Val for a string literal.
+   *
+   * `"abc"`
+   */
+  static str(s: string) {
+    return Val.new(Type.string(), Lit.str(s));
+  }
+
+  /**
+   * Returns a Val for a multiline string literal.
+   *
+   * Same as `string`, but for multiple strings each on a new line.
+   */
+  static strMulti(...strings: string[]) {
+    return Val.new(Type.string(), Lit.strMulti(...strings));
+  }
+
+  /**
+   * Returns a Val for a char literal.
+   *
+   * `'a'`
+   */
+  static char(c: string) {
+    return Val.new(Type.char(), Lit.char(c));
+  }
+
+  /**
+   * Returns a Val for an int literal.
+   */
+  static int(n: Numberish) {
+    return Val.new(Type.int(), n);
+  }
+
+  /**
+   * Returns a Val for an unsigned integer literal.
+   *
+   * `23U`
+   */
+  static unsigned(n: Numberish) {
+    return Val.new(Type.simple("unsigned int"), Lit.unsigned(n));
+  }
+
+  /**
+   * Returns a Val for a long literal.
+   *
+   * `23L`
+   */
+  static longInt(n: Numberish) {
+    return Val.new(Type.simple("long"), n);
+  }
+
+  /**
+   * Returns a Val for an unsigned long literal.
+   *
+   * `23UL`
+   */
+  static unsignedLongInt(n: Numberish) {
+    return Val.new(Type.simple("unsigned long"), n);
+  }
+
+  /**
+   * Returns a Val for a long long literal.
+   *
+   * `23LL`
+   */
+  static longLongInt(n: Numberish) {
+    return Val.new(Type.simple("long long"), Lit.longLongInt(n));
+  }
+
+  /**
+   * Returns a Val for an unsigned long long literal.
+   *
+   * `23ULL`
+   */
+  static unsignedLongLongInt(n: Numberish) {
+    return Val.new(
+      Type.simple("unsigned long long"),
+      Lit.unsignedLongLongInt(n)
+    );
+  }
+
+  /**
+   * Returns a Val for a float literal.
+   *
+   * `23.45F`
+   */
+  static float(n: Numberish) {
+    return Val.new(Type.float(), Lit.float(n));
+  }
+
+  /**
+   * Returns a Val for a long double literal.
+   *
+   * `23.45L`
+   */
+  static longDouble(n: Numberish) {
+    return Val.new(Type.simple("long double"), Lit.longDouble(n));
+  }
+
+  /**
+   * Returns a Val for a wide char literal.
+   *
+   * `L'a'`
+   */
+  static wideChar(c: Numberish) {
+    return Val.new(Type.simple("wchar_t"), Lit.wideChar(c));
+  }
+
+  /**
+   * Returns a Val for a compound literal expression.
+   *
+   * `{ "abc", 123, &var }`
+   */
+  static compound(...values: CodeLike[]) {
+    return Val.new(Type.any(), Lit.compound(...values));
+  }
+
+  /**
+   * Returns a Val for a struct or union designated dot initializer expression.
+   *
+   * `{ .a = 3, .b = &var, .c = "def" }`
+   */
+  static designatedDot(values: Partial<Record<string, CodeLike>>) {
+    return Val.new(Type.any(), Lit.designatedDot(values));
+  }
+
+  /**
+   * Returns a Val for an array designated subscript initializer expression.
+   *
+   * `{ [1] = 2, [3] = 5 }`
+   */
+  static designatedSub(values: Partial<Record<number, CodeLike>>) {
+    return Val.new(Type.any(), Lit.designatedSub(values));
+  }
+
+  /**
+   * Returns a Val for a union single value initializer expression.
+   *
+   * `{23}`
+   */
+  static singleMemberInit(value: CodeLike) {
+    return Val.new(Type.any(), value);
+  }
+
+  /** Used for defining an api for using macro values. */
+  static macro<S extends string = "any">(name: CodeLike, type?: TypeArg<S>) {
+    return Val.new<S>(type ?? (Type.any() as any), name);
+  }
+
+  static new<S extends string>(type: TypeArg<S>, valueExp: CodeLike) {
+    return new Val(type, valueExp);
   }
 }

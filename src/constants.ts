@@ -1,5 +1,5 @@
+import { Val } from "./rValue";
 import { Type } from "./type";
-import { Val } from "./value";
 
 export const NULL = Val.new(Type.void().ptr(), "NULL");
 export const NULL_TERM = Val.char("\0");

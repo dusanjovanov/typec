@@ -1,8 +1,8 @@
 import { Directive } from "../directive";
 import { Func } from "../func";
 import { Par } from "../param";
+import { Val } from "../rValue";
 import { Type } from "../type";
-import { Val } from "../value";
 
 const FILE = Type.alias("FILE");
 

@@ -20,4 +20,11 @@ export class Loop {
   ) {
     return `for(${init};${condition};${update})${Block.new(...body)}`;
   }
+
+  /**
+   * Returns a do while loop statement.
+   */
+  static doWhile(body: CodeLike[], condition: CodeLike) {
+    return `do${Block.new(...body)}while(${condition})`;
+  }
 }

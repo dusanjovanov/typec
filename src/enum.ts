@@ -1,8 +1,8 @@
 import { curly } from "./chunk";
+import { Val } from "./rValue";
 import { Type } from "./type";
 import type { Embeddable, PointerQualifier, TypeQualifier } from "./types";
 import { join } from "./utils";
-import { Val } from "./value";
 import { Var } from "./variable";
 
 /** Used for declaring and working with enums. */

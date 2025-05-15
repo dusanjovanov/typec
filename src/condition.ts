@@ -1,6 +1,7 @@
 import { Block, Chunk } from "./chunk";
 import type { CodeLike } from "./types";
 
+/** If block. */
 export class Condition {
   constructor(condition: CodeLike, body: CodeLike[]) {
     this.statements.push(condBlock("if", condition, body));

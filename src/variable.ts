@@ -1,7 +1,7 @@
 import { semicolon } from "./chunk";
 import { Lit } from "./literal";
 import { Op } from "./operators";
-import { RValue } from "./rValue";
+import { Val } from "./rValue";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import type {
@@ -14,7 +14,7 @@ import type {
 import { Utils } from "./utils";
 
 /** Used for working with variables of any type. */
-export class Var<S extends string> extends RValue<S> {
+export class Var<S extends string> extends Val<S> {
   constructor(type: TypeArg<S>, name: string) {
     super(type, name);
     this.name = name;

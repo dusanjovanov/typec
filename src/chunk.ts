@@ -14,6 +14,7 @@ export class Chunk {
   /** Add statements to the Chunk. */
   add(...statements: CodeLike[]) {
     this.statements.push(...statements);
+    return this;
   }
 
   toString() {
@@ -41,7 +42,7 @@ export class Chunk {
   }
 }
 
-/** A block of code or chunk within curly braces. Can be stringified. */
+/** A chunk of code within curly braces. Can be stringified. */
 export class Block {
   constructor(statements: CodeLike[]) {
     this.chunk = Chunk.new(...statements);
@@ -51,6 +52,7 @@ export class Block {
   /** Add statements to the Block. */
   add(...statements: CodeLike[]) {
     this.chunk.statements.push(...statements);
+    return this;
   }
 
   toString() {

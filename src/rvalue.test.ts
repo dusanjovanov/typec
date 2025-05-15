@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Val } from "./value";
+import { Val } from "./rValue";
 import { Type } from "./type";
 
 describe("RValue", () => {

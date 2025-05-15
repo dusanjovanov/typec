@@ -1,7 +1,7 @@
+import { Val } from "./rValue";
 import { Type } from "./type";
 import type { CodeLike, TypeArg } from "./types";
 import { emptyFalsy, emptyNotFalse, joinArgs, typeArgToType } from "./utils";
-import { Val } from "./value";
 
 const preUn = (op: string) => {
   return <S extends string>(type: TypeArg<S>, exp: CodeLike) => {
@@ -139,7 +139,10 @@ export class Op {
 
   /** Returns a return statement expression. */
   static return(value?: CodeLike) {
-    return Val.new(Type.any(), `return${emptyNotFalse(value, (v) => ` ${v}`)}`);
+    return Val.new(
+      Type.any(),
+      `return${emptyNotFalse(value, (v) => ` ${v}`)}`
+    );
   }
 
   /** Returns a function call expression. */

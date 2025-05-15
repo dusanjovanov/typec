@@ -1,10 +1,10 @@
 import type { Enum } from "./enum";
 import type { Func } from "./func";
 import type { Par } from "./param";
+import type { Val } from "./rValue";
 import type { Struct } from "./struct";
 import type { Type } from "./type";
 import type { Union } from "./union";
-import type { Val } from "./value";
 
 export const INTEGER_TYPES = [
   "char",
