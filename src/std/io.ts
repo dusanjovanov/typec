@@ -1,4 +1,4 @@
-import { Dir } from "../directive";
+import { Directive } from "../directive";
 import { Func } from "../func";
 import { Par } from "../param";
 import { Val } from "../rValue";
@@ -7,7 +7,7 @@ import { Type } from "../type";
 const FILE = Type.alias("FILE");
 
 export const stdio = {
-  include: Dir.includeSys("stdio.h"),
+  include: Directive.includeSys("stdio.h"),
   FILE,
   size_t: Type.alias("size_t"),
   fpos_t: Type.alias("fpos_t"),

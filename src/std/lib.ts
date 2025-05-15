@@ -1,10 +1,10 @@
-import { Dir } from "../directive";
+import { Directive } from "../directive";
 import { Func } from "../func";
 import { Par } from "../param";
 import { Type } from "../type";
 
 export const stdlib = {
-  include: Dir.includeSys("stdlib.h"),
+  include: Directive.includeSys("stdlib.h"),
   malloc: Func.new(Type.void().ptr(), "malloc", [Par.size_t("_Size")]),
   calloc: Func.new(Type.void().ptr(), "calloc", [
     Par.size_t("_Count"),

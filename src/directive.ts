@@ -3,7 +3,7 @@ import type { CodeLike } from "./types";
 import { joinArgs } from "./utils";
 
 /** C preprocessor directives. */
-export class Dir {
+export class Directive {
   static defineValue(name: string, value: CodeLike) {
     return `#define ${name} ${value}`;
   }

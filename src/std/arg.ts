@@ -1,6 +1,6 @@
 import { Chunk } from "../chunk";
 import { MACRO_TYPE } from "../constants";
-import { Dir } from "../directive";
+import { Directive } from "../directive";
 import { Func } from "../func";
 import { Par } from "../param";
 import { Type } from "../type";
@@ -10,7 +10,7 @@ import { Var } from "../variable";
 const va_list = Type.alias("va_list");
 
 export const stdarg = {
-  include: Dir.includeSys("stdarg.h"),
+  include: Directive.includeSys("stdarg.h"),
   va_list,
   va_start: Func.void("va_start", [
     Par.new(va_list, "ap"),
