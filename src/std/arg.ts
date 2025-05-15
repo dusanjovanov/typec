@@ -10,7 +10,7 @@ import { Var } from "../variable";
 const va_list = Type.alias("va_list");
 
 export const stdarg = {
-  include: Dir.includeSystem("stdarg.h"),
+  include: Dir.includeSys("stdarg.h"),
   va_list,
   va_start: Func.void("va_start", [
     Par.new(va_list, "ap"),

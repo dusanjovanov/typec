@@ -16,11 +16,13 @@ export class Dir {
     return `#undef ${name}`;
   }
 
-  static includeRelative(name: string) {
+  /** Generates an include directive for a relative ( project ) header file. `""` */
+  static includeRel(name: string) {
     return `#include "${name}"`;
   }
 
-  static includeSystem(name: string) {
+  /** Generates an include directive for a system ( standard ) header file. `<>` */
+  static includeSys(name: string) {
     return `#include <${name}>`;
   }
 

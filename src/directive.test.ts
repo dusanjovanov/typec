@@ -3,10 +3,10 @@ import { Dir } from "./directive";
 
 describe("directive", () => {
   test("includeRelative", () => {
-    expect(Dir.includeRelative("abc.h")).toBe(`#include "abc.h"`);
+    expect(Dir.includeRel("abc.h")).toBe(`#include "abc.h"`);
   });
 
   test("includeSystem", () => {
-    expect(Dir.includeSystem("string.h")).toBe(`#include <string.h>`);
+    expect(Dir.includeSys("string.h")).toBe(`#include <string.h>`);
   });
 });

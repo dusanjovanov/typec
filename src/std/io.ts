@@ -7,7 +7,7 @@ import { Type } from "../type";
 const FILE = Type.alias("FILE");
 
 export const stdio = {
-  include: Dir.includeSystem("stdio.h"),
+  include: Dir.includeSys("stdio.h"),
   FILE,
   size_t: Type.alias("size_t"),
   fpos_t: Type.alias("fpos_t"),

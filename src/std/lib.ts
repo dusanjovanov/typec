@@ -4,7 +4,7 @@ import { Par } from "../param";
 import { Type } from "../type";
 
 export const stdlib = {
-  include: Dir.includeSystem("stdlib.h"),
+  include: Dir.includeSys("stdlib.h"),
   malloc: Func.new(Type.void().ptr(), "malloc", [Par.size_t("_Size")]),
   calloc: Func.new(Type.void().ptr(), "calloc", [
     Par.size_t("_Count"),
