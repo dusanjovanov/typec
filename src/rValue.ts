@@ -1,115 +1,408 @@
 import { Chunk } from "./chunk";
 import { Condition } from "./condition";
+import type { Func } from "./func";
 import { Lit } from "./literal";
-import { Op } from "./operators";
 import { Type } from "./type";
-import type { CodeLike, Numberish, TypeArg } from "./types";
-import { typeArgToType, Utils } from "./utils";
+import type { CodeLike, Numberish, TypeArg, ValArg } from "./types";
+import { emptyFalsy, joinArgs, ret } from "./utils";
 
 /**
  * A value container containing an `rvalue` expression with helpers for generating all C literal and initializer expressions
  * and other, more complex, expressions that include it by chaining.
  *
- * This is also the base class from which `Var` ( `Par` ) inherits from.
+ * This is also the base class from which `Var` ( and `Param` ) inherits from.
  */
-export class Val<S extends string> {
-  constructor(type: TypeArg<S>, valueExp: CodeLike) {
-    this.type = typeArgToType(type);
-    this.value = String(valueExp);
+export class Val<S extends string = any> {
+  constructor(exp: ValueExp<S>) {
+    this.exp = exp;
   }
-  type;
-  value;
+  exp;
+
+  get type() {
+    return this.exp.type;
+  }
 
   toString() {
-    return String(this.value);
+    switch (this.exp.kind) {
+      case "literal": {
+        return String(this.exp.value);
+      }
+      case "name": {
+        return this.exp.name;
+      }
+      case "binary": {
+        return `${this.exp.left}${this.exp.op}${this.exp.right}`;
+      }
+      case "preUnary": {
+        return `${this.exp.op}${this.exp.value}`;
+      }
+      case "postUnary": {
+        return `${this.exp.value}${this.exp.op}`;
+      }
+      case "member": {
+        if (this.exp.op === "[]") return `${this.exp.left}[${this.exp.right}]`;
+        return `${this.exp.left}${this.exp.op}${this.exp.right}`;
+      }
+      case "call": {
+        return `${this.exp.funcName}(${emptyFalsy(this.exp.args, joinArgs)})`;
+      }
+      case "cast": {
+        return `(${this.exp.type})${this.exp.value}`;
+      }
+      case "memory": {
+        return `${this.exp.op}(${this.exp.value})`;
+      }
+      case "ternary": {
+        return `${this.exp.cond}?${this.exp.exp1}:${this.exp.exp2}`;
+      }
+    }
   }
 
-  /** Returns a Value for the `+` binary expression between this and another expression. */
-  plus(value: CodeLike) {
-    return Op.plus(Type.any(), this, value);
+  private binary(value: ValArg, op: BinaryExp<any>["op"]): Val {
+    return new Val({
+      kind: "binary",
+      type: Type.any(),
+      left: this,
+      right: Val.valArgToVal(value),
+      op,
+    });
   }
 
-  /** Returns a Value for the `-` binary expression between this and another expression. */
-  minus(value: CodeLike) {
-    return Op.minus(Type.any(), this, value);
+  /** Returns a Val for the `+` binary expression between this and another expression. */
+  plus(value: ValArg) {
+    return this.binary(value, "+");
   }
 
-  /** Returns a Value for the `*` binary expression between this and another expression. */
-  mul(value: CodeLike) {
-    return Op.mul(Type.any(), this, value);
+  /** Returns a Val for the `-` binary expression between this and another expression. */
+  minus(value: ValArg) {
+    return this.binary(value, "-");
   }
 
-  /** Returns a Value for the `/` binary expression between this and another expression. */
-  div(value: CodeLike) {
-    return Op.div(Type.any(), this, value);
+  /** Returns a Val for the `*` binary expression between this and another expression. */
+  mul(value: ValArg) {
+    return this.binary(value, "*");
   }
 
-  /** Returns a Value for the `%` binary expression between this and another expression. */
-  modulo(value: CodeLike) {
-    return Op.modulo(Type.any(), this, value);
+  /** Returns a Val for the `/` binary expression between this and another expression. */
+  div(value: ValArg) {
+    return this.binary(value, "/");
   }
 
-  /** Returns a Value for the `>` expression between this and another expression.  */
-  gt(value: CodeLike) {
-    return Op.gt(this, value);
+  /** Returns a Val for the `%` binary expression between this and another expression. */
+  modulo(value: ValArg) {
+    return this.binary(value, "%");
   }
 
-  /** Returns a Value for the `<` expression between this and another expression.  */
-  lt(value: CodeLike) {
-    return Op.lt(this, value);
+  private binaryLogical(
+    value: ValArg,
+    op: "==" | ">" | "<" | ">=" | "<=" | "!=" | "||" | "&&"
+  ): Val<"bool"> {
+    return new Val({
+      kind: "binary",
+      type: Type.bool(),
+      left: this,
+      right: Val.valArgToVal(value),
+      op,
+    });
   }
 
-  /** Returns a Value for the `>=` expression between this and another expression.  */
-  gte(value: CodeLike) {
-    return Op.gte(this, value);
+  /** Returns a Val for the `==` expression between this and another expression.  */
+  equal(value: ValArg) {
+    return this.binaryLogical(value, "==");
   }
 
-  /** Returns a Value for the `<=` expression between this and another expression.  */
-  lte(value: CodeLike) {
-    return Op.lte(this, value);
+  /** Returns a Val for the `>` expression between this and another expression.  */
+  gt(value: ValArg) {
+    return this.binaryLogical(value, ">");
   }
 
-  /** Returns a Value for the `==` expression between this and another expression.  */
-  equal(value: CodeLike) {
-    return Op.equal(this, value);
+  /** Returns a Val for the `<` expression between this and another expression.  */
+  lt(value: ValArg) {
+    return this.binaryLogical(value, "<");
   }
 
-  /** Returns a Value for the `!` unary expression.  */
+  /** Returns a Val for the `>=` expression between this and another expression.  */
+  gte(value: ValArg) {
+    return this.binaryLogical(value, ">=");
+  }
+
+  /** Returns a Val for the `<=` expression between this and another expression.  */
+  lte(value: ValArg) {
+    return this.binaryLogical(value, "<=");
+  }
+
+  /** Returns a Val for the `!=` expression between this and another expression.  */
+  notEqual(value: ValArg) {
+    return this.binaryLogical(value, "!=");
+  }
+
+  /** Returns a Val for the `||` expression between this and another expression.  */
+  or(value: ValArg) {
+    return this.binaryLogical(value, "||");
+  }
+
+  /** Returns a Val for the `|` expression between this and another expression.  */
+  bitOr(value: ValArg) {
+    return this.binary(value, "|");
+  }
+
+  /** Returns a Val for the `&` expression between this and another expression.  */
+  bitAnd(value: ValArg) {
+    return this.binary(value, "&");
+  }
+
+  private assignBinary(
+    value: ValArg,
+    op: "=" | "+=" | "-=" | "*=" | "/=" | "%="
+  ): Val<S> {
+    return new Val({
+      kind: "binary",
+      type: this.type,
+      left: this,
+      right: Val.valArgToVal(value),
+      op,
+    });
+  }
+
+  /** Assign a value. */
+  assign(value: ValArg) {
+    return this.assignBinary(value, "=");
+  }
+
+  /** `+=` */
+  plusAssign(value: ValArg) {
+    return this.assignBinary(value, "+=");
+  }
+
+  /** `-=` */
+  minusAssign(value: ValArg) {
+    return this.assignBinary(value, "-=");
+  }
+
+  /** `*=` */
+  mulAssign(value: ValArg) {
+    return this.assignBinary(value, "*=");
+  }
+
+  /** `/=` */
+  divAssign(value: ValArg) {
+    return this.assignBinary(value, "/=");
+  }
+
+  /** `%=` */
+  moduloAssign(value: ValArg) {
+    return this.assignBinary(value, "%=");
+  }
+
+  /** Returns a Val for the `!` unary expression.  */
   not() {
-    return Op.not(this);
+    return new Val({
+      kind: "preUnary",
+      type: Type.bool(),
+      op: "!",
+      value: this,
+    });
   }
 
-  /** Returns a Value for the `!=` expression between this and another expression.  */
-  notEqual(value: CodeLike) {
-    return Op.notEqual(this, value);
+  /** Returns a Val for the cast `(type)exp` expression of this expression to the passed Type.  */
+  cast<S extends string>(type: Type<S>): Val<S> {
+    return new Val({
+      kind: "cast",
+      type,
+      value: this,
+    });
   }
 
-  /** Returns a Value for the `||` expression between this and another expression.  */
-  or(value: CodeLike) {
-    return Op.or(this, value);
+  /** Returns a Val for the `sizeof` operator for this value.  */
+  sizeOf() {
+    return Val.sizeOf(this);
   }
 
-  /** Returns a Value for the cast `(type)exp` expression of this expression to the passed Type.  */
-  cast(type: Type<any>) {
-    return Op.cast(type, this);
+  /** Returns a Val with the `-` in front of this Val. */
+  negative() {
+    return new Val({
+      kind: "preUnary",
+      type: this.type,
+      value: this,
+      op: "-",
+    });
   }
 
-  /** Returns a Value for the ternary `cond?exp1:exp2` expression where the condition is this expression.  */
-  ternary(exp1: CodeLike, exp2: CodeLike) {
-    return Op.ternary(this, exp1, exp2);
+  /** Returns a Val for a subscript ( index ) accessor `arr[3]`. */
+  at(index: ValArg) {
+    return new Val({
+      kind: "member",
+      type: Type.any(),
+      left: this,
+      right: Val.valArgToVal(index),
+      op: "[]",
+    });
+  }
+
+  /** Access a member of the struct directly. */
+  dot(key: string) {
+    return new Val({
+      kind: "member",
+      type: Type.any(),
+      left: this,
+      right: new Val({ kind: "name", name: key, type: Type.any() }),
+      op: ".",
+    });
+  }
+
+  /** Access a member of the struct through a pointer. */
+  arrow(key: string): Val {
+    return new Val({
+      kind: "member",
+      type: Type.any(),
+      left: this,
+      right: new Val({ kind: "name", name: key, type: Type.any() }),
+      op: "->",
+    });
+  }
+
+  /** Returns the reference expression for this value. `&expression`. */
+  ref(): Val<`${S}*`> {
+    return new Val({
+      kind: "preUnary",
+      type: this.type.pointer(),
+      value: this,
+      op: "&",
+    });
+  }
+
+  /** Returns the dereference expression for this value. `*expression`. */
+  deRef() {
+    return new Val({
+      kind: "preUnary",
+      // TODO: Extract type from pointer
+      type: this.type,
+      value: this,
+      op: "*",
+    });
+  }
+
+  /** `a++` */
+  postInc() {
+    return new Val({
+      kind: "postUnary",
+      type: this.type,
+      value: this,
+      op: "++",
+    });
+  }
+
+  /** `a--` */
+  postDec() {
+    return new Val({
+      kind: "postUnary",
+      type: this.type,
+      value: this,
+      op: "--",
+    });
+  }
+
+  /** `++a` */
+  preInc() {
+    return new Val({
+      kind: "preUnary",
+      type: this.type,
+      value: this,
+      op: "++",
+    });
+  }
+
+  /** `--a` */
+  preDec() {
+    return new Val({
+      kind: "preUnary",
+      type: this.type,
+      value: this,
+      op: "--",
+    });
+  }
+
+  /** Returns a function call expression. */
+  call(...args: ValArg[]) {
+    return new Val({
+      kind: "call",
+      type: Type.any(),
+      funcName: this.toString(),
+      args: args.map((arg) => Val.valArgToVal(arg)),
+    });
+  }
+
+  /** Returns a Val for the ternary `cond?exp1:exp2` expression where the condition is the current value.  */
+  ternary(exp1: ValArg, exp2: ValArg) {
+    return Val.ternary(this, exp1, exp2);
+  }
+
+  /** Returns the function return statement that returns this value. */
+  return() {
+    return ret(this);
+  }
+
+  /** Accepts an array of member names and returns an array of Values with an arrow access operator expression for each member. */
+  arrowMulti<const Names extends readonly string[]>(...memberNames: Names) {
+    return memberNames.map((m) => this.arrow(m)) as {
+      [index in keyof Names]: Val<"any">;
+    };
+  }
+
+  /** Returns assignments to multiple struct members by value ( dot ). */
+  assignDotMulti(values: Record<string, ValArg>) {
+    return Chunk.new(
+      ...Object.entries(values).map(([key, value]) => {
+        return this.dot(key).assign(value);
+      })
+    );
+  }
+
+  /** Returns assignments to multiple struct members by reference ( arrow ). */
+  assignArrowMulti(values: Record<string, ValArg>) {
+    return Chunk.new(
+      ...Object.entries(values).map(([key, value]) => {
+        return this.arrow(key).assign(value);
+      })
+    );
+  }
+
+  /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
+  subAssign(index: ValArg, value: ValArg) {
+    return this.at(index).assign(value);
   }
 
   /**
-   * Returns the smaller value expression using relational logical operators between this variable's name and another expression of the same type.
+   * Returns a Chunk of subscript assignment statements
+   * for each of the values passed starting from index 0 in increments of 1.
    */
-  min(value: CodeLike) {
-    return Utils.min(this, value);
+  subAssignMulti(...values: ValArg[]) {
+    return Chunk.new(...values.map((v, i) => this.subAssign(i, v)));
   }
 
-  /** Returns an assignment expression with a clamped value between min and max. */
-  clamp(min: CodeLike, max: CodeLike) {
-    // TODO: first type ?
-    return Op.assign(Type.any(), this, Utils.clamp(this, min, max));
+  /**
+   * A utility for returning the smaller value between the current and passed value using ternary and `<`.
+   */
+  min(value: ValArg) {
+    return Val.ternary(this.lt(value), this, value);
+  }
+
+  /**
+   * A utility for returning the greater value between the current and passed value using ternary and `>`.
+   */
+  max(value: ValArg) {
+    return Val.ternary(this.gt(value), this, value);
+  }
+
+  /**
+   * A utility for clamping the current value between min and max using ternary and `<` `>` operators.
+   */
+  clamp(minValue: ValArg, maxValue: ValArg) {
+    return Val.ternary(
+      this.lt(minValue),
+      minValue,
+      Val.ternary(this.gt(maxValue), maxValue, this)
+    );
   }
 
   /**
@@ -130,22 +423,22 @@ export class Val<S extends string> {
      }
    * ```
    */
-  equalReturn(valueToCompare: CodeLike, returnValue?: CodeLike) {
-    return Condition.if(this.equal(valueToCompare), [Op.return(returnValue)]);
+  equalReturn(valueToCompare: Val, returnValue?: Val) {
+    return Condition.if(this.equal(valueToCompare), [ret(returnValue)]);
   }
 
   /**
    * Returns an if block with the value itself as the condition and returns the expression argument.
    */
-  thenReturn(returnValue?: CodeLike) {
-    return Condition.if(this, [Op.return(returnValue)]);
+  thenReturn(returnValue?: Val) {
+    return Condition.if(this, [ret(returnValue)]);
   }
 
   /**
    * Returns an if block that checks if the value is falsy using the ! unary operator and returns the expression argument.
    */
-  notReturn(returnValue?: CodeLike) {
-    return Condition.if(this.not(), [Op.return(returnValue)]);
+  notReturn(returnValue?: Val) {
+    return Condition.if(this.not(), [ret(returnValue)]);
   }
 
   /**
@@ -162,163 +455,17 @@ export class Val<S extends string> {
     return Condition.if(this.not(), body);
   }
 
-  /** Returns a Value for the `|` expression between this and another expression.  */
-  bitOr(value: CodeLike) {
-    return Op.bitOr(this, value);
-  }
-
-  /** Returns a Value for the `&` expression between this and another expression.  */
-  bitAnd(value: CodeLike) {
-    return Op.bitAnd(this, value);
-  }
-
-  /** Returns a Value for the sizeof expression.  */
-  sizeOf() {
-    return Op.sizeOf(this);
-  }
-
-  /** Assign a value. */
-  assign(value: CodeLike) {
-    // TODO: value type ?
-    return Op.assign(Type.any(), this, value);
-  }
-
-  /** Returns a Value with the `-` in front of this Value. */
-  negative() {
-    return Op.negative(this);
-  }
-
-  /** Returns a Value for a subscript ( index ) accessor `arr[3]`. */
-  at(index: CodeLike) {
-    return Op.subscript(this, index);
-  }
-
-  /** Access a member of the struct directly. */
-  dot(key: CodeLike) {
-    return Op.dot(this, key);
-  }
-
-  /** Access a member of the struct through a pointer. */
-  arrow(key: CodeLike) {
-    return Op.arrow(this, key);
-  }
-
-  /** Returns the reference expression for this value. `&expression`. */
-  ref() {
-    return Op.ref(this.type.ptr(), this);
-  }
-
-  /** Returns the dereference expression for this value. `*expression`. */
-  deRef() {
-    return Op.deRef(this.type, this);
-  }
-
-  /** Returns assignments to multiple struct members by value ( dot ). */
-  assignDotMulti(values: Record<string, CodeLike>) {
-    return Chunk.new(
-      ...Object.entries(values).map(([key, value]) => {
-        return this.dot(key).assign(value);
-      })
-    );
-  }
-
-  /** Returns assignments to multiple struct members by reference ( arrow ). */
-  assignArrowMulti(values: Record<string, CodeLike>) {
-    return Chunk.new(
-      ...Object.entries(values).map(([key, value]) => {
-        return this.arrow(key).assign(value);
-      })
-    );
-  }
-
-  /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
-  subAssign(index: CodeLike, value: CodeLike) {
-    // TODO: Element type of array otherwise any
-    return Op.assign(Type.any(), Op.subscript(this, index), value);
-  }
-
-  /**
-   * Returns a Chunk of subscript assignment statements
-   * for each of the values passed starting from index 0 in increments of 1.
-   */
-  subAssignMulti(...values: CodeLike[]) {
-    return Chunk.new(...values.map((v, i) => this.subAssign(i, v)));
-  }
-
-  /** `+=` */
-  plusAssign(value: CodeLike) {
-    return Op.plusAssign(this.type, this, value);
-  }
-
-  /** `-=` */
-  minusAssign(value: CodeLike) {
-    return Op.minusAssign(this.type, this, value);
-  }
-
-  /** `*=` */
-  mulAssign(value: CodeLike) {
-    return Op.mulAssign(this.type, this, value);
-  }
-
-  /** `/=` */
-  divAssign(value: CodeLike) {
-    return Op.divAssign(this.type, this, value);
-  }
-
-  /** `%=` */
-  moduloAssign(value: CodeLike) {
-    return Op.moduloAssign(this.type, this, value);
-  }
-
-  /** Wraps the expression in parenthesis. */
-  parens() {
-    return Op.parens(this.type, this);
-  }
-
-  /** `a++` */
-  postInc() {
-    return Op.postInc(this.type, this);
-  }
-
-  /** `a--` */
-  postDec() {
-    return Op.postDec(this.type, this);
-  }
-
-  /** `++a` */
-  preInc() {
-    return Op.preInc(this.type, this);
-  }
-
-  /** `--a` */
-  preDec() {
-    return Op.preDec(this.type, this);
-  }
-
-  /** Returns a function call expression. */
-  call(...args: CodeLike[]) {
-    return Op.call(this, args);
-  }
-
-  /** Returns the function return expression that returns this value. */
-  return() {
-    return Op.return(this);
-  }
-
-  /** Accepts an array of member names and returns an array of Values with an arrow access operator expression for each member. */
-  arrowMulti<const Names extends string[]>(...memberNames: Names) {
-    return memberNames.map((m) => Val.new(Type.any(), this.arrow(m))) as {
-      [index in keyof Names]: Val<"any">;
-    };
-  }
-
   /**
    * Returns a Val for a string literal.
    *
    * `"abc"`
    */
   static str(s: string) {
-    return Val.new(Type.string(), Lit.str(s));
+    return new Val({
+      kind: "literal",
+      type: Type.string(),
+      value: Lit.str(s),
+    });
   }
 
   /**
@@ -327,7 +474,11 @@ export class Val<S extends string> {
    * Same as `string`, but for multiple strings each on a new line.
    */
   static strMulti(...strings: string[]) {
-    return Val.new(Type.string(), Lit.strMulti(...strings));
+    return new Val({
+      kind: "literal",
+      type: Type.string(),
+      value: Lit.strMulti(...strings),
+    });
   }
 
   /**
@@ -336,80 +487,11 @@ export class Val<S extends string> {
    * `'a'`
    */
   static char(c: string) {
-    return Val.new(Type.char(), Lit.char(c));
-  }
-
-  /**
-   * Returns a Val for an int literal.
-   */
-  static int(n: Numberish) {
-    return Val.new(Type.int(), n);
-  }
-
-  /**
-   * Returns a Val for an unsigned integer literal.
-   *
-   * `23U`
-   */
-  static unsigned(n: Numberish) {
-    return Val.new(Type.simple("unsigned int"), Lit.unsigned(n));
-  }
-
-  /**
-   * Returns a Val for a long literal.
-   *
-   * `23L`
-   */
-  static longInt(n: Numberish) {
-    return Val.new(Type.simple("long"), n);
-  }
-
-  /**
-   * Returns a Val for an unsigned long literal.
-   *
-   * `23UL`
-   */
-  static unsignedLongInt(n: Numberish) {
-    return Val.new(Type.simple("unsigned long"), n);
-  }
-
-  /**
-   * Returns a Val for a long long literal.
-   *
-   * `23LL`
-   */
-  static longLongInt(n: Numberish) {
-    return Val.new(Type.simple("long long"), Lit.longLongInt(n));
-  }
-
-  /**
-   * Returns a Val for an unsigned long long literal.
-   *
-   * `23ULL`
-   */
-  static unsignedLongLongInt(n: Numberish) {
-    return Val.new(
-      Type.simple("unsigned long long"),
-      Lit.unsignedLongLongInt(n)
-    );
-  }
-
-  /**
-   * Returns a Val for a float literal.
-   *
-   * `23.45F`
-   */
-  static float(n: Numberish) {
-    return Val.new(Type.float(), Lit.float(n));
-  }
-
-  /**
-   * Returns a Val for a long double literal.
-   *
-   * `23.45L`
-   */
-  static longDouble(n: Numberish) {
-    return Val.new(Type.simple("long double"), Lit.longDouble(n));
+    return new Val({
+      kind: "literal",
+      type: Type.char(),
+      value: Lit.char(c),
+    });
   }
 
   /**
@@ -418,7 +500,113 @@ export class Val<S extends string> {
    * `L'a'`
    */
   static wideChar(c: Numberish) {
-    return Val.new(Type.simple("wchar_t"), Lit.wideChar(c));
+    return new Val({
+      kind: "literal",
+      type: Type.simple("wchar_t"),
+      value: Lit.wideChar(c),
+    });
+  }
+
+  /**
+   * Returns a Val for an int literal.
+   */
+  static int(n: Numberish) {
+    return new Val({
+      kind: "literal",
+      type: Type.int(),
+      value: n,
+    });
+  }
+
+  /**
+   * Returns a Val for an unsigned integer literal.
+   *
+   * `23U`
+   */
+  static unsigned(n: Numberish) {
+    return new Val({
+      kind: "literal",
+      type: Type.simple("unsigned int"),
+      value: Lit.unsigned(n),
+    });
+  }
+
+  /**
+   * Returns a Val for a long literal.
+   *
+   * `23L`
+   */
+  static longInt(n: Numberish) {
+    return new Val({
+      kind: "literal",
+      type: Type.simple("long"),
+      value: Lit.longInt(n),
+    });
+  }
+
+  /**
+   * Returns a Val for an unsigned long literal.
+   *
+   * `23UL`
+   */
+  static unsignedLongInt(n: Numberish) {
+    return new Val({
+      kind: "literal",
+      type: Type.simple("unsigned long"),
+      value: Lit.unsignedLongInt(n),
+    });
+  }
+
+  /**
+   * Returns a Val for a long long literal.
+   *
+   * `23LL`
+   */
+  static longLongInt(n: Numberish) {
+    return new Val({
+      kind: "literal",
+      type: Type.simple("long long"),
+      value: Lit.longLongInt(n),
+    });
+  }
+
+  /**
+   * Returns a Val for an unsigned long long literal.
+   *
+   * `23ULL`
+   */
+  static unsignedLongLongInt(n: Numberish) {
+    return new Val({
+      kind: "literal",
+      type: Type.simple("unsigned long long"),
+      value: Lit.unsignedLongLongInt(n),
+    });
+  }
+
+  /**
+   * Returns a Val for a float literal.
+   *
+   * `23.45F`
+   */
+  static float(n: Numberish) {
+    return new Val({
+      kind: "literal",
+      type: Type.float(),
+      value: Lit.float(n),
+    });
+  }
+
+  /**
+   * Returns a Val for a long double literal.
+   *
+   * `23.45L`
+   */
+  static longDouble(n: Numberish) {
+    return new Val({
+      kind: "literal",
+      type: Type.simple("long double"),
+      value: Lit.longDouble(n),
+    });
   }
 
   /**
@@ -426,8 +614,12 @@ export class Val<S extends string> {
    *
    * `{ "abc", 123, &var }`
    */
-  static compound(...values: CodeLike[]) {
-    return Val.new(Type.any(), Lit.compound(...values));
+  static compound(...values: ValArg[]) {
+    return new Val({
+      kind: "literal",
+      type: Type.any(),
+      value: Lit.compound(...values),
+    });
   }
 
   /**
@@ -435,8 +627,12 @@ export class Val<S extends string> {
    *
    * `{ .a = 3, .b = &var, .c = "def" }`
    */
-  static designatedDot(values: Partial<Record<string, CodeLike>>) {
-    return Val.new(Type.any(), Lit.designatedDot(values));
+  static designatedDot(values: Partial<Record<string, ValArg>>) {
+    return new Val({
+      kind: "literal",
+      type: Type.any(),
+      value: Lit.designatedDot(values),
+    });
   }
 
   /**
@@ -444,8 +640,12 @@ export class Val<S extends string> {
    *
    * `{ [1] = 2, [3] = 5 }`
    */
-  static designatedSub(values: Partial<Record<number, CodeLike>>) {
-    return Val.new(Type.any(), Lit.designatedSub(values));
+  static designatedSub(values: Partial<Record<number, ValArg>>) {
+    return new Val({
+      kind: "literal",
+      type: Type.any(),
+      value: Lit.designatedSub(values),
+    });
   }
 
   /**
@@ -453,16 +653,176 @@ export class Val<S extends string> {
    *
    * `{23}`
    */
-  static singleMemberInit(value: CodeLike) {
-    return Val.new(Type.any(), value);
+  static singleMemberInit(value: ValArg) {
+    return new Val({
+      kind: "literal",
+      type: Type.any(),
+      value: Lit.singleMemberInit(value),
+    });
   }
 
-  /** Used for defining an api for using macro values. */
-  static macro<S extends string = "any">(name: CodeLike, type?: TypeArg<S>) {
-    return Val.new<S>(type ?? (Type.any() as any), name);
+  /** Returns a Val for a macro value. */
+  static macro<S extends string = "any">(name: string, type?: TypeArg<S>) {
+    return new Val<S>({
+      kind: "name",
+      type: type ?? (Type.any() as any),
+      name: name.toString(),
+    });
   }
 
-  static new<S extends string>(type: TypeArg<S>, valueExp: CodeLike) {
-    return new Val(type, valueExp);
+  /** Takes in a Func and args and returns a call expression Val for it. */
+  static call<S extends string>(func: Func<S, any>, ...args: ValArg[]) {
+    return new Val({
+      kind: "call",
+      type: func.returnType,
+      funcName: func.name,
+      args: args.map((arg) => Val.valArgToVal(arg)),
+    });
+  }
+
+  /** Returns a Val for the reference expression `&` for the passed Val. */
+  static ref<S extends string>(value: Val<S>) {
+    return new Val({
+      kind: "preUnary",
+      type: value.type.pointer(),
+      value,
+      op: "&",
+    });
+  }
+
+  /** Returns a Val for the `sizeof` expression. */
+  static sizeOf(value: ValArg) {
+    return new Val({
+      kind: "memory",
+      type: Type.size_t(),
+      op: "sizeof",
+      value: Val.valArgToVal(value),
+    });
+  }
+
+  /** Returns a Val for a ternary expression. */
+  static ternary(cond: ValArg, exp1: ValArg, exp2: ValArg) {
+    return new Val({
+      kind: "ternary",
+      type: Type.any(),
+      cond: Val.valArgToVal(cond),
+      exp1: Val.valArgToVal(exp1),
+      exp2: Val.valArgToVal(exp2),
+    });
+  }
+
+  static valArgToVal(val: ValArg): Val {
+    return val instanceof Val
+      ? (val as any)
+      : val instanceof Type
+      ? new Val({ kind: "literal", type: val, value: val })
+      : typeof val === "number"
+      ? Val.int(val)
+      : new Val({ kind: "literal", type: Type.any(), value: val });
   }
 }
+
+type ValueExp<S extends string> =
+  | LiteralExp<S>
+  | NameExp<S>
+  | BinaryExp<S>
+  | PreUnaryExp<S>
+  | PostUnaryExp<S>
+  | MemberExp<S>
+  | TernaryExp<S>
+  | FuncCallExp<S>
+  | CastExp<S>
+  | MemoryExp<S>;
+
+type BaseExp<S extends string> = {
+  type: Type<S>;
+};
+
+type LiteralExp<S extends string> = BaseExp<S> & {
+  kind: "literal";
+  value: string | number | boolean | Type;
+};
+
+type NameExp<S extends string> = BaseExp<S> & {
+  kind: "name";
+  name: string;
+};
+
+type BinaryExp<S extends string> = BaseExp<S> & {
+  kind: "binary";
+  left: Val;
+  right: Val;
+  op:
+    | "="
+    | "+="
+    | "-="
+    | "*="
+    | "/="
+    | "%="
+    | "&="
+    | "|="
+    | "^="
+    | "<<="
+    | ">>="
+    | "+"
+    | "-"
+    | "*"
+    | "/"
+    | "%"
+    | "&"
+    | "|"
+    | "^"
+    | "<<"
+    | ">>"
+    | "&&"
+    | "||"
+    | "=="
+    | "!="
+    | "<"
+    | ">"
+    | "<="
+    | ">=";
+};
+
+type PreUnaryExp<S extends string> = BaseExp<S> & {
+  kind: "preUnary";
+  value: Val;
+  op: "++" | "--" | "*" | "&" | "!" | "+" | "-" | "~";
+};
+
+type PostUnaryExp<S extends string> = BaseExp<S> & {
+  kind: "postUnary";
+  value: Val;
+  op: "++" | "--";
+};
+
+type MemberExp<S extends string> = BaseExp<S> & {
+  kind: "member";
+  left: Val;
+  right: Val;
+  op: "->" | "." | "[]";
+};
+
+type TernaryExp<S extends string> = BaseExp<S> & {
+  kind: "ternary";
+  cond: Val;
+  exp1: Val;
+  exp2: Val;
+};
+
+type FuncCallExp<S extends string> = BaseExp<S> & {
+  kind: "call";
+  funcName: string;
+  args: Val[];
+};
+
+type CastExp<S extends string> = BaseExp<S> & {
+  kind: "cast";
+  value: Val;
+};
+
+type MemoryExp<S extends string> = BaseExp<S> & {
+  kind: "memory";
+  value: Val;
+  op: "sizeof" | "alignof";
+};

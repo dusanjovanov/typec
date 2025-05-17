@@ -1,6 +1,6 @@
 import { NULL, NULL_TERM } from "../constants";
 import { Func } from "../func";
-import { Par } from "../param";
+import { Param } from "../param";
 import { stdlib, stdstring } from "../std";
 import { Type } from "../type";
 import { Var } from "../variable";
@@ -9,7 +9,7 @@ import { Var } from "../variable";
 export const slice = Func.new(
   Type.string(),
   "str_slice",
-  [Par.string("str", ["const"]), Par.size_t("start"), Par.size_t("end")],
+  [Param.string("str", ["const"]), Param.size_t("start"), Param.size_t("end")],
   ({ params }) => {
     const len = Var.size_t("len");
     const sliceLen = Var.size_t("copyLen");

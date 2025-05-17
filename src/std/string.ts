@@ -1,35 +1,35 @@
 import { Directive } from "../directive";
 import { Func } from "../func";
-import { Par } from "../param";
+import { Param } from "../param";
 import { Type } from "../type";
 
 export const stdstring = {
   include: Directive.includeSys("string.h"),
-  strlen: Func.new(Type.size_t(), "strlen", [Par.string("str")]),
+  strlen: Func.new(Type.size_t(), "strlen", [Param.string("str")]),
   strnlen_s: Func.new(Type.size_t(), "strnlen_s", [
-    Par.string("str"),
-    Par.size_t("strsz"),
+    Param.string("str"),
+    Param.size_t("strsz"),
   ]),
   strcat: Func.string("strcat", [
-    Par.string("dest"),
-    Par.string("src", ["const"]),
+    Param.string("dest"),
+    Param.string("src", ["const"]),
   ]),
   strstr: Func.string("strstr", [
-    Par.string("str", ["const"]),
-    Par.string("substr", ["const"]),
+    Param.string("str", ["const"]),
+    Param.string("substr", ["const"]),
   ]),
   strcpy: Func.string("strcpy", [
-    Par.string("dest", [], ["restrict"]),
-    Par.string("src", [], ["restrict"]),
+    Param.string("dest", [], ["restrict"]),
+    Param.string("src", [], ["restrict"]),
   ]),
   strncpy: Func.string("strncpy", [
-    Par.string("dest", [], ["restrict"]),
-    Par.string("src", [], ["restrict"]),
-    Par.size_t("count"),
+    Param.string("dest", [], ["restrict"]),
+    Param.string("src", [], ["restrict"]),
+    Param.size_t("count"),
   ]),
   strncmp: Func.int("strncmp", [
-    Par.string("lhs", ["const"]),
-    Par.string("rhs", ["const"]),
-    Par.size_t("count"),
+    Param.string("lhs", ["const"]),
+    Param.string("rhs", ["const"]),
+    Param.size_t("count"),
   ]),
 };

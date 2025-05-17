@@ -1,12 +1,10 @@
-import { Op } from "./operators";
-import type { Type } from "./type";
 import type {
   BoundApi,
   BoundFunc,
   CodeLike,
   GenericApi,
   GenericFunc,
-  TypeArg,
+  ValArg,
 } from "./types";
 
 /**
@@ -89,27 +87,11 @@ export const unique = <T>(arr: T[]) => {
 
 /** Various useful utils. */
 export class Utils {
-  static min(left: CodeLike, right: CodeLike) {
-    return Op.ternary(Op.lt(left, right), left, right);
-  }
-
-  static max(left: CodeLike, right: CodeLike) {
-    return Op.ternary(Op.gt(left, right), left, right);
-  }
-
-  static clamp(value: CodeLike, minVal: CodeLike, maxVal: CodeLike) {
-    return Op.ternary(
-      Op.lt(value, minVal),
-      minVal,
-      Op.ternary(Op.gt(value, maxVal), maxVal, value)
-    );
-  }
-
   /**
    * Returns a function that returns the `.call()` result for the passed Func
    * with the first parameter of the Func bound to the expression.
    */
-  static bindFunc<Func extends GenericFunc>(expression: CodeLike, func: Func) {
+  static bindFunc<Func extends GenericFunc>(expression: ValArg, func: Func) {
     return ((...args: any[]) =>
       func.call(expression, ...args)) as BoundFunc<Func>;
   }
@@ -117,10 +99,7 @@ export class Utils {
   /**
    * Same as `bindFunc`, but for multiple Funcs.
    */
-  static bindFuncs<Funcs extends GenericApi>(
-    expression: CodeLike,
-    funcs: Funcs
-  ) {
+  static bindFuncs<Funcs extends GenericApi>(expression: ValArg, funcs: Funcs) {
     const bound: Record<string, any> = {};
     Object.entries(funcs).forEach(([key, fn]) => {
       bound[key] = (...args: any[]) => fn.call(expression, ...args);
@@ -129,8 +108,4 @@ export class Utils {
   }
 }
 
-export const typeArgToType = <S extends string>(type: TypeArg<S>): Type<S> => {
-  return typeof type === "object" && "kind" in type && type.kind === "type"
-    ? (type as any)
-    : ((type as any).type() as Type<S>);
-};
+export const ret = (val: any) => `return${emptyNotFalse(val, (v) => ` ${v}`)}`;

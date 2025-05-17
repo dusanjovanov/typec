@@ -1,7 +1,8 @@
 import { NULL } from "../constants";
 import { Func } from "../func";
 import { Loop } from "../loops";
-import { Par } from "../param";
+import { Param } from "../param";
+import { Val } from "../rValue";
 import { stdlib, stdstring, VarArgs } from "../std";
 import { Type } from "../type";
 import { Var } from "../variable";
@@ -10,7 +11,7 @@ import { Var } from "../variable";
 export const concat = Func.new(
   Type.string(),
   "str_concat",
-  [Par.string("str", ["const"])],
+  [Param.string("str", ["const"])],
   ({ params }) => {
     const totalLen = Var.size_t("total_len");
     const varArgs = VarArgs.new();

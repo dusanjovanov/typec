@@ -1,6 +1,6 @@
 import { Block } from "./chunk";
-import { Op } from "./operators";
-import type { Par } from "./param";
+import type { Param } from "./param";
+import { Val } from "./rValue";
 import type {
   AutoSimpleType,
   GenericMembers,
@@ -8,16 +8,10 @@ import type {
   TypeArg,
   TypeQualifier,
 } from "./types";
-import {
-  emptyFalsy,
-  join,
-  joinArgs,
-  stringSplice,
-  typeArgToType,
-} from "./utils";
+import { emptyFalsy, join, joinArgs, stringSplice } from "./utils";
 
-/** Used for generating C type syntax. */
-export class Type<S extends string> {
+/** Used for declaring types and generating C type syntax. */
+export class Type<S extends string = any> {
   constructor(desc: TypeDescription<S>) {
     this.desc = desc;
     this.str = this.createTypeStr() as any;
@@ -27,8 +21,8 @@ export class Type<S extends string> {
   str: string;
 
   /** Create a pointer type to this type. */
-  ptr(qualifiers?: PointerQualifier[]) {
-    return Type.ptr(this, qualifiers) as unknown as Type<`${S}*`>;
+  pointer(qualifiers?: PointerQualifier[]) {
+    return Type.pointer(this, qualifiers) as unknown as Type<`${S}*`>;
   }
 
   /** Returns a new Type with the `const` modifier added to the type. */
@@ -43,7 +37,7 @@ export class Type<S extends string> {
   }
 
   sizeOf() {
-    return Op.sizeOf(this);
+    return Val.sizeOf(this);
   }
 
   /**
@@ -73,7 +67,7 @@ export class Type<S extends string> {
   }
 
   static any(qualifiers?: TypeQualifier[]) {
-    return Type.simple("any", qualifiers);
+    return Type.simple("any", qualifiers) as Type<any>;
   }
 
   static int(qualifiers?: TypeQualifier[]) {
@@ -112,13 +106,13 @@ export class Type<S extends string> {
     return Type.simple("float", qualifiers);
   }
 
-  static ptr<S extends string>(
+  static pointer<S extends string>(
     type: TypeArg<S>,
     qualifiers: PointerQualifier[] = []
   ) {
     return Type.new({
       kind: "pointer",
-      type: typeArgToType(type),
+      type: Type.typeArgToType(type),
       qualifiers,
     }) as unknown as Type<`${S}*`>;
   }
@@ -128,7 +122,7 @@ export class Type<S extends string> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.char(typeQualifiers).ptr(pointerQualifiers);
+    return Type.char(typeQualifiers).pointer(pointerQualifiers);
   }
 
   static array<S extends string>(
@@ -138,12 +132,17 @@ export class Type<S extends string> {
     return Type.new({ kind: "array", elementType, length });
   }
 
-  static func<Return extends string>(
+  static func<Return extends string, Params extends readonly Param<any, any>[]>(
     returnType: Type<Return>,
-    params: Par<any, any>[],
+    params: Params,
     hasVarArgs = false
   ) {
-    return Type.new({ kind: "func", returnType, params, hasVarArgs });
+    return Type.new({
+      kind: "func",
+      returnType,
+      params: params as unknown as Param<any, any>[],
+      hasVarArgs,
+    }) as Type<`${Return}(${ParamsListFromParams<Params>})`>;
   }
 
   static struct<Name extends string>(
@@ -166,6 +165,12 @@ export class Type<S extends string> {
     qualifiers: TypeQualifier[] = []
   ) {
     return Type.new({ kind: "enum", name, qualifiers });
+  }
+
+  static typeArgToType<S extends string>(type: TypeArg<S>): Type<S> {
+    return typeof type === "object" && "kind" in type && type.kind === "type"
+      ? (type as any)
+      : ((type as any).type() as Type<S>);
   }
 
   static new<S extends string = any>(desc: TypeDescription<S>) {
@@ -336,7 +341,7 @@ export type ArrayType<S extends string> = {
 export type FuncType<S extends string> = {
   kind: "func";
   returnType: Type<S>;
-  params: Par<any, any>[];
+  params: Param<any, any>[];
   hasVarArgs: boolean;
 };
 
@@ -358,3 +363,17 @@ export type EnumType<Name extends string> = {
   name: Name;
   qualifiers: TypeQualifier[];
 };
+
+type ParamsListFromParams<Params extends readonly Param<any, any>[]> =
+  Params extends []
+    ? "void"
+    : Params extends readonly [
+        infer First extends Param<any, any>,
+        ...infer Rest extends readonly Param<any, any>[]
+      ]
+    ? Rest extends readonly Param<any, any>[]
+      ? `${First extends Param<infer T, any>
+          ? T
+          : any},${ParamsListFromParams<Rest>}`
+      : `${First extends Param<infer T, any> ? T : any}`
+    : any;

@@ -1,22 +1,23 @@
-import { semicolon } from "./chunk";
-import { Lit } from "./literal";
-import { Op } from "./operators";
 import { Val } from "./rValue";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import type {
-  CodeLike,
   GenericApi,
   PointerQualifier,
   TypeArg,
   TypeQualifier,
+  ValArg,
 } from "./types";
 import { Utils } from "./utils";
 
 /** Used for working with variables of any type. */
 export class Var<S extends string> extends Val<S> {
   constructor(type: TypeArg<S>, name: string) {
-    super(type, name);
+    super({
+      kind: "name",
+      type: Type.typeArgToType(type),
+      name,
+    });
     this.name = name;
   }
   kind = "variable" as const;
@@ -32,44 +33,44 @@ export class Var<S extends string> extends Val<S> {
   }
 
   /** Initialize with a value. */
-  init(value: CodeLike) {
-    return Op.assign(this.type, this.declare(), value);
+  init(value: ValArg) {
+    return `${this.declare()}=${value}`;
   }
 
   /** Returns the compound initialization. */
-  initCompound(...values: CodeLike[]) {
-    return Op.assign(
-      this.type,
-      this.declare(),
-      semicolon(Lit.compound(...values))
-    );
+  initCompound(...values: ValArg[]) {
+    // return Op.assign(
+    //   this.type,
+    //   this.declare(),
+    //   semicolon(Lit.compound(...values))
+    // );
   }
 
   /** Returns the designated sub initialization. */
-  initDesignatedSub(values: Record<number, CodeLike>) {
-    return Op.assign(
-      this.type,
-      this.declare(),
-      semicolon(Lit.designatedSub(values))
-    );
+  initDesignatedSub(values: Record<number, ValArg>) {
+    // return Op.assign(
+    //   this.type,
+    //   this.declare(),
+    //   semicolon(Lit.designatedSub(values))
+    // );
   }
 
   /** Initialize with a designated dot initializer. */
-  initDesignatedDot(values: Record<string | number, CodeLike>) {
-    return Op.assign(
-      this.type,
-      this.declare(),
-      semicolon(Lit.designatedDot(values))
-    );
+  initDesignatedDot(values: Record<string | number, ValArg>) {
+    // return Op.assign(
+    //   this.type,
+    //   this.declare(),
+    //   semicolon(Lit.designatedDot(values))
+    // );
   }
 
   /** Single value initializer. */
-  initSingleMember(value: CodeLike) {
-    return Op.assign(
-      this.type,
-      this.declare(),
-      Lit.singleMemberInit(value)
-    );
+  initSingleMember(value: ValArg) {
+    // return Op.assign(
+    //   this.type,
+    //   this.declare(),
+    //   Lit.singleMemberInit(value)
+    // );
   }
 
   /**
@@ -77,17 +78,6 @@ export class Var<S extends string> extends Val<S> {
    */
   api<Api extends GenericApi>(funcs: Api) {
     return new VarApi(this.type, this.name, funcs);
-  }
-
-  static new<S extends string>(type: TypeArg<S>, name: string) {
-    return new Var(type, name);
-  }
-
-  /**
-   * Returns a `VarApi` object with bound functions.
-   */
-  static api<Api extends GenericApi>(type: TypeArg, name: string, funcs: Api) {
-    return new VarApi(type, name, funcs);
   }
 
   static void(name: string, typeQualifiers?: TypeQualifier[]) {
@@ -137,6 +127,17 @@ export class Var<S extends string> extends Val<S> {
     pointerQualifiers?: PointerQualifier[]
   ) {
     return Var.new(Type.string(typeQualifiers, pointerQualifiers), name);
+  }
+
+  /**
+   * Returns a `VarApi` object with bound functions.
+   */
+  static api<Api extends GenericApi>(type: TypeArg, name: string, funcs: Api) {
+    return new VarApi(type, name, funcs);
+  }
+
+  static new<S extends string>(type: TypeArg<S>, name: string) {
+    return new Var(type, name);
   }
 }
 

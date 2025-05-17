@@ -18,7 +18,7 @@ export class Enum<
     const keys: Record<string, any> = {};
 
     Object.keys(values).forEach((name) => {
-      keys[name] = Val.new(Type.int(), name);
+      keys[name] = Val.int(name);
     });
 
     this.keys = keys as {
@@ -38,8 +38,8 @@ export class Enum<
    *  C: null
    * })
    *
-   * myEnum.keys.A === Value("A")
-   * myEnum.keys.C === Value("C")
+   * myEnum.keys.A === Val("A")
+   * myEnum.keys.C === Val("C")
    * ```
    */
   keys;
@@ -67,26 +67,18 @@ export class Enum<
     return Type.enum(this.name, qualifiers);
   }
 
-  /** Get a pointer variable type for this enum. */
-  pointerType(
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return this.type(typeQualifiers).ptr(pointerQualifiers);
-  }
-
   /** Returns a Var to hold a value of this enum. */
   var(name: string, qualifiers?: TypeQualifier[]) {
     return Var.new(this.type(qualifiers), name);
   }
 
   /** Returns a Var to hold a `pointer` to a value of this enum. */
-  ptr(
+  pointer(
     name: string,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(this.pointerType(typeQualifiers, pointerQualifiers), name);
+    return Var.new(this.type(typeQualifiers).pointer(pointerQualifiers), name);
   }
 
   static new<

@@ -1,6 +1,6 @@
 import { Directive } from "../directive";
 import { Func } from "../func";
-import { Par } from "../param";
+import { Param } from "../param";
 import { Val } from "../rValue";
 import { Type } from "../type";
 
@@ -29,7 +29,7 @@ export const stdio = {
   SEEK_CUR: Val.macro("SEEK_CUR"),
   printf: Func.int(
     "printf",
-    [Par.string("format", ["const"], ["const"])],
+    [Param.string("format", ["const"], ["const"])],
     undefined,
     {
       hasVarArgs: true,
@@ -37,7 +37,7 @@ export const stdio = {
   ),
   scanf: Func.int(
     "scanf",
-    [Par.string("format", ["const"], ["const"])],
+    [Param.string("format", ["const"], ["const"])],
     undefined,
     {
       hasVarArgs: true,
@@ -46,8 +46,8 @@ export const stdio = {
   fprintf: Func.int(
     "fprintf",
     [
-      Par.new(FILE.ptr().const(), "stream"),
-      Par.string("format", ["const"], ["const"]),
+      Param.new(FILE.pointer().const(), "stream"),
+      Param.string("format", ["const"], ["const"]),
     ],
     undefined,
     {
@@ -57,8 +57,8 @@ export const stdio = {
   fscanf: Func.int(
     "fscanf",
     [
-      Par.new(FILE.ptr().const(), "stream"),
-      Par.string("format", ["const"], ["const"]),
+      Param.new(FILE.pointer().const(), "stream"),
+      Param.string("format", ["const"], ["const"]),
     ],
     undefined,
     {
@@ -67,23 +67,23 @@ export const stdio = {
   ),
   sprintf: Func.int(
     "sprintf",
-    [Par.string("str"), Par.string("format", ["const"], ["const"])],
+    [Param.string("str"), Param.string("format", ["const"], ["const"])],
     undefined,
     {
       hasVarArgs: true,
     }
   ),
-  tmpnam: Func.string("tmpnam", [Par.string("str")]),
-  tmpfile: Func.new(FILE.ptr(), "tmpfile", []),
+  tmpnam: Func.string("tmpnam", [Param.string("str")]),
+  tmpfile: Func.new(FILE.pointer(), "tmpfile", []),
   rename: Func.int("rename", [
-    Par.string("oldFilename", ["const"]),
-    Par.string("newFilename", ["const"]),
+    Param.string("oldFilename", ["const"]),
+    Param.string("newFilename", ["const"]),
   ]),
-  remove: Func.int("rename", [Par.string("filename", ["const"])]),
+  remove: Func.int("rename", [Param.string("filename", ["const"])]),
   fopen: Func.new(FILE, "fopen", [
-    Par.string("filename", ["const"]),
-    Par.string("_Mode", ["const"]),
+    Param.string("filename", ["const"]),
+    Param.string("_Mode", ["const"]),
   ]),
-  fclose: Func.int("fclose", [Par.new(FILE.ptr(), "stream")]),
-  puts: Func.int("puts", [Par.string("str", ["const"])]),
+  fclose: Func.int("fclose", [Param.new(FILE.pointer(), "stream")]),
+  puts: Func.int("puts", [Param.string("str", ["const"])]),
 };

@@ -9,7 +9,6 @@ export * from "./func";
 export * from "./gcc";
 export * from "./literal";
 export * from "./loops";
-export * from "./operators";
 export * from "./param";
 export * from "./rValue";
 export * from "./std";

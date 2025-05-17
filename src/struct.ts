@@ -1,4 +1,4 @@
-import { Par } from "./param";
+import { Param } from "./param";
 import { Type } from "./type";
 import type {
   Embeddable,
@@ -40,26 +40,29 @@ export class Struct<Name extends string, Members extends GenericMembers>
   }
 
   /** Pointer Var */
-  ptr(
+  pointer(
     name: string,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(this.type(typeQualifiers).ptr(pointerQualifiers), name);
+    return Var.new(this.type(typeQualifiers).pointer(pointerQualifiers), name);
   }
 
   /** param */
   par<Name extends string>(name: Name, typeQualifiers?: TypeQualifier[]) {
-    return Par.new(this.type(typeQualifiers), name);
+    return Param.new(this.type(typeQualifiers), name);
   }
 
   /** Pointer param */
-  ptrPar<Name extends string>(
+  pointerParam<Name extends string>(
     name: Name,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Par.new(this.type(typeQualifiers).ptr(pointerQualifiers), name);
+    return Param.new(
+      this.type(typeQualifiers).pointer(pointerQualifiers),
+      name
+    );
   }
 
   varApi<Api extends GenericApi>(name: string, api: Api) {

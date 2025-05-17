@@ -1,6 +1,6 @@
 import type { Enum } from "./enum";
 import type { Func } from "./func";
-import type { Par } from "./param";
+import type { Param } from "./param";
 import type { Val } from "./rValue";
 import type { Struct } from "./struct";
 import type { Type } from "./type";
@@ -81,15 +81,15 @@ export type Numberish = number | string;
 /** `string`, `number`, `boolean`, or a tc object with `toString()` implemented. */
 export type CodeLike = TextLike | { toString(): string };
 
-/** same as CodeLike, but has a generic string argument so that Func call arguments can be "named". */
-export type FuncArg<_ extends string> = TextLike | { toString(): string };
-
 export type GenericMembers = {
   [Key: string]: Type<any>;
 };
 
-export type FuncArgsFromParams<Params extends readonly Par<any, any>[]> = {
-  [index in keyof Params]: FuncArg<Params[index]["name"]>;
+export type FuncArgsFromParams<Params extends readonly Param<any, any>[]> = {
+  [index in keyof Params]: FuncArg<
+    Params[index]["type"] extends Type<infer S> ? S : any,
+    Params[index]["name"]
+  >;
 };
 
 export type GenericFunc = Func<any, any>;
@@ -105,10 +105,10 @@ export type BoundApi<Funcs extends GenericApi> = {
   [key in keyof Funcs]: BoundFunc<Funcs[key]>;
 };
 
-type BoundArgs<Params extends readonly Par<any, any>[]> =
+type BoundArgs<Params extends readonly Param<any, any>[]> =
   Params extends readonly [
-    infer _ extends Par<any, any>,
-    ...infer Rest extends readonly Par<any, any>[]
+    infer _ extends Param<any, any>,
+    ...infer Rest extends readonly Param<any, any>[]
   ]
     ? FuncArgsFromParams<Rest>
     : [];
@@ -117,7 +117,18 @@ export type TypeArg<S extends string = any> =
   | Type<S>
   | Struct<S, any>
   | Union<S, any>
-  | Enum<S, any>;
+  | Enum<S, any>
+  | Func<S, any>;
+
+export type ValArg = Val | Type | number | string | boolean;
+
+/** same as ValArg, but has a generic string argument so that Func call arguments can be "named". */
+export type FuncArg<_ extends string, __ extends string> =
+  | Val
+  | Type
+  | number
+  | string
+  | boolean;
 
 export type Embeddable = {
   embed(): string;
