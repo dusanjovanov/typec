@@ -1,19 +1,22 @@
-import { curly } from "./chunk";
+import { BRANDING_MAP } from "./branding";
 import { Val } from "./rValue";
+import { Stat } from "./statement";
 import { Type } from "./type";
-import type { Embeddable, PointerQualifier, TypeQualifier } from "./types";
-import { join } from "./utils";
+import type {
+  GenericEnumValues,
+  PointerQualifier,
+  TypeQualifier,
+} from "./types";
 import { Var } from "./variable";
 
 /** Used for declaring and working with enums. */
 export class Enum<
-  Name extends string,
-  Values extends Record<string, string | number | null>
-> implements Embeddable
-{
+  Name extends string = any,
+  Values extends GenericEnumValues = any
+> {
   constructor(name: Name, values: Values) {
     this.name = name;
-    this.__values = values;
+    this._values = values;
 
     const keys: Record<string, any> = {};
 
@@ -25,41 +28,16 @@ export class Enum<
       [key in keyof Values]: Val<"int">;
     };
   }
-  kind = "enum" as const;
+  kind = BRANDING_MAP.enum;
   name;
-  __values;
+  _values;
   /**
-   * Access the names of the enum defined values by name.
-   *
-   * ```ts
-   * const myEnum = Enum.new("my_enum", {
-   *  A: 0,
-   *  B: 1,
-   *  C: null
-   * })
-   *
-   * myEnum.keys.A === Val("A")
-   * myEnum.keys.C === Val("C")
-   * ```
+   * Dictionary of enum values as Val objects.
    */
   keys;
 
   declare() {
-    return `enum ${this.name}${curly(
-      join(
-        Object.entries(this.__values).map(([name, value]) => {
-          if (value == null) {
-            return name;
-          }
-          return `${name}=${value}`;
-        }),
-        ","
-      )
-    )};`;
-  }
-
-  embed() {
-    return this.declare();
+    return Stat.enum(this.name, this._values);
   }
 
   /** Get a variable type for this enum. */

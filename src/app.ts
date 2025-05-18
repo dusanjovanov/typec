@@ -1,7 +1,6 @@
-import { Chunk } from "./chunk";
 import { Func } from "./func";
-import type { CodeLike, Embeddable } from "./types";
-import { unique } from "./utils";
+import { Stat } from "./statement";
+import type { StatArg } from "./types";
 
 export class App {
   constructor({ includes = [], embeds = [], main }: AppOptions) {
@@ -19,17 +18,7 @@ export class App {
       return this.main();
     });
 
-    const mainDef = mainFn.define();
-
-    return Chunk.new(
-      ...unique(this.includes.map((i) => i.toString())),
-      ...unique(
-        this.embeds.map((e) => {
-          return e.embed();
-        })
-      ),
-      mainDef
-    ).toString();
+    return Stat.chunk([...this.includes, ...this.embeds, mainFn]).toString();
   }
 
   static new(options: AppOptions) {
@@ -39,9 +28,9 @@ export class App {
 
 export type AppOptions = {
   /** Add include directives. */
-  includes?: CodeLike[];
+  includes?: string[];
   /** Embed code between include directives and the main function. */
-  embeds?: Embeddable[];
+  embeds?: StatArg[];
   /** The app's main function */
-  main: () => CodeLike[];
+  main: () => StatArg[];
 };

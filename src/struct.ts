@@ -1,7 +1,8 @@
+import { BRANDING_MAP } from "./branding";
 import { Param } from "./param";
+import { Stat } from "./statement";
 import { Type } from "./type";
 import type {
-  Embeddable,
   GenericApi,
   GenericMembers,
   PointerQualifier,
@@ -10,24 +11,21 @@ import type {
 import { Var } from "./variable";
 
 /** Used for declaring and working with structs. */
-export class Struct<Name extends string, Members extends GenericMembers>
-  implements Embeddable
-{
+export class Struct<
+  Name extends string = any,
+  Members extends GenericMembers = any
+> {
   constructor(members: Members, name: Name = null as unknown as Name) {
     this.name = name;
     this.members = members;
   }
-  kind = "struct" as const;
+  kind = BRANDING_MAP.struct;
   name;
   members;
 
-  /** Returns the struct declaration ( definition ). */
+  /** Returns the struct declaration statement. */
   declare() {
-    return `struct ${this.name}${Type.membersBlock(this.members)};`;
-  }
-
-  embed() {
-    return this.declare();
+    return Stat.struct(this.name, this.members);
   }
 
   /** Get a struct var type for this struct. */

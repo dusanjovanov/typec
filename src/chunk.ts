@@ -42,28 +42,6 @@ export class Chunk {
   }
 }
 
-/** A chunk of code within curly braces. Can be stringified. */
-export class Block {
-  constructor(statements: CodeLike[]) {
-    this.chunk = Chunk.new(...statements);
-  }
-  chunk;
-
-  /** Add statements to the Block. */
-  add(...statements: CodeLike[]) {
-    this.chunk.statements.push(...statements);
-    return this;
-  }
-
-  toString() {
-    return `\n${curly(`\n${this.chunk}\n`)}`;
-  }
-
-  static new(...statements: CodeLike[]) {
-    return new Block(statements);
-  }
-}
-
 /** Code between curly braces */
 export const curly = (code: CodeLike) => {
   return `{${code}}`;

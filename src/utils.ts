@@ -52,17 +52,6 @@ export const joinWithPrefix = (arr: CodeLike[], prefix: string, sep = " ") => {
   );
 };
 
-export const fillArray = <T>(
-  length: number,
-  callback: (index: number) => T
-) => {
-  return Array.from({ length }).map((_, index) => callback(index));
-};
-
-export const pointerStars = (level = 1) => {
-  return join(fillArray(level, () => "*"));
-};
-
 export const joinArgs = (args: CodeLike[]) => {
   return join(args, ",");
 };
@@ -107,5 +96,3 @@ export class Utils {
     return bound as BoundApi<Funcs>;
   }
 }
-
-export const ret = (val: any) => `return${emptyNotFalse(val, (v) => ` ${v}`)}`;

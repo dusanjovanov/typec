@@ -1,30 +1,25 @@
-import { Block } from "./chunk";
-import type { CodeLike } from "./types";
+import { Stat } from "./statement";
+import type { StatArg, ValArg } from "./types";
 
 export class Loop {
   /**
    * Returns a while loop statement.
    */
-  static while(condition: CodeLike, body: CodeLike[]) {
-    return `while(${condition})${Block.new(...body)}`;
+  static while(condition: ValArg, body: StatArg[]) {
+    return Stat.while(condition, body);
   }
 
   /**
    * Returns a for loop statement.
    */
-  static for(
-    init: CodeLike,
-    condition: CodeLike,
-    update: CodeLike,
-    body: CodeLike[]
-  ) {
-    return `for(${init};${condition};${update})${Block.new(...body)}`;
+  static for(init: StatArg, condition: ValArg, iter: ValArg, body: StatArg[]) {
+    return Stat.for(init, condition, iter, body);
   }
 
   /**
    * Returns a do while loop statement.
    */
-  static doWhile(body: CodeLike[], condition: CodeLike) {
-    return `do${Block.new(...body)}while(${condition})`;
+  static doWhile(statements: StatArg[], condition: ValArg) {
+    return Stat.doWhile(statements, condition);
   }
 }

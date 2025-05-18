@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { Condition } from "./condition";
+import { Cond } from "./condition";
 
 describe("conditional", () => {
   test("if", () => {
-    expect(`${Condition.if("a>b", ["return false"])}`).toBe(`if(a>b)
+    expect(`${Cond.if("a>b", ["return false"])}`).toBe(`if(a>b)
 {
 return false;
 }`);
@@ -11,7 +11,7 @@ return false;
 
   test("if elseif", () => {
     expect(
-      `${Condition.if("a>b", ["return false"]).elseif("b>a", ["return true"])}`
+      `${Cond.if("a>b", ["return false"]).elseif("b>a", ["return true"])}`
     ).toBe(`if(a>b)
 {
 return false;
@@ -24,7 +24,7 @@ return true;
 
   test("if elseif else", () => {
     expect(
-      `${Condition.if("a>b", ["return false"])
+      `${Cond.if("a>b", ["return false"])
         .elseif("b>a", ["return true"])
         .else(["return NULL"])}`
     ).toBe(`if(a>b)

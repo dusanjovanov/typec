@@ -1,8 +1,8 @@
-import { Chunk } from "../chunk";
 import { MACRO_TYPE } from "../constants";
 import { Directive } from "../directive";
 import { Func } from "../func";
 import { Param } from "../param";
+import { Stat } from "../statement";
 import { Type } from "../type";
 import type { ValArg } from "../types";
 import { Var } from "../variable";
@@ -57,7 +57,7 @@ export class VarArgs {
    * You have to pass the name of the last fixed param of the function.
    */
   declareAndStart(nameOfLastFixedParam: ValArg) {
-    return Chunk.new(this.declare(), this.start(nameOfLastFixedParam));
+    return Stat.chunk([this.declare(), this.start(nameOfLastFixedParam)]);
   }
 
   /** Get the next arg. You have to pass it's type. */

@@ -1,22 +1,16 @@
-import { Block } from "./chunk";
+import { BRANDING_MAP } from "./branding";
 import type { Param } from "./param";
 import { Val } from "./rValue";
+import { Stat } from "./statement";
 import { Type } from "./type";
-import {
-  type CodeLike,
-  type Embeddable,
-  type FuncArgsFromParams,
-  type ValArg,
-} from "./types";
-import { ret } from "./utils";
+import { type FuncArgsFromParams, type StatArg, type ValArg } from "./types";
 
 /** Used for creating and using functions or just declaring and using their api if they come from C libraries. */
 export class Func<
   Return extends string,
   const Params extends readonly Param<any, any>[],
   VarArgs extends boolean = false
-> implements Embeddable
-{
+> {
   constructor(
     returnType: Type<Return>,
     name: string,
@@ -40,7 +34,7 @@ export class Func<
     });
     this.params = paramsByName as FuncParamsByName<Params>;
   }
-  kind = "func" as const;
+  kind = BRANDING_MAP.func;
   returnType;
   name;
   /** Params by name */
@@ -61,26 +55,24 @@ export class Func<
     );
   }
 
-  /** Returns the declaration ( prototype ) of the function. */
+  /** Returns the declaration ( prototype ) statement for the function. */
   declare() {
-    return this.type.declare(this.name);
+    return Stat.funcDeclaration(this.type, this.name);
   }
 
   /**
-   * Returns the definition ( implementation ) of the function.
+   * Returns the definition ( implementation ) statement for the function.
    *
-   * Returns an empty string if the body function is not defined.
+   * Returns a declaration statement if the body of the function is not defined.
    */
-  define() {
-    if (!this.body) return "";
+  define(): Stat {
+    if (!this.body) return this.declare();
 
-    return `${this.declare()}${Block.new(
-      ...(this.body({ params: this.params }) ?? [])
-    )}`;
-  }
-
-  embed() {
-    return this.define();
+    return Stat.funcDef(
+      this.type,
+      this.name,
+      this.body({ params: this.params })
+    );
   }
 
   /** Returns this function's call expression Val. */
@@ -93,8 +85,8 @@ export class Func<
   }
 
   /** Returns a return statement expression. */
-  static return(value?: CodeLike) {
-    return ret(value);
+  static return(value?: ValArg) {
+    return Stat.return(value);
   }
 
   /** Shortcut for the `void` return type. */
@@ -104,7 +96,7 @@ export class Func<
   >(
     name: string,
     params: Params,
-    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
     return new Func(Type.void(), name, params, body, options);
@@ -117,7 +109,7 @@ export class Func<
   >(
     name: string,
     params: Params,
-    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
     return new Func(Type.bool(), name, params, body, options);
@@ -130,7 +122,7 @@ export class Func<
   >(
     name: string,
     params: Params,
-    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
     return new Func(Type.int(), name, params, body, options);
@@ -143,7 +135,7 @@ export class Func<
   >(
     name: string,
     params: Params,
-    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
     return new Func(Type.double(), name, params, body, options);
@@ -156,7 +148,7 @@ export class Func<
   >(
     name: string,
     params: Params,
-    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
     return new Func(Type.string(), name, params, body, options);
@@ -170,7 +162,7 @@ export class Func<
     returnType: Type<Return>,
     name: string,
     params: Params,
-    body?: (arg: { params: FuncParamsByName<Params> }) => CodeLike[],
+    body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
     return new Func(returnType, name, params, body, options);
@@ -202,4 +194,4 @@ export type FuncParamsByName<Params extends readonly Param<any, any>[]> =
 
 export type BodyFn<Params extends readonly Param<any, any>[]> = (arg: {
   params: FuncParamsByName<Params>;
-}) => CodeLike[];
+}) => StatArg[];

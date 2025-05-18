@@ -1,6 +1,6 @@
-import { Block } from "./chunk";
 import type { Param } from "./param";
 import { Val } from "./rValue";
+import { Stat } from "./statement";
 import type {
   AutoSimpleType,
   GenericMembers,
@@ -177,13 +177,6 @@ export class Type<S extends string = any> {
     return new Type(desc);
   }
 
-  /** Generates a block of struct or union members. */
-  static membersBlock(members: GenericMembers) {
-    return Block.new(
-      ...Object.entries(members).map(([name, type]) => `${type} ${name}`)
-    );
-  }
-
   private qualifiersBefore(
     desc: Exclude<TypeDescription<any>, ArrayType<any> | FuncType<any>>
   ) {
@@ -229,7 +222,7 @@ export class Type<S extends string = any> {
         //
         else {
           return `${retStr}${this.nameAfter(name)}(${joinArgs(
-            desc.params.map((p) => p.declare())
+            desc.params.map((p) => p.declare().toString())
           )}${emptyFalsy(
             desc.hasVarArgs === false ? null : desc.hasVarArgs,
             () => `,...`
@@ -243,7 +236,7 @@ export class Type<S extends string = any> {
       }
       case "union": {
         if (desc.name == null) {
-          return `union ${Type.membersBlock(desc.members)}`;
+          return `union ${Stat.block(Stat.memberStatements(desc.members))}`;
         }
         return `${this.qualifiersBefore(desc)}union ${
           desc.name

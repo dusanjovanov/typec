@@ -1,8 +1,11 @@
+import type { Cond } from "./condition";
 import type { Enum } from "./enum";
 import type { Func } from "./func";
 import type { Param } from "./param";
 import type { Val } from "./rValue";
+import type { Stat } from "./statement";
 import type { Struct } from "./struct";
+import type { Switch } from "./switch";
 import type { Type } from "./type";
 import type { Union } from "./union";
 
@@ -85,6 +88,8 @@ export type GenericMembers = {
   [Key: string]: Type<any>;
 };
 
+export type GenericEnumValues = Record<string, string | number | null>;
+
 export type FuncArgsFromParams<Params extends readonly Param<any, any>[]> = {
   [index in keyof Params]: FuncArg<
     Params[index]["type"] extends Type<infer S> ? S : any,
@@ -115,14 +120,14 @@ type BoundArgs<Params extends readonly Param<any, any>[]> =
 
 export type TypeArg<S extends string = any> =
   | Type<S>
-  | Struct<S, any>
-  | Union<S, any>
-  | Enum<S, any>
-  | Func<S, any>;
+  | Struct<S>
+  | Union<S>
+  | Enum<S>
+  | Func<S, any, any>;
 
 export type ValArg = Val | Type | number | string | boolean;
 
-/** same as ValArg, but has a generic string argument so that Func call arguments can be "named". */
+/** same as ValArg, but has a generic type and name arguments so that Func call arguments can be "typed" and "named". */
 export type FuncArg<_ extends string, __ extends string> =
   | Val
   | Type
@@ -130,6 +135,12 @@ export type FuncArg<_ extends string, __ extends string> =
   | string
   | boolean;
 
-export type Embeddable = {
-  embed(): string;
-};
+export type StatArg =
+  | Stat
+  | Val
+  | Cond
+  | Switch
+  | Func<any, any, any>
+  | Struct
+  | Union
+  | Enum;

@@ -11,7 +11,7 @@ describe("Variable", () => {
     const v = Var.new(varType, varName);
     expect(v.name).toBe(varName);
     expect(v.type).toBe(varType);
-    expect(v.declare()).toBe(`int ${varName}`);
+    expect(v.declare().toString()).toBe(`int ${varName};`);
 
     // ref
     const refVal = v.ref();
@@ -21,7 +21,7 @@ describe("Variable", () => {
     const varValue = 3;
     expect(v.assign(varValue).toString()).toBe(`${varName}=${varValue}`);
     expect(v.init(varValue).toString()).toBe(
-      `${varType.str} ${varName}=${varValue}`
+      `${varType.str} ${varName}=${varValue};`
     );
     expect(v.minus(varValue).toString()).toBe(`${varName}-${varValue}`);
   });
@@ -34,7 +34,7 @@ describe("Variable", () => {
     const v = Var.new(varType, varName);
     expect(v.name).toBe(varName);
     expect(v.type).toBe(varType);
-    expect(v.declare()).toBe(`${varType.str} ${varName}`);
+    expect(v.declare().toString()).toBe(`${varType.str} ${varName};`);
 
     // ref
     const refVal = v.ref();
@@ -47,7 +47,9 @@ describe("Variable", () => {
     // assignment
     const pointerVar = Var.new(Type.int().pointer(), "var");
     expect(v.assign(pointerVar).toString()).toBe(`${varName}=${pointerVar}`);
-    expect(v.init(pointerVar).toString()).toBe(`int* ${varName}=${pointerVar}`);
+    expect(v.init(pointerVar).toString()).toBe(
+      `int* ${varName}=${pointerVar};`
+    );
 
     // arithmetic
 

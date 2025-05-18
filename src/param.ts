@@ -1,3 +1,4 @@
+import { Stat } from "./statement";
 import { Type } from "./type";
 import {
   type PointerQualifier,
@@ -13,11 +14,23 @@ export class Param<S extends string, Name extends string> extends Var<S> {
   }
   name;
 
+  /** Returns the param declaration statement. */
+  declare() {
+    return Stat.paramDeclaration(this.type, this.name);
+  }
+
   static int<Name extends string>(
     name: Name,
     typeQualifiers?: TypeQualifier[]
   ) {
     return Param.new(Type.int(typeQualifiers), name);
+  }
+
+  static char<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[]
+  ) {
+    return Param.new(Type.char(typeQualifiers), name);
   }
 
   static size_t<Name extends string>(
@@ -48,6 +61,13 @@ export class Param<S extends string, Name extends string> extends Var<S> {
     typeQualifiers?: TypeQualifier[]
   ) {
     return Param.new(Type.double(typeQualifiers), name);
+  }
+
+  static bool<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[]
+  ) {
+    return Param.new(Type.bool(typeQualifiers), name);
   }
 
   static new<S extends string, Name extends string>(

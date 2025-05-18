@@ -1,10 +1,11 @@
-import { Chunk } from "./chunk";
-import { Condition } from "./condition";
+import { BRANDING_MAP } from "./branding";
+import { Cond } from "./condition";
 import type { Func } from "./func";
 import { Lit } from "./literal";
+import { Stat } from "./statement";
 import { Type } from "./type";
-import type { CodeLike, Numberish, TypeArg, ValArg } from "./types";
-import { emptyFalsy, joinArgs, ret } from "./utils";
+import type { Numberish, StatArg, TypeArg, ValArg } from "./types";
+import { emptyFalsy, joinArgs } from "./utils";
 
 /**
  * A value container containing an `rvalue` expression with helpers for generating all C literal and initializer expressions
@@ -16,6 +17,7 @@ export class Val<S extends string = any> {
   constructor(exp: ValueExp<S>) {
     this.exp = exp;
   }
+  kind = BRANDING_MAP.val;
   exp;
 
   get type() {
@@ -337,9 +339,9 @@ export class Val<S extends string = any> {
     return Val.ternary(this, exp1, exp2);
   }
 
-  /** Returns the function return statement that returns this value. */
+  /** Returns a Val for the function return statement that returns this value. */
   return() {
-    return ret(this);
+    return Stat.return(this);
   }
 
   /** Accepts an array of member names and returns an array of Values with an arrow access operator expression for each member. */
@@ -351,8 +353,8 @@ export class Val<S extends string = any> {
 
   /** Returns assignments to multiple struct members by value ( dot ). */
   assignDotMulti(values: Record<string, ValArg>) {
-    return Chunk.new(
-      ...Object.entries(values).map(([key, value]) => {
+    return Stat.chunk(
+      Object.entries(values).map(([key, value]) => {
         return this.dot(key).assign(value);
       })
     );
@@ -360,8 +362,8 @@ export class Val<S extends string = any> {
 
   /** Returns assignments to multiple struct members by reference ( arrow ). */
   assignArrowMulti(values: Record<string, ValArg>) {
-    return Chunk.new(
-      ...Object.entries(values).map(([key, value]) => {
+    return Stat.chunk(
+      Object.entries(values).map(([key, value]) => {
         return this.arrow(key).assign(value);
       })
     );
@@ -377,7 +379,7 @@ export class Val<S extends string = any> {
    * for each of the values passed starting from index 0 in increments of 1.
    */
   subAssignMulti(...values: ValArg[]) {
-    return Chunk.new(...values.map((v, i) => this.subAssign(i, v)));
+    return Stat.chunk(values.map((v, i) => this.subAssign(i, v)));
   }
 
   /**
@@ -423,36 +425,36 @@ export class Val<S extends string = any> {
      }
    * ```
    */
-  equalReturn(valueToCompare: Val, returnValue?: Val) {
-    return Condition.if(this.equal(valueToCompare), [ret(returnValue)]);
+  equalReturn(valueToCompare: ValArg, returnValue?: ValArg) {
+    return Cond.if(this.equal(valueToCompare), [Stat.return(returnValue)]);
   }
 
   /**
    * Returns an if block with the value itself as the condition and returns the expression argument.
    */
-  thenReturn(returnValue?: Val) {
-    return Condition.if(this, [ret(returnValue)]);
+  thenReturn(returnValue?: ValArg) {
+    return Cond.if(this, [Stat.return(returnValue)]);
   }
 
   /**
    * Returns an if block that checks if the value is falsy using the ! unary operator and returns the expression argument.
    */
-  notReturn(returnValue?: Val) {
-    return Condition.if(this.not(), [ret(returnValue)]);
+  notReturn(returnValue?: ValArg) {
+    return Cond.if(this.not(), [Stat.return(returnValue)]);
   }
 
   /**
    * Returns an if block with the value itself as the condition and accepts an argument to be the if's body.
    */
-  then(body: CodeLike[]) {
-    return Condition.if(this, body);
+  then(statements: StatArg[]) {
+    return Cond.if(this, statements);
   }
 
   /**
    * Returns an if block that checks if the value is falsy using the ! unary operator and accepts an argument to be the if's body.
    */
-  notThen(body: CodeLike[]) {
-    return Condition.if(this.not(), body);
+  notThen(statements: StatArg[]) {
+    return Cond.if(this.not(), statements);
   }
 
   /**

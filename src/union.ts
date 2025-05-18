@@ -1,28 +1,26 @@
+import { BRANDING_MAP } from "./branding";
 import { Param } from "./param";
+import { Stat } from "./statement";
 import { Type } from "./type";
-import type {
-  Embeddable,
-  GenericMembers,
-  PointerQualifier,
-  TypeQualifier,
-} from "./types";
+import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
 import { Var } from "./variable";
 
 /** Used for declaring and working with unions. */
-export class Union<Name extends string, Members extends GenericMembers>
-  implements Embeddable
-{
+export class Union<
+  Name extends string = any,
+  Members extends GenericMembers = any
+> {
   constructor(name: Name, members: Members) {
     this.name = name;
     this.members = members;
   }
-  kind = "union" as const;
+  kind = BRANDING_MAP.union;
   name;
   members;
 
   /** Returns the union declaration ( definition ). */
   declare() {
-    return `union ${this.name}${Type.membersBlock(this.members)};`;
+    return Stat.union(this.name, this.members);
   }
 
   /** Get a union var type for this Union. */
@@ -58,10 +56,6 @@ export class Union<Name extends string, Members extends GenericMembers>
       this.type(typeQualifiers).pointer(pointerQualifiers),
       name
     );
-  }
-
-  embed() {
-    return this.declare();
   }
 
   /** Create a named union. */

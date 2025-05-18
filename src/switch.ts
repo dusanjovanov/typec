@@ -1,33 +1,32 @@
-import { Block, Chunk } from "./chunk";
-import type { CodeLike } from "./types";
+import { BRANDING_MAP } from "./branding";
+import { Stat } from "./statement";
+import type { StatArg, ValArg } from "./types";
 
 /** `switch` control statement. */
 export class Switch {
-  constructor(exp: CodeLike) {
+  constructor(exp: ValArg) {
     this.exp = exp;
     this.statements = [];
   }
-  kind = "switch" as const;
+  kind = BRANDING_MAP.switch;
   exp;
-  statements: string[];
+  statements: Stat[];
 
-  case(exp: CodeLike, body: CodeLike[]) {
-    this.statements.push(`case ${exp}:${Block.new(...body)}`);
+  case(value: ValArg, statements: StatArg[]) {
+    this.statements.push(Stat.case(value, statements));
     return this;
   }
 
-  default(body: CodeLike[]) {
-    this.statements.push(`default:${Block.new(...body)}`);
+  default(statements: StatArg[]) {
+    this.statements.push(Stat.default(statements));
     return this;
   }
 
   toString() {
-    return Chunk.new([
-      `switch(${this.exp})${Block.new(...this.statements)}`,
-    ]).toString();
+    return `switch(${this.exp})${Stat.block(this.statements)}`;
   }
 
-  static new(exp: CodeLike) {
+  static new(exp: ValArg) {
     return new Switch(exp);
   }
 }

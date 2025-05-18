@@ -1,44 +1,33 @@
-import { Block, Chunk } from "./chunk";
-import type { CodeLike } from "./types";
+import { BRANDING_MAP } from "./branding";
+import { Stat } from "./statement";
+import type { StatArg, ValArg } from "./types";
 
-/** If block. */
-export class Condition {
-  constructor(condition: CodeLike, body: CodeLike[]) {
-    this.statements.push(condBlock("if", condition, body));
+/** `if / else if / else` block. */
+export class Cond {
+  constructor(cond: ValArg, statements: StatArg[]) {
+    this.statements.push(Stat.if(cond, statements));
   }
-  kind = "condition" as const;
-  statements: CodeLike[] = [];
+  kind = BRANDING_MAP.cond;
+  statements: Stat[] = [];
 
-  elseif(condition: CodeLike, body: CodeLike[]) {
-    this.statements.push(condBlock("else if", condition, body));
+  elseif(cond: ValArg, statements: StatArg[]) {
+    this.statements.push(Stat.elseif(cond, statements));
     return this;
   }
 
-  else(body: CodeLike[]) {
-    this.statements.push(`else${Block.new(...body)}`);
+  else(statements: StatArg[]) {
+    this.statements.push(Stat.else(statements));
     return this;
   }
 
   toString() {
-    return Chunk.new(...this.statements).toString();
+    return Stat.chunk(this.statements);
   }
 
   /**
-   * Starts a control block if statement that can be chained with else if and else.
-   *
-   * The class has a `.toString()` so you can just pass the object to a string evaluated expression like a template string.
+   * Starts a control `if` statement that can be chained with `elseif` and `else`.
    */
-  static if(condition: CodeLike, body: CodeLike[]) {
-    return new Condition(condition, body);
+  static if(condition: ValArg, body: StatArg[]) {
+    return new Cond(condition, body);
   }
 }
-
-const condBlock = (
-  type: CondBlockType,
-  condition: CodeLike,
-  body: CodeLike[]
-) => {
-  return `${type}(${condition})${Block.new(...body)}`;
-};
-
-type CondBlockType = "if" | "else if";

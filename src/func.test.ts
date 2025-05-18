@@ -13,8 +13,10 @@ describe("Func", () => {
         return [params.a.plus(params.b).return()];
       }
     );
-    expect(fn.declare()).toBe(`int sum(int a,int b)`);
-    expect(fn.define()).toBe(`int sum(int a,int b)\n{\nreturn a+b;\n}`);
+    expect(fn.declare().toString()).toBe(`int sum(int a,int b)`);
+    expect(fn.define().toString()).toBe(
+      `int sum(int a,int b)\n{\nreturn a+b;\n}`
+    );
     expect(fn.call(2, 2).toString()).toBe(`sum(2,2)`);
   });
 });
