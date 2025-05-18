@@ -353,20 +353,16 @@ export class Val<S extends string = any> {
 
   /** Returns assignments to multiple struct members by value ( dot ). */
   assignDotMulti(values: Record<string, ValArg>) {
-    return Stat.chunk(
-      Object.entries(values).map(([key, value]) => {
-        return this.dot(key).assign(value);
-      })
-    );
+    return Object.entries(values).map(([key, value]) => {
+      return this.dot(key).assign(value);
+    });
   }
 
   /** Returns assignments to multiple struct members by reference ( arrow ). */
   assignArrowMulti(values: Record<string, ValArg>) {
-    return Stat.chunk(
-      Object.entries(values).map(([key, value]) => {
-        return this.arrow(key).assign(value);
-      })
-    );
+    return Object.entries(values).map(([key, value]) => {
+      return this.arrow(key).assign(value);
+    });
   }
 
   /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
@@ -379,7 +375,7 @@ export class Val<S extends string = any> {
    * for each of the values passed starting from index 0 in increments of 1.
    */
   subAssignMulti(...values: ValArg[]) {
-    return Stat.chunk(values.map((v, i) => this.subAssign(i, v)));
+    return values.map((v, i) => this.subAssign(i, v));
   }
 
   /**
