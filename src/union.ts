@@ -42,7 +42,7 @@ export class Union<
   }
 
   /** Param. */
-  par<Name extends string>(name: Name, typeQualifiers?: TypeQualifier[]) {
+  param<Name extends string>(name: Name, typeQualifiers?: TypeQualifier[]) {
     return Param.new(this.type(typeQualifiers), name);
   }
 
