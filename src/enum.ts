@@ -31,7 +31,7 @@ export class Enum<
   name;
   _values;
   /**
-   * Dictionary of enum values as Val objects.
+   * Dictionary of enum values as `Val<"int">` objects.
    */
   keys;
 

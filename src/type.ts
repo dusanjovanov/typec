@@ -1,3 +1,4 @@
+import { BRANDING_MAP, isTcObject } from "./branding";
 import type { Param } from "./param";
 import { Stat } from "./statement";
 import type {
@@ -16,7 +17,7 @@ export class Type<S extends string = any> {
     this.desc = desc;
     this.str = this.createTypeStr() as any;
   }
-  kind = "type" as const;
+  kind = BRANDING_MAP.type;
   desc;
   str: string;
 
@@ -168,9 +169,7 @@ export class Type<S extends string = any> {
   }
 
   static typeArgToType<S extends string>(type: TypeArg<S>): Type<S> {
-    return typeof type === "object" && "kind" in type && type.kind === "type"
-      ? (type as any)
-      : ((type as any).type() as Type<S>);
+    return isTcObject("type", type) ? type : type.type();
   }
 
   static new<S extends string = any>(desc: TypeDescription<S>) {
@@ -236,7 +235,9 @@ export class Type<S extends string = any> {
       }
       case "union": {
         if (desc.name == null) {
-          return `union ${Stat.block(Stat.memberStatements(desc.members))}`;
+          return `union ${Stat.block(
+            Stat.memberStatements(desc.members)
+          )}${this.nameAfter(name)}`;
         }
         return `${this.qualifiersBefore(desc)}union ${
           desc.name

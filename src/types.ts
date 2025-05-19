@@ -122,8 +122,7 @@ export type TypeArg<S extends string = any> =
   | Type<S>
   | Struct<S>
   | Union<S>
-  | Enum<S>
-  | Func<S, any, any>;
+  | Enum<S>;
 
 export type ValArg =
   | Val

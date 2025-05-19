@@ -92,7 +92,7 @@ export class Stat {
         return `${this.desc.name}=${this.desc.value},`;
       }
       case "enum": {
-        return `enum ${this.desc.name}${Stat.block(this.desc.statements)}`;
+        return `enum ${this.desc.name}${Stat.block(this.desc.statements)};`;
       }
     }
   }

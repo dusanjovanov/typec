@@ -33,7 +33,7 @@ export type BrandingMap = {
   func: Func<any, any, any>;
   switch: Switch;
   cond: Cond;
-  enum: Enum<any, any>;
+  enum: Enum;
   val: Val;
   type: Type;
 };
