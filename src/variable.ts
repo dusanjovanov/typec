@@ -1,5 +1,4 @@
 import { Lit } from "./literal";
-import { Val } from "./val";
 import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";
@@ -11,6 +10,7 @@ import type {
   ValArg,
 } from "./types";
 import { Utils } from "./utils";
+import { Val } from "./val";
 
 /** Used for working with variables of any type. */
 export class Var<S extends string = any> extends Val<S> {
@@ -58,11 +58,8 @@ export class Var<S extends string = any> extends Val<S> {
     return Stat.varInit(this, Lit.singleMemberInit(value));
   }
 
-  /**
-   * Returns a `VarApi` object for this `Var` with bound functions.
-   */
-  api<Api extends GenericApi>(funcs: Api) {
-    return new VarApi(this.type, this.name, funcs);
+  api<Api extends GenericApi>(api: Api) {
+    return new VarApi(this.type, this.name, api);
   }
 
   static int(name: string, typeQualifiers?: TypeQualifier[]) {
@@ -126,11 +123,13 @@ export class Var<S extends string = any> extends Val<S> {
   }
 }
 
-/** tc equivalent of a class based api. */
+/**
+ * tc equivalent of a class based api for a Var.
+ */
 export class VarApi<S extends string, Api extends GenericApi> extends Var<S> {
   constructor(type: TypeArg<S>, name: string, api: Api) {
     super(type, name);
-    this._ = Utils.bindFuncs(this.ref(), api);
+    this.$ = Utils.bindFuncs(this.ref(), api);
   }
-  _;
+  $;
 }

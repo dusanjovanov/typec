@@ -4,8 +4,8 @@ import type { Func } from "./func";
 import { Lit } from "./literal";
 import { Stat } from "./statement";
 import { Type } from "./type";
-import type { Numberish, StatArg, TypeArg, ValArg } from "./types";
-import { emptyFalsy, joinArgs } from "./utils";
+import type { GenericApi, Numberish, StatArg, TypeArg, ValArg } from "./types";
+import { emptyFalsy, joinArgs, Utils } from "./utils";
 
 /**
  * A value container containing an `rvalue` expression with helpers for generating all C literal and initializer expressions
@@ -456,6 +456,10 @@ export class Val<S extends string = any> {
     return Cond.if(this.not(), statements);
   }
 
+  api<Api extends GenericApi>(api: Api) {
+    return new ValApi(this.exp, api);
+  }
+
   /**
    * Returns a Val for a string literal.
    *
@@ -848,3 +852,14 @@ type MemoryExp<S extends string> = BaseExp<S> & {
 type TypeExp<S extends string> = BaseExp<S> & {
   kind: "type";
 };
+
+/**
+ * tc equivalent of a class based api for a Val.
+ */
+export class ValApi<S extends string, Api extends GenericApi> extends Val<S> {
+  constructor(exp: ValueExp<S>, funcs: Api) {
+    super(exp);
+    this.$ = Utils.bindFuncs(new Val(exp), funcs);
+  }
+  $;
+}

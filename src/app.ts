@@ -18,7 +18,11 @@ export class App {
       return this.main();
     });
 
-    return Stat.chunk([...this.includes, ...this.embeds, mainFn]).toString();
+    return Stat.chunk(
+      [...this.includes, ...this.embeds, mainFn].filter(
+        (e) => typeof e === "object" && "kind" in e
+      )
+    ).toString();
   }
 
   static new(options: AppOptions) {
@@ -30,7 +34,7 @@ export type AppOptions = {
   /** Add include directives. */
   includes?: string[];
   /** Embed code between include directives and the main function. */
-  embeds?: StatArg[];
+  embeds?: (StatArg | Function)[];
   /** The app's main function */
   main: () => StatArg[];
 };

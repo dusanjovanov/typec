@@ -1,5 +1,5 @@
 import type {
-  BoundApi,
+  BoundFuncs,
   BoundFunc,
   CodeLike,
   GenericApi,
@@ -93,6 +93,6 @@ export class Utils {
     Object.entries(funcs).forEach(([key, fn]) => {
       bound[key] = (...args: any[]) => fn.call(expression, ...args);
     });
-    return bound as BoundApi<Funcs>;
+    return bound as BoundFuncs<Funcs>;
   }
 }

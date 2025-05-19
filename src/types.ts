@@ -2,12 +2,12 @@ import type { Cond } from "./condition";
 import type { Enum } from "./enum";
 import type { Func } from "./func";
 import type { Param } from "./param";
-import type { Val } from "./val";
 import type { Stat } from "./statement";
 import type { Struct } from "./struct";
 import type { Switch } from "./switch";
 import type { Type } from "./type";
 import type { Union } from "./union";
+import type { Val } from "./val";
 
 export const INTEGER_TYPES = [
   "char",
@@ -100,13 +100,13 @@ export type FuncArgsFromParams<Params extends readonly Param<any, any>[]> = {
 export type GenericFunc = Func<any, any>;
 export type GenericApi = Record<string, GenericFunc>;
 
-export type BoundFunc<Func extends GenericFunc> = (
-  ...args: Func["hasVarArgs"] extends false
-    ? BoundArgs<Func["_params"]>
-    : [...BoundArgs<Func["_params"]>, ...CodeLike[]]
-) => Val<"any">;
+export type BoundFunc<Fn extends GenericFunc> = (
+  ...args: Fn["hasVarArgs"] extends false
+    ? BoundArgs<Fn["_params"]>
+    : [...BoundArgs<Fn["_params"]>, ...CodeLike[]]
+) => Val<Fn extends Func<infer R, any, any> ? R : any>;
 
-export type BoundApi<Funcs extends GenericApi> = {
+export type BoundFuncs<Funcs extends GenericApi> = {
   [key in keyof Funcs]: BoundFunc<Funcs[key]>;
 };
 

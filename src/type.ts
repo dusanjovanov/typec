@@ -1,5 +1,4 @@
 import type { Param } from "./param";
-import { Val } from "./val";
 import { Stat } from "./statement";
 import type {
   AutoSimpleType,
@@ -9,6 +8,7 @@ import type {
   TypeQualifier,
 } from "./types";
 import { emptyFalsy, join, joinArgs, stringSplice } from "./utils";
+import { Val } from "./val";
 
 /** Used for declaring types and generating C type syntax. */
 export class Type<S extends string = any> {
@@ -67,7 +67,7 @@ export class Type<S extends string = any> {
   }
 
   static any(qualifiers?: TypeQualifier[]) {
-    return Type.simple("any", qualifiers) as Type<any>;
+    return Type.simple("__any", qualifiers) as Type<any>;
   }
 
   static int(qualifiers?: TypeQualifier[]) {

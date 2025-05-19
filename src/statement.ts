@@ -29,7 +29,7 @@ export class Stat {
         return `while(${this.desc.cond})${Stat.block(this.desc.statements)}`;
       }
       case "for": {
-        return `for(${this.desc.init};${this.desc.cond};${
+        return `for(${this.desc.init}${this.desc.cond};${
           this.desc.iter
         })${Stat.block(this.desc.statements)}`;
       }
@@ -97,6 +97,7 @@ export class Stat {
     }
   }
 
+  // TODO: remove string from type
   /** Helper to add new lines between statements which represent a chunk of code, but not necessarily a block ( chunk with curly braces ). */
   static chunk(statements: (StatArg | string)[]): string {
     return statements
