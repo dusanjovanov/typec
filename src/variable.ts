@@ -3,7 +3,9 @@ import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import type {
+  BoundFuncs,
   GenericApi,
+  GenericFunc,
   PointerQualifier,
   TypeArg,
   TypeQualifier,
@@ -23,10 +25,6 @@ export class Var<S extends string = any> extends Val<S> {
     this.name = name;
   }
   name;
-
-  isArray() {
-    return this.type.desc.kind === "array";
-  }
 
   /** Returns the variable declaration statement. */
   declare() {
@@ -56,10 +54,6 @@ export class Var<S extends string = any> extends Val<S> {
   /** Single value initializer. */
   initSingleMember(value: ValArg) {
     return Stat.varInit(this, Lit.singleMemberInit(value));
-  }
-
-  api<Api extends GenericApi>(api: Api) {
-    return new VarApi(this.type, this.name, api);
   }
 
   static int(name: string, typeQualifiers?: TypeQualifier[]) {
@@ -114,8 +108,13 @@ export class Var<S extends string = any> extends Val<S> {
   /**
    * Returns a `VarApi` object with bound functions.
    */
-  static api<Api extends GenericApi>(type: TypeArg, name: string, funcs: Api) {
-    return new VarApi(type, name, funcs);
+  static api<S extends string, Api extends GenericApi>(
+    type: TypeArg<S>,
+    name: string,
+    funcs: Api,
+    getExp?: (variable: Var<S>, fn: GenericFunc) => ValArg
+  ) {
+    return new VarApi(type, name, funcs, getExp);
   }
 
   static new<S extends string>(type: TypeArg<S>, name: string) {
@@ -127,9 +126,21 @@ export class Var<S extends string = any> extends Val<S> {
  * tc equivalent of a class based api for a Var.
  */
 export class VarApi<S extends string, Api extends GenericApi> extends Var<S> {
-  constructor(type: TypeArg<S>, name: string, api: Api) {
+  constructor(
+    type: TypeArg<S>,
+    name: string,
+    api: Api,
+    getExp?: (variable: Var<S>, fn: GenericFunc) => ValArg
+  ) {
     super(type, name);
-    this.$ = Utils.bindFuncs(this.ref(), api);
+    this.$ = Utils.bindFuncs(
+      getExp
+        ? (fn) => {
+            return getExp(this, fn);
+          }
+        : this,
+      api
+    );
   }
-  $;
+  $: BoundFuncs<Api>;
 }

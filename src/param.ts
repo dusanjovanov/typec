@@ -5,11 +5,15 @@ import {
   type TypeArg,
   type TypeQualifier,
 } from "./types";
-import { Var } from "./variable";
+import { Val } from "./val";
 
-export class Param<S extends string, Name extends string> extends Var<S> {
+export class Param<S extends string, Name extends string> extends Val<S> {
   constructor(type: TypeArg<S>, name: Name) {
-    super(type, name);
+    super({
+      kind: "name",
+      type: Type.typeArgToType(type),
+      name,
+    });
     this.name = name;
   }
   name;

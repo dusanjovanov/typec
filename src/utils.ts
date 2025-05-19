@@ -1,6 +1,6 @@
 import type {
-  BoundFuncs,
   BoundFunc,
+  BoundFuncs,
   CodeLike,
   GenericApi,
   GenericFunc,
@@ -88,10 +88,19 @@ export class Utils {
   /**
    * Same as `bindFunc`, but for multiple Funcs.
    */
-  static bindFuncs<Funcs extends GenericApi>(expression: ValArg, funcs: Funcs) {
+  static bindFuncs<Funcs extends GenericApi>(
+    expression: ValArg | ((fn: GenericFunc) => ValArg),
+    funcs: Funcs
+  ) {
     const bound: Record<string, any> = {};
     Object.entries(funcs).forEach(([key, fn]) => {
-      bound[key] = (...args: any[]) => fn.call(expression, ...args);
+      let exp = expression;
+      if (typeof exp === "function") {
+        exp = exp(fn);
+      }
+      bound[key] = (...args: any[]) => {
+        return fn.call(exp, ...args);
+      };
     });
     return bound as BoundFuncs<Funcs>;
   }
