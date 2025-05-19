@@ -1,9 +1,7 @@
 import { BRANDING_MAP } from "./branding";
-import { Param } from "./param";
 import { Stat } from "./statement";
 import { Type } from "./type";
 import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
-import { Var } from "./variable";
 
 /** Used for declaring and working with unions. */
 export class Union<
@@ -28,34 +26,12 @@ export class Union<
     return Type.union(this.name, this.members, qualifiers);
   }
 
-  var(name: string, typeQualifiers?: TypeQualifier[]) {
-    return Var.new(this.type(typeQualifiers), name);
-  }
-
   /** Pointer Var. */
   pointer(
-    name: string,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(this.type(typeQualifiers).pointer(pointerQualifiers), name);
-  }
-
-  /** Param. */
-  param<Name extends string>(name: Name, typeQualifiers?: TypeQualifier[]) {
-    return Param.new(this.type(typeQualifiers), name);
-  }
-
-  /** Pointer param. */
-  pointerParam<Name extends string>(
-    name: Name,
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return Param.new(
-      this.type(typeQualifiers).pointer(pointerQualifiers),
-      name
-    );
+    return this.type(typeQualifiers).pointer(pointerQualifiers);
   }
 
   /** Create a named union. */

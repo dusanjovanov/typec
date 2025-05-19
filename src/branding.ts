@@ -4,6 +4,7 @@ import type { Func } from "./func";
 import type { Val } from "./rValue";
 import type { Struct } from "./struct";
 import type { Switch } from "./switch";
+import type { Type } from "./type";
 import type { Union } from "./union";
 
 export const BRANDING_MAP = {
@@ -14,6 +15,7 @@ export const BRANDING_MAP = {
   val: Symbol.for("tc_val"),
   switch: Symbol.for("tc_switch"),
   cond: Symbol.for("tc_cond"),
+  type: Symbol.for("tc_type"),
 };
 
 export const isTcObject = <Which extends keyof BrandingMap>(
@@ -33,4 +35,5 @@ export type BrandingMap = {
   cond: Cond;
   enum: Enum<any, any>;
   val: Val;
+  type: Type;
 };

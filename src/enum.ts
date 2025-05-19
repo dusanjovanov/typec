@@ -7,7 +7,6 @@ import type {
   PointerQualifier,
   TypeQualifier,
 } from "./types";
-import { Var } from "./variable";
 
 /** Used for declaring and working with enums. */
 export class Enum<
@@ -45,18 +44,12 @@ export class Enum<
     return Type.enum(this.name, qualifiers);
   }
 
-  /** Returns a Var to hold a value of this enum. */
-  var(name: string, qualifiers?: TypeQualifier[]) {
-    return Var.new(this.type(qualifiers), name);
-  }
-
   /** Returns a Var to hold a `pointer` to a value of this enum. */
   pointer(
-    name: string,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return Var.new(this.type(typeQualifiers).pointer(pointerQualifiers), name);
+    return this.type(typeQualifiers).pointer(pointerQualifiers);
   }
 
   static new<

@@ -44,15 +44,18 @@ export class Func<
   type;
   _params;
 
+  /** Returns a Val for the name of this function. */
+  val() {
+    return new Val({
+      kind: "name",
+      type: this.type,
+      name: this.name,
+    });
+  }
+
   /** Returns the address of this function. */
   ref() {
-    return Val.ref(
-      new Val({
-        kind: "name",
-        type: this.type,
-        name: this.name,
-      })
-    );
+    return this.val().ref();
   }
 
   /** Returns the declaration ( prototype ) statement for the function. */

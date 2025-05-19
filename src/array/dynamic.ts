@@ -9,11 +9,14 @@ import { DynamicArray } from "./types";
 
 export const initDynamic = Func.void(
   "tc_array_dynamic_init",
-  [DynamicArray.pointerParam("array"), Param.new(Type.size_t(), "size")],
+  [
+    Param.new(DynamicArray.pointer(), "array"),
+    Param.new(Type.size_t(), "size"),
+  ],
   ({ params }) => {
     const { array, size } = params;
     return [
-      array.assignArrowMulti({
+      ...array.assignArrowMulti({
         count: 0,
         size,
         items: stdlib.malloc.call(
@@ -28,7 +31,7 @@ export const initDynamic = Func.void(
 const forEachDynamicParams = [
   Param.new(Type.void().pointer(), "element"),
   Param.new(Type.int(), "index"),
-  DynamicArray.pointerParam("array"),
+  Param.new(DynamicArray.pointer(), "array"),
   Param.new(Type.void().pointer(), "user_data"),
 ] as const;
 
@@ -43,7 +46,7 @@ export const forEachDynamicCallback = (
 export const forEachDynamic = Func.void(
   "tc_array_dynamic_for_each",
   [
-    DynamicArray.pointerParam("array"),
+    Param.new(DynamicArray.pointer(), "array"),
     Param.new(
       Type.func(
         Type.void(),
@@ -67,7 +70,10 @@ export const forEachDynamic = Func.void(
 
 export const pushDynamic = Func.void(
   "tc_array_dynamic_push",
-  [DynamicArray.pointerParam("array"), Param.new(Type.void().pointer(), "item")],
+  [
+    Param.new(DynamicArray.pointer(), "array"),
+    Param.new(Type.void().pointer(), "item"),
+  ],
   ({ params }) => {
     const { array, item } = params;
     const newSize = Var.new(Type.size_t(), "new_size");
@@ -85,7 +91,7 @@ export const pushDynamic = Func.void(
             )
           ),
           newItems.notReturn(),
-          array.assignArrowMulti({
+          ...array.assignArrowMulti({
             items: newItems,
             size: newSize,
           }),
@@ -102,7 +108,7 @@ export const destroyDynamic = Func.void(
     const { array } = params;
     return [
       stdlib.free.call(array.arrow("items")),
-      array.assignArrowMulti({
+      ...array.assignArrowMulti({
         items: NULL,
         count: 0,
         size: 0,

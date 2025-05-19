@@ -125,12 +125,21 @@ export type TypeArg<S extends string = any> =
   | Enum<S>
   | Func<S, any, any>;
 
-export type ValArg = Val | Type | number | string | boolean;
+export type ValArg =
+  | Val
+  | Type
+  | Struct
+  | Func<any, any, any>
+  | number
+  | string
+  | boolean;
 
 /** same as ValArg, but has a generic type and name arguments so that Func call arguments can be "typed" and "named". */
 export type FuncArg<_ extends string, __ extends string> =
   | Val
   | Type
+  | Struct
+  | Func<any, any, any>
   | number
   | string
   | boolean;

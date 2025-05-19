@@ -1,4 +1,4 @@
-import { BRANDING_MAP } from "./branding";
+import { BRANDING_MAP, isTcObject } from "./branding";
 import { Cond } from "./condition";
 import type { Func } from "./func";
 import { Lit } from "./literal";
@@ -56,6 +56,9 @@ export class Val<S extends string = any> {
       }
       case "ternary": {
         return `${this.exp.cond}?${this.exp.exp1}:${this.exp.exp2}`;
+      }
+      case "type": {
+        return `${this.exp.type}`;
       }
     }
   }
@@ -710,13 +713,29 @@ export class Val<S extends string = any> {
   }
 
   static valArgToVal(val: ValArg): Val {
-    return val instanceof Val
-      ? (val as any)
-      : val instanceof Type
-      ? new Val({ kind: "literal", type: val, value: val })
-      : typeof val === "number"
-      ? Val.int(val)
-      : new Val({ kind: "literal", type: Type.any(), value: val });
+    if (isTcObject("val", val)) {
+      return val;
+    }
+    //
+    else if (isTcObject("type", val)) {
+      return new Val({ kind: "type", type: val });
+    }
+    //
+    else if (isTcObject("struct", val)) {
+      return new Val({ kind: "type", type: val.type() });
+    }
+    //
+    else if (isTcObject("func", val)) {
+      return new Val({ kind: "name", type: val.type, name: val.name });
+    }
+    //
+    else if (typeof val === "number") {
+      return Val.int(val);
+    }
+    //
+    else {
+      return new Val({ kind: "literal", type: Type.any(), value: val });
+    }
   }
 }
 
@@ -730,7 +749,8 @@ type ValueExp<S extends string> =
   | TernaryExp<S>
   | FuncCallExp<S>
   | CastExp<S>
-  | MemoryExp<S>;
+  | MemoryExp<S>
+  | TypeExp<S>;
 
 type BaseExp<S extends string> = {
   type: Type<S>;
@@ -823,4 +843,8 @@ type MemoryExp<S extends string> = BaseExp<S> & {
   kind: "memory";
   value: Val;
   op: "sizeof" | "alignof";
+};
+
+type TypeExp<S extends string> = BaseExp<S> & {
+  kind: "type";
 };
