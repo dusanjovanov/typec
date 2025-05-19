@@ -1,4 +1,4 @@
-import { Val } from "./rValue";
+import { Val } from "./val";
 import { Type } from "./type";
 
 export const NULL = Val.macro("NULL", Type.void().pointer());

@@ -1,5 +1,5 @@
 import { Lit } from "./literal";
-import { Val } from "./rValue";
+import { Val } from "./val";
 import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";

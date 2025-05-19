@@ -2,7 +2,7 @@ import type { Cond } from "./condition";
 import type { Enum } from "./enum";
 import type { Func } from "./func";
 import type { Param } from "./param";
-import type { Val } from "./rValue";
+import type { Val } from "./val";
 import type { Stat } from "./statement";
 import type { Struct } from "./struct";
 import type { Switch } from "./switch";

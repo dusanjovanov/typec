@@ -2,7 +2,7 @@ import { NULL } from "../constants";
 import { Func } from "../func";
 import { Loop } from "../loops";
 import { Param } from "../param";
-import { Val } from "../rValue";
+import { Val } from "../val";
 import { stdlib, stdstring, VarArgs } from "../std";
 import { Type } from "../type";
 import { Var } from "../variable";

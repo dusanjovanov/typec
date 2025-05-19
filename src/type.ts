@@ -1,5 +1,5 @@
 import type { Param } from "./param";
-import { Val } from "./rValue";
+import { Val } from "./val";
 import { Stat } from "./statement";
 import type {
   AutoSimpleType,

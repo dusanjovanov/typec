@@ -10,7 +10,7 @@ export * from "./gcc";
 export * from "./literal";
 export * from "./loops";
 export * from "./param";
-export * from "./rValue";
+export * from "./val";
 export * from "./std";
 export * from "./string";
 export * from "./struct";

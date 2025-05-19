@@ -1,7 +1,7 @@
 import type { Cond } from "./condition";
 import type { Enum } from "./enum";
 import type { Func } from "./func";
-import type { Val } from "./rValue";
+import type { Val } from "./val";
 import type { Struct } from "./struct";
 import type { Switch } from "./switch";
 import type { Type } from "./type";

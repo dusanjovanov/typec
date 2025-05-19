@@ -1,7 +1,7 @@
 import { isTcObject } from "./branding";
 import { curly } from "./chunk";
 import type { Cond } from "./condition";
-import { Val } from "./rValue";
+import { Val } from "./val";
 import type { Switch } from "./switch";
 import type { Type } from "./type";
 import type {

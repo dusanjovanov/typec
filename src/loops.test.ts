@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Loop } from "./loops";
-import { Val } from "./rValue";
+import { Val } from "./val";
 
 describe("Loop", () => {
   test("while basic", () => {
