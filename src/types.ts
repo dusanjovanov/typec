@@ -97,7 +97,7 @@ export type FuncArgsFromParams<Params extends readonly Param<any, any>[]> = {
   >;
 };
 
-export type GenericFunc = Func<any, any>;
+export type GenericFunc = Func<any, any, any>;
 export type GenericApi = Record<string, GenericFunc>;
 
 export type BoundFunc<Fn extends GenericFunc> = (
