@@ -1,14 +1,8 @@
 import { BRANDING_MAP } from "./branding";
-import { Val } from "./val";
 import { Stat } from "./statement";
 import { Type } from "./type";
-import type {
-  GenericApi,
-  GenericMembers,
-  PointerQualifier,
-  TypeQualifier,
-} from "./types";
-import { Var } from "./variable";
+import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
+import { Val } from "./val";
 
 /** Used for declaring and working with structs. */
 export class Struct<
@@ -28,12 +22,12 @@ export class Struct<
     return Stat.struct(this.name, this.members);
   }
 
-  /** Get a struct var type for this struct. */
+  /** Get a type for this struct. */
   type(qualifiers?: TypeQualifier[]) {
     return Type.struct<Name>(this.name, qualifiers);
   }
 
-  /** Pointer Var */
+  /** Get a pointer type to this struct. */
   pointer(
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
@@ -43,10 +37,6 @@ export class Struct<
 
   sizeOf() {
     return Val.sizeOf(this);
-  }
-
-  varApi<Api extends GenericApi>(name: string, api: Api) {
-    return Var.api(this.type(), name, api);
   }
 
   static new<Name extends string, Members extends GenericMembers>(

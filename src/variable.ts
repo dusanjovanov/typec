@@ -3,15 +3,16 @@ import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import type {
-  BoundFuncs,
-  GenericApi,
-  GenericFunc,
+  ExtractTypeStr,
+  GenericMembers,
   PointerQualifier,
+  StringKeyOf,
   TypeArg,
   TypeQualifier,
   ValArg,
 } from "./types";
-import { Utils } from "./utils";
+import type { Union } from "./union";
+import { createMemberValues } from "./utils";
 import { Val } from "./val";
 
 /** Used for working with variables of any type. */
@@ -97,24 +98,46 @@ export class Var<S extends string = any> extends Val<S> {
     return Var.new(Type.array(elementType, length), name);
   }
 
-  static struct<Name extends string>(
-    struct: Struct<Name, any>,
+  static struct<Name extends string, Members extends GenericMembers>(
+    struct: Struct<Name, Members>,
     name: string,
     typeQualifiers?: TypeQualifier[]
   ) {
-    return Var.new(struct.type(typeQualifiers), name);
+    return new VarStruct(struct.type(typeQualifiers), name, struct);
   }
 
-  /**
-   * Returns a `VarApi` object with bound functions.
-   */
-  static api<S extends string, Api extends GenericApi>(
-    type: TypeArg<S>,
+  static structPointer<Name extends string, Members extends GenericMembers>(
+    struct: Struct<Name, Members>,
     name: string,
-    funcs: Api,
-    getExp?: (variable: Var<S>, fn: GenericFunc) => ValArg
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
   ) {
-    return new VarApi(type, name, funcs, getExp);
+    return new VarStruct<`${Name}*`, Members>(
+      struct.type(typeQualifiers).pointer(pointerQualifiers),
+      name,
+      struct as any
+    );
+  }
+
+  static union<Name extends string, Members extends GenericMembers>(
+    union: Union<Name, Members>,
+    name: string,
+    typeQualifiers?: TypeQualifier[]
+  ) {
+    return new VarUnion(union.type(typeQualifiers), name, union);
+  }
+
+  static unionPointer<Name extends string, Members extends GenericMembers>(
+    union: Union<Name, Members>,
+    name: string,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return new VarUnion<`${Name}*`, Members>(
+      union.type(typeQualifiers).pointer(pointerQualifiers),
+      name,
+      union as any
+    );
   }
 
   static new<S extends string>(type: TypeArg<S>, name: string) {
@@ -122,25 +145,64 @@ export class Var<S extends string = any> extends Val<S> {
   }
 }
 
-/**
- * tc equivalent of a class based api for a Var.
- */
-export class VarApi<S extends string, Api extends GenericApi> extends Var<S> {
+export class VarStruct<
+  Name extends string,
+  Members extends GenericMembers
+> extends Var<Name> {
   constructor(
-    type: TypeArg<S>,
+    type: TypeArg<Name>,
     name: string,
-    api: Api,
-    getExp?: (variable: Var<S>, fn: GenericFunc) => ValArg
+    struct: Struct<Name, Members>
   ) {
     super(type, name);
-    this.$ = Utils.bindFuncs(
-      getExp
-        ? (fn) => {
-            return getExp(this, fn);
-          }
-        : this,
-      api
-    );
+    this.struct = struct;
+
+    this._ = createMemberValues(this, struct);
   }
-  $: BoundFuncs<Api>;
+  struct;
+  /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
+  _;
+
+  /** Access a member of the struct var directly. */
+  dot<Key extends StringKeyOf<Members>>(
+    key: Key
+  ): Val<ExtractTypeStr<Members[Key]>> {
+    return Val.member(this.struct, key, this, ".");
+  }
+
+  /** Access a member of the struct var through a pointer. */
+  arrow<Key extends StringKeyOf<Members>>(
+    key: Key
+  ): Val<ExtractTypeStr<Members[Key]>> {
+    return Val.member(this.struct, key, this, "->");
+  }
+}
+
+export class VarUnion<
+  Name extends string,
+  Members extends GenericMembers
+> extends Var<Name> {
+  constructor(type: TypeArg<Name>, name: string, union: Union<Name, Members>) {
+    super(type, name);
+    this.union = union;
+
+    this._ = createMemberValues(this, union);
+  }
+  union;
+  /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
+  _;
+
+  /** Access a member of the struct var directly. */
+  dot<Key extends StringKeyOf<Members>>(
+    key: Key
+  ): Val<ExtractTypeStr<Members[Key]>> {
+    return Val.member(this.union, key, this, ".");
+  }
+
+  /** Access a member of the struct var through a pointer. */
+  arrow<Key extends StringKeyOf<Members>>(
+    key: Key
+  ): Val<ExtractTypeStr<Members[Key]>> {
+    return Val.member(this.union, key, this, "->");
+  }
 }

@@ -21,6 +21,10 @@ export class Type<S extends string = any> {
   desc;
   str: string;
 
+  get typeKind() {
+    return this.desc.kind;
+  }
+
   /** Create a pointer type to this type. */
   pointer(qualifiers?: PointerQualifier[]) {
     return Type.pointer(this, qualifiers) as unknown as Type<`${S}*`>;

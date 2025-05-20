@@ -1,10 +1,16 @@
 import { Stat } from "./statement";
+import type { Struct } from "./struct";
 import { Type } from "./type";
 import {
+  type ExtractTypeStr,
+  type GenericMembers,
   type PointerQualifier,
+  type StringKeyOf,
   type TypeArg,
   type TypeQualifier,
 } from "./types";
+import type { Union } from "./union";
+import { createMemberValues } from "./utils";
 import { Val } from "./val";
 
 export class Param<S extends string, Name extends string> extends Val<S> {
@@ -74,10 +80,112 @@ export class Param<S extends string, Name extends string> extends Val<S> {
     return Param.new(Type.bool(typeQualifiers), name);
   }
 
+  static structPointer<
+    StructName extends string,
+    Members extends GenericMembers,
+    Name extends string
+  >(
+    struct: Struct<StructName, Members>,
+    name: Name,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return new ParamStruct<`${StructName}*`, Members, Name>(
+      struct.type(typeQualifiers).pointer(pointerQualifiers),
+      name,
+      struct as any
+    );
+  }
+
+  static unionPointer<
+    UnionName extends string,
+    Members extends GenericMembers,
+    Name extends string
+  >(
+    union: Union<UnionName, Members>,
+    name: Name,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ) {
+    return new ParamUnion<`${UnionName}*`, Members, Name>(
+      union.type(typeQualifiers).pointer(pointerQualifiers),
+      name,
+      union as any
+    );
+  }
+
   static new<S extends string, Name extends string>(
     type: TypeArg<S>,
     name: Name
   ) {
     return new Param(type, name);
+  }
+}
+
+export class ParamStruct<
+  StructName extends string,
+  Members extends GenericMembers,
+  Name extends string
+> extends Param<StructName, Name> {
+  constructor(
+    type: TypeArg<StructName>,
+    name: Name,
+    struct: Struct<StructName, Members>
+  ) {
+    super(type, name);
+    this.struct = struct;
+
+    this._ = createMemberValues(this, struct);
+  }
+  struct;
+  /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
+  _;
+
+  /** Access a member of the struct param directly. */
+  dot<Key extends StringKeyOf<Members>>(
+    key: Key
+  ): Val<ExtractTypeStr<Members[Key]>> {
+    return Val.member(this.struct, key, this, ".");
+  }
+
+  /** Access a member of the struct param through a pointer. */
+  arrow<Key extends StringKeyOf<Members>>(
+    key: Key
+  ): Val<ExtractTypeStr<Members[Key]>> {
+    return Val.member(this.struct, key, this, "->");
+  }
+}
+
+export class ParamUnion<
+  UnionName extends string,
+  Members extends GenericMembers,
+  Name extends string
+> extends Param<UnionName, Name> {
+  constructor(
+    type: TypeArg<UnionName>,
+    name: Name,
+    union: Union<UnionName, Members>
+  ) {
+    super(type, name);
+    this.union = union;
+
+    this._ = createMemberValues(this, union);
+  }
+  union;
+  /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
+  _;
+
+  /** Access a member of the union param directly. */
+  dot<Key extends StringKeyOf<Members>>(
+    key: Key
+  ): Val<ExtractTypeStr<Members[Key]>> {
+    return Val.member(this.union, key, this, ".");
+  }
+
+  /** Access a member of the union param through a pointer. */
+  arrow<Key extends StringKeyOf<Members>>(
+    key: Key
+  ): Val<ExtractTypeStr<Members[Key]>> {
+    return Val.member(this.union, key, this, "->");
   }
 }

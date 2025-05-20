@@ -1,5 +1,4 @@
 import { BRANDING_MAP } from "./branding";
-import { Val } from "./val";
 import { Stat } from "./statement";
 import { Type } from "./type";
 import type {
@@ -7,6 +6,7 @@ import type {
   PointerQualifier,
   TypeQualifier,
 } from "./types";
+import { Val } from "./val";
 
 /** Used for declaring and working with enums. */
 export class Enum<
@@ -23,7 +23,7 @@ export class Enum<
       keys[name] = Val.int(name);
     });
 
-    this.keys = keys as {
+    this._ = keys as {
       [key in keyof Values]: Val<"int">;
     };
   }
@@ -33,7 +33,7 @@ export class Enum<
   /**
    * Dictionary of enum values as `Val<"int">` objects.
    */
-  keys;
+  _;
 
   declare() {
     return Stat.enum(this.name, this._values);

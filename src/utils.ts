@@ -1,11 +1,16 @@
+import type { Struct } from "./struct";
 import type {
   BoundFunc,
   BoundFuncs,
   CodeLike,
-  GenericApi,
+  ExtractTypeStr,
   GenericFunc,
+  GenericFuncs,
+  GenericMembers,
   ValArg,
 } from "./types";
+import type { Union } from "./union";
+import type { Val } from "./val";
 
 /**
  * Returns an empty string when the value is falsy or an empty array.
@@ -88,7 +93,7 @@ export class Utils {
   /**
    * Same as `bindFunc`, but for multiple Funcs.
    */
-  static bindFuncs<Funcs extends GenericApi>(
+  static bindFuncs<Funcs extends GenericFuncs>(
     expression: ValArg | ((fn: GenericFunc) => ValArg),
     funcs: Funcs
   ) {
@@ -105,3 +110,19 @@ export class Utils {
     return bound as BoundFuncs<Funcs>;
   }
 }
+
+export const createMemberValues = <Members extends GenericMembers>(
+  val: Val,
+  struct: Struct<any, Members> | Union<any, Members>
+) => {
+  const vals: Record<any, any> = {};
+  Object.keys(struct.members).forEach((key) => {
+    vals[key] =
+      val.type.typeKind === "pointer"
+        ? val.arrow(key as any)
+        : val.dot(key as any);
+  });
+  return vals as {
+    [Key in keyof Members]: Val<ExtractTypeStr<Members[Key]>>;
+  };
+};

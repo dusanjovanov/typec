@@ -21,12 +21,12 @@ export class Union<
     return Stat.union(this.name, this.members);
   }
 
-  /** Get a union var type for this Union. */
+  /** Get a type for this union. */
   type(qualifiers?: TypeQualifier[]) {
     return Type.union(this.name, this.members, qualifiers);
   }
 
-  /** Pointer Var. */
+  /** Get a pointer type to this union. */
   pointer(
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]

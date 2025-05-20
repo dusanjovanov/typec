@@ -3,8 +3,18 @@ import { Cond } from "./condition";
 import type { Func } from "./func";
 import { Lit } from "./literal";
 import { Stat } from "./statement";
+import type { Struct } from "./struct";
 import { Type } from "./type";
-import type { GenericApi, Numberish, StatArg, TypeArg, ValArg } from "./types";
+import type {
+  GenericFuncs,
+  GenericMembers,
+  Numberish,
+  StatArg,
+  StringKeyOf,
+  TypeArg,
+  ValArg,
+} from "./types";
+import type { Union } from "./union";
 import { emptyFalsy, joinArgs, Utils } from "./utils";
 
 /**
@@ -456,8 +466,9 @@ export class Val<S extends string = any> {
     return Cond.if(this.not(), statements);
   }
 
-  api<Api extends GenericApi>(api: Api) {
-    return new ValApi(this.exp, api);
+  /** Returns a `ValBound` object where the passed funcs are bound to this Val. */
+  bind<Funcs extends GenericFuncs>(funcs: Funcs) {
+    return new ValBound(this.exp, funcs);
   }
 
   /**
@@ -716,6 +727,28 @@ export class Val<S extends string = any> {
     });
   }
 
+  static member<
+    Members extends GenericMembers,
+    Key extends StringKeyOf<Members>
+  >(
+    struct: Struct<any, Members> | Union<any, Members>,
+    key: Key,
+    left: ValArg,
+    op: "->" | "."
+  ) {
+    return new Val({
+      kind: "member",
+      type: struct.members[key],
+      left: Val.valArgToVal(left),
+      right: new Val({
+        kind: "name",
+        name: key,
+        type: struct.members[key],
+      }),
+      op,
+    });
+  }
+
   static valArgToVal(val: ValArg): Val {
     if (isTcObject("val", val)) {
       return val;
@@ -854,10 +887,18 @@ type TypeExp<S extends string> = BaseExp<S> & {
 };
 
 /**
- * tc equivalent of a class based api for a Val.
+ * `tc` equivalent of a class based api for a Val.
+ *
+ * It allows you to bind Func calls to a value expression as their first argument.
+ *
+ * The `$` field contains a dictionary of JS functions that return the `.call()` result of the passed Funcs
+ * where the first argument is always the value the Funcs are bound to.
  */
-export class ValApi<S extends string, Api extends GenericApi> extends Val<S> {
-  constructor(exp: ValueExp<S>, funcs: Api) {
+export class ValBound<
+  S extends string,
+  Funcs extends GenericFuncs
+> extends Val<S> {
+  constructor(exp: ValueExp<S>, funcs: Funcs) {
     super(exp);
     this.$ = Utils.bindFuncs(new Val(exp), funcs);
   }

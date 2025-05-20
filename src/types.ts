@@ -92,13 +92,13 @@ export type GenericEnumValues = Record<string, string | number | null>;
 
 export type FuncArgsFromParams<Params extends readonly Param<any, any>[]> = {
   [index in keyof Params]: FuncArg<
-    Params[index]["type"] extends Type<infer S> ? S : any,
+    ExtractTypeStr<Params[index]["type"]>,
     Params[index]["name"]
   >;
 };
 
 export type GenericFunc = Func<any, any, any>;
-export type GenericApi = Record<string, GenericFunc>;
+export type GenericFuncs = Record<string, GenericFunc>;
 
 export type BoundFunc<Fn extends GenericFunc> = (
   ...args: Fn["hasVarArgs"] extends false
@@ -106,7 +106,7 @@ export type BoundFunc<Fn extends GenericFunc> = (
     : [...BoundArgs<Fn["_params"]>, ...CodeLike[]]
 ) => Val<Fn extends Func<infer R, any, any> ? R : any>;
 
-export type BoundFuncs<Funcs extends GenericApi> = {
+export type BoundFuncs<Funcs extends GenericFuncs> = {
   [key in keyof Funcs]: BoundFunc<Funcs[key]>;
 };
 
@@ -152,3 +152,5 @@ export type StatArg =
   | Struct
   | Union
   | Enum;
+
+export type ExtractTypeStr<T extends Type> = T extends Type<infer S> ? S : any;
