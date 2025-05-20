@@ -44,6 +44,6 @@ export class Union<
 
   /** Create an anonymous Union. */
   static anon<Members extends GenericMembers>(members: Members) {
-    return new Union(null as any, members);
+    return new Union<"anon", Members>(null as any, members);
   }
 }

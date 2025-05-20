@@ -3,10 +3,8 @@ import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import type {
-  ExtractTypeStr,
   GenericMembers,
   PointerQualifier,
-  StringKeyOf,
   TypeArg,
   TypeQualifier,
   ValArg,
@@ -162,20 +160,6 @@ export class VarStruct<
   struct;
   /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
   _;
-
-  /** Access a member of the struct var directly. */
-  dot<Key extends StringKeyOf<Members>>(
-    key: Key
-  ): Val<ExtractTypeStr<Members[Key]>> {
-    return Val.member(this.struct, key, this, ".");
-  }
-
-  /** Access a member of the struct var through a pointer. */
-  arrow<Key extends StringKeyOf<Members>>(
-    key: Key
-  ): Val<ExtractTypeStr<Members[Key]>> {
-    return Val.member(this.struct, key, this, "->");
-  }
 }
 
 export class VarUnion<
@@ -191,18 +175,4 @@ export class VarUnion<
   union;
   /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
   _;
-
-  /** Access a member of the struct var directly. */
-  dot<Key extends StringKeyOf<Members>>(
-    key: Key
-  ): Val<ExtractTypeStr<Members[Key]>> {
-    return Val.member(this.union, key, this, ".");
-  }
-
-  /** Access a member of the struct var through a pointer. */
-  arrow<Key extends StringKeyOf<Members>>(
-    key: Key
-  ): Val<ExtractTypeStr<Members[Key]>> {
-    return Val.member(this.union, key, this, "->");
-  }
 }

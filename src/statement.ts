@@ -1,9 +1,8 @@
 import { isTcObject } from "./branding";
 import { curly } from "./chunk";
 import type { Cond } from "./condition";
-import { Val } from "./val";
 import type { Switch } from "./switch";
-import type { Type } from "./type";
+import { Type } from "./type";
 import type {
   GenericEnumValues,
   GenericMembers,
@@ -11,6 +10,7 @@ import type {
   ValArg,
 } from "./types";
 import { emptyNotFalse } from "./utils";
+import { Val } from "./val";
 import type { Var } from "./variable";
 
 /** Used for creating statements. */
@@ -293,9 +293,9 @@ export class Stat {
     });
   }
 
-  static memberStatements(members: GenericMembers) {
+  static memberStatements(members: GenericMembers): Stat[] {
     return Object.entries(members).map(([key, value]) => {
-      return Stat.varDeclaration(value, key);
+      return Stat.varDeclaration(Type.typeArgToType(value), key);
     });
   }
 }

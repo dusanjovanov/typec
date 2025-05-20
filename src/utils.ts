@@ -1,3 +1,4 @@
+import { isTcObject } from "./branding";
 import type { Struct } from "./struct";
 import type {
   BoundFunc,
@@ -10,7 +11,7 @@ import type {
   ValArg,
 } from "./types";
 import type { Union } from "./union";
-import type { Val } from "./val";
+import { ValStruct, ValUnion, type Val } from "./val";
 
 /**
  * Returns an empty string when the value is falsy or an empty array.
@@ -117,12 +118,28 @@ export const createMemberValues = <Members extends GenericMembers>(
 ) => {
   const vals: Record<any, any> = {};
   Object.keys(struct.members).forEach((key) => {
-    vals[key] =
+    const memberVal =
       val.type.typeKind === "pointer"
         ? val.arrow(key as any)
         : val.dot(key as any);
+
+    if (isTcObject("struct", struct.members[key])) {
+      vals[key] = new ValStruct(struct.members[key], memberVal.exp);
+    }
+    //
+    else if (isTcObject("union", struct.members[key])) {
+      vals[key] = new ValUnion(struct.members[key], memberVal.exp);
+    }
+    //
+    else {
+      vals[key] = memberVal;
+    }
   });
   return vals as {
-    [Key in keyof Members]: Val<ExtractTypeStr<Members[Key]>>;
+    [Key in keyof Members]: Members[Key] extends Struct<infer N, infer M>
+      ? ValStruct<N, M>
+      : Members[Key] extends Union<infer N, infer M>
+      ? ValUnion<N, M>
+      : Val<ExtractTypeStr<Members[Key]>>;
   };
 };

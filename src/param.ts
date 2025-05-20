@@ -2,10 +2,8 @@ import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import {
-  type ExtractTypeStr,
   type GenericMembers,
   type PointerQualifier,
-  type StringKeyOf,
   type TypeArg,
   type TypeQualifier,
 } from "./types";
@@ -140,20 +138,6 @@ export class ParamStruct<
   struct;
   /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
   _;
-
-  /** Access a member of the struct param directly. */
-  dot<Key extends StringKeyOf<Members>>(
-    key: Key
-  ): Val<ExtractTypeStr<Members[Key]>> {
-    return Val.member(this.struct, key, this, ".");
-  }
-
-  /** Access a member of the struct param through a pointer. */
-  arrow<Key extends StringKeyOf<Members>>(
-    key: Key
-  ): Val<ExtractTypeStr<Members[Key]>> {
-    return Val.member(this.struct, key, this, "->");
-  }
 }
 
 export class ParamUnion<
@@ -174,18 +158,4 @@ export class ParamUnion<
   union;
   /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
   _;
-
-  /** Access a member of the union param directly. */
-  dot<Key extends StringKeyOf<Members>>(
-    key: Key
-  ): Val<ExtractTypeStr<Members[Key]>> {
-    return Val.member(this.union, key, this, ".");
-  }
-
-  /** Access a member of the union param through a pointer. */
-  arrow<Key extends StringKeyOf<Members>>(
-    key: Key
-  ): Val<ExtractTypeStr<Members[Key]>> {
-    return Val.member(this.union, key, this, "->");
-  }
 }

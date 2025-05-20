@@ -15,7 +15,7 @@ import type {
   ValArg,
 } from "./types";
 import type { Union } from "./union";
-import { emptyFalsy, joinArgs, Utils } from "./utils";
+import { createMemberValues, emptyFalsy, joinArgs, Utils } from "./utils";
 
 /**
  * A value container containing an `rvalue` expression with helpers for generating all C literal and initializer expressions
@@ -738,12 +738,12 @@ export class Val<S extends string = any> {
   ) {
     return new Val({
       kind: "member",
-      type: struct.members[key],
+      type: Type.typeArgToType(struct.members[key]),
       left: Val.valArgToVal(left),
       right: new Val({
         kind: "name",
         name: key,
-        type: struct.members[key],
+        type: Type.typeArgToType(struct.members[key]),
       }),
       op,
     });
@@ -903,4 +903,30 @@ export class ValBound<
     this.$ = Utils.bindFuncs(new Val(exp), funcs);
   }
   $;
+}
+
+export class ValStruct<
+  Name extends string,
+  Members extends GenericMembers
+> extends Val<Name> {
+  constructor(struct: Struct<Name, Members>, exp: ValueExp<any>) {
+    super(exp);
+    this.struct = struct;
+    this._ = createMemberValues(this, struct);
+  }
+  _;
+  struct;
+}
+
+export class ValUnion<
+  Name extends string,
+  Members extends GenericMembers
+> extends Val<Name> {
+  constructor(union: Union<Name, Members>, exp: ValueExp<any>) {
+    super(exp);
+    this.union = union;
+    this._ = createMemberValues(this, union);
+  }
+  _;
+  union;
 }

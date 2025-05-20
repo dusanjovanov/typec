@@ -85,7 +85,7 @@ export type Numberish = number | string;
 export type CodeLike = TextLike | { toString(): string };
 
 export type GenericMembers = {
-  [Key: string]: Type<any>;
+  [Key: string]: TypeArg;
 };
 
 export type GenericEnumValues = Record<string, string | number | null>;
@@ -153,4 +153,12 @@ export type StatArg =
   | Union
   | Enum;
 
-export type ExtractTypeStr<T extends Type> = T extends Type<infer S> ? S : any;
+export type ExtractTypeStr<T extends TypeArg> = T extends Type<infer S>
+  ? S
+  : T extends Struct<infer Name>
+  ? Name
+  : T extends Union<infer Name>
+  ? Name
+  : T extends Enum<infer Name>
+  ? Name
+  : any;
