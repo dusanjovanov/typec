@@ -1,8 +1,12 @@
+import { Func, type Fn } from "./func";
 import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import {
+  type BodyFn,
+  type FuncArgs,
   type GenericMembers,
+  type ParamsListFromParams,
   type PointerQualifier,
   type TypeArg,
   type TypeQualifier,
@@ -112,6 +116,22 @@ export class Param<S extends string, Name extends string> extends Val<S> {
     );
   }
 
+  static func<
+    Return extends string,
+    const Params extends readonly Param<any, any>[],
+    Name extends string,
+    VarArgs extends boolean = false
+  >(
+    returnType: Type<Return>,
+    params: Params,
+    name: Name,
+    options?: {
+      hasVarArgs?: VarArgs;
+    }
+  ) {
+    return createFuncParam(returnType, params, name, options);
+  }
+
   static new<S extends string, Name extends string>(
     type: TypeArg<S>,
     name: Name
@@ -159,3 +179,49 @@ export class ParamUnion<
   /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member. */
   _;
 }
+
+const createFuncParam = <
+  Return extends string,
+  const Params extends readonly Param<any, any>[],
+  Name extends string,
+  VarArgs extends boolean = false
+>(
+  returnType: Type<Return>,
+  params: Params,
+  name: Name,
+  options?: {
+    hasVarArgs?: VarArgs;
+  }
+) => {
+  const obj = (...args: any[]) => {
+    return Val.call(obj as any, ...args);
+  };
+  Object.defineProperty(obj, "name", {
+    value: name,
+    writable: false,
+    configurable: true,
+  });
+  obj.declare = () => {
+    return Stat.paramDeclaration(
+      Type.func(returnType, params, options?.hasVarArgs),
+      name
+    );
+  };
+  obj.duplicate = (name: string, body: BodyFn<Params>) => {
+    return Func.new(returnType, name, params, body, options);
+  };
+  return obj as ParamFunc<Return, Params, Name, VarArgs>;
+};
+
+type ParamFunc<
+  Return extends string,
+  Params extends readonly Param<any, any>[],
+  Name extends string,
+  VarArgs extends boolean = false
+> = Param<`${Return}(${ParamsListFromParams<Params>})`, Name> & {
+  /** Returns a Fn with the same signature ( type ) and a different name and body ( that you pass ). */
+  duplicate: (
+    name: string,
+    body: BodyFn<Params>
+  ) => Fn<Return, Params, VarArgs>;
+} & ((...args: FuncArgs<Params, VarArgs>) => Val<Return>);

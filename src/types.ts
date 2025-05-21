@@ -179,3 +179,26 @@ export type ParamsListFromParams<Params extends readonly Param<any, any>[]> =
           : any},${ParamsListFromParams<Rest>}`
       : `${First extends Param<infer T, any> ? T : any}`
     : any;
+
+export type FuncParamsByName<Params extends readonly Param<any, any>[]> =
+  Params extends []
+    ? {}
+    : Params extends readonly [
+        infer First extends Param<any, any>,
+        ...infer Rest extends Param<any, any>[]
+      ]
+    ? Rest extends readonly Param<any, any>[]
+      ? Record<First["name"], First> & FuncParamsByName<Rest>
+      : Record<First["name"], First>
+    : {};
+
+export type BodyFn<Params extends readonly Param<any, any>[]> = (arg: {
+  params: FuncParamsByName<Params>;
+}) => StatArg[];
+
+export type FuncArgs<
+  Params extends readonly Param<any, any>[],
+  VarArgs extends boolean
+> = VarArgs extends false
+  ? FuncArgsFromParams<Params>
+  : [...FuncArgsFromParams<Params>, ...ValArg[]];

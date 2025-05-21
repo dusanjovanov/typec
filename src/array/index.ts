@@ -1,7 +1,6 @@
 import {
   destroyDynamic,
   forEachDynamic,
-  forEachDynamicCallback,
   initDynamic,
   pushDynamic,
 } from "./dynamic";
@@ -14,5 +13,4 @@ export const tc_arr = {
   pushDynamic,
   destroyDynamic,
   forEachDynamic,
-  forEachDynamicCallback,
 };

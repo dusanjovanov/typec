@@ -1,5 +1,5 @@
 import { NULL } from "../constants";
-import { Func, type BodyFn } from "../func";
+import { Func } from "../func";
 import { Loop } from "../loops";
 import { Param } from "../param";
 import { stdlib } from "../std";
@@ -26,26 +26,20 @@ export const initDynamic = Func.void(
   }
 );
 
-const forEachDynamicParams = [
-  Param.new(Type.void().pointer(), "element"),
-  Param.new(Type.int(), "index"),
-  Param.new(DynamicArray.pointer(), "array"),
-  Param.new(Type.void().pointer(), "user_data"),
-] as const;
-
-/** Helper to create a forEach callback Func for a dynamic array. */
-export const forEachDynamicCallback = (
-  name: string,
-  body: BodyFn<typeof forEachDynamicParams>
-) => {
-  return Func.void(name, forEachDynamicParams, body);
-};
-
 export const forEachDynamic = Func.void(
   "tc_array_dynamic_for_each",
   [
     Param.structPointer(DynamicArray, "array"),
-    Param.new(Type.func(Type.void(), forEachDynamicParams), "callback"),
+    Param.func(
+      Type.void(),
+      [
+        Param.new(Type.void().pointer(), "element"),
+        Param.new(Type.int(), "index"),
+        Param.new(DynamicArray.pointer(), "array"),
+        Param.new(Type.void().pointer(), "user_data"),
+      ],
+      "callback"
+    ),
     Param.new(Type.void().pointer(), "user_data"),
   ],
   ({ params }) => {
@@ -54,7 +48,7 @@ export const forEachDynamic = Func.void(
 
     return [
       Loop.for(i.init(0), i.lt(array._.count), i.postDec(), [
-        callback.call(array._.items.at(i), i, array, user_data),
+        callback(array._.items.at(i), i, array, user_data),
       ]),
     ];
   }

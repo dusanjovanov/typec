@@ -3,9 +3,10 @@ import type { Param } from "./param";
 import { Stat } from "./statement";
 import { Type } from "./type";
 import {
-  type FuncArgsFromParams,
+  type BodyFn,
+  type FuncArgs,
+  type FuncParamsByName,
   type ParamsListFromParams,
-  type StatArg,
   type ValArg,
 } from "./types";
 import { Val } from "./val";
@@ -45,11 +46,11 @@ const createCallable = <
   params.forEach((p) => {
     paramsByName[p.name] = p;
   });
-  obj.paramsByName = paramsByName as FuncParamsByName<Params>;
+  obj.params = paramsByName as FuncParamsByName<Params>;
   obj.define = () => {
     if (!obj.body) return obj.declare();
 
-    return Stat.funcDef(obj.type, name, obj.body({ params: obj.paramsByName }));
+    return Stat.funcDef(obj.type, name, obj.body({ params: obj.params }));
   };
   obj.val = () => {
     return new Val({
@@ -152,29 +153,6 @@ type FuncOptions<VarArgs extends boolean> = {
   hasVarArgs?: VarArgs;
 };
 
-export type FuncArgs<
-  Params extends readonly Param<any, any>[],
-  VarArgs extends boolean
-> = VarArgs extends false
-  ? FuncArgsFromParams<Params>
-  : [...FuncArgsFromParams<Params>, ...ValArg[]];
-
-export type FuncParamsByName<Params extends readonly Param<any, any>[]> =
-  Params extends []
-    ? {}
-    : Params extends readonly [
-        infer First extends Param<any, any>,
-        ...infer Rest extends Param<any, any>[]
-      ]
-    ? Rest extends readonly Param<any, any>[]
-      ? Record<First["name"], First> & FuncParamsByName<Rest>
-      : Record<First["name"], First>
-    : {};
-
-export type BodyFn<Params extends readonly Param<any, any>[]> = (arg: {
-  params: FuncParamsByName<Params>;
-}) => StatArg[];
-
 export type Fn<
   Return extends string,
   Params extends readonly Param<any, any>[],
@@ -196,4 +174,5 @@ export type Fn<
   returnType: Type<Return>;
   type: Type<`${Return}(${ParamsListFromParams<Params>})`>;
   body: BodyFn<Params> | undefined;
+  params: FuncParamsByName<Params>;
 } & ((...args: FuncArgs<Params, VarArgs>) => Val<Return>);
