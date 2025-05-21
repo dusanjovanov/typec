@@ -7,5 +7,4 @@ export const tc_str = {
   concat,
   indexOf,
   slice,
-  stringApi: { concat, indexOf, slice },
 };

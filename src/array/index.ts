@@ -15,10 +15,4 @@ export const tc_arr = {
   destroyDynamic,
   forEachDynamic,
   forEachDynamicCallback,
-  dynamicArrayApi: {
-    init: initDynamic,
-    push: pushDynamic,
-    forEach: forEachDynamic,
-    destroy: destroyDynamic,
-  },
 };
