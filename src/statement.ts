@@ -1,4 +1,4 @@
-import { isTcObject } from "./branding";
+import { BRANDING_MAP, isTcObject } from "./branding";
 import { curly } from "./chunk";
 import type { Cond } from "./condition";
 import type { Switch } from "./switch";
@@ -19,6 +19,7 @@ export class Stat {
     this.desc = desc;
   }
   desc;
+  kind = BRANDING_MAP.stat;
 
   toString() {
     switch (this.desc.kind) {
@@ -111,8 +112,12 @@ export class Stat {
   }
 
   static statArgToStat(arg: StatArg) {
-    if (arg instanceof Stat) {
+    if (isTcObject("stat", arg)) {
       return arg;
+    }
+    //
+    else if (isTcObject("val", arg)) {
+      return new Stat({ kind: "value", value: arg });
     }
     //
     else if (isTcObject("cond", arg)) {
@@ -138,7 +143,7 @@ export class Stat {
     else if (isTcObject("enum", arg)) {
       return arg.declare();
     }
-    //
+    // keep TS happy
     else {
       return new Stat({ kind: "value", value: arg });
     }

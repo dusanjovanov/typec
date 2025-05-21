@@ -1,6 +1,7 @@
 import type { Cond } from "./condition";
 import type { Enum } from "./enum";
 import type { Fn } from "./func";
+import type { Stat } from "./statement";
 import type { Struct } from "./struct";
 import type { Switch } from "./switch";
 import type { Type } from "./type";
@@ -9,6 +10,7 @@ import type { Union } from "./union";
 import type { Val } from "./val";
 
 export const BRANDING_MAP = {
+  stat: Symbol.for("tc_stat"),
   struct: Symbol.for("tc_struct"),
   union: Symbol.for("tc_union"),
   enum: Symbol.for("tc_enum"),
@@ -32,6 +34,7 @@ export const isTcObject = <Which extends keyof BrandingMap>(
 };
 
 export type BrandingMap = {
+  stat: Stat;
   struct: Struct;
   union: Union;
   func: Fn<any, any, any>;
