@@ -81,10 +81,12 @@ export class Lit {
   /**
    * Adds the float sufix to a floating point number.
    *
+   * If an integer number is passed, it automatically adds a `.0F` at the end.
+   *
    * `23.45F`
    */
   static float(n: Numberish) {
-    return `${n}F`;
+    return `${typeof n === "number" && n % 2 === 0 ? `${n}.0` : n}F`;
   }
 
   /**

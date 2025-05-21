@@ -599,7 +599,9 @@ export class Val<S extends string = any> {
   }
 
   /**
-   * Returns a Val for a float literal.
+   * Returns a Val for a float literal with a float suffix.
+   *
+   * If an integer number is passed, it automatically adds a `.0F` at the end.
    *
    * `23.45F`
    */
@@ -766,7 +768,7 @@ export class Val<S extends string = any> {
     }
     //
     else if (typeof val === "number") {
-      if (val % 0 !== 0) {
+      if (val % 2 !== 0) {
         return new Val({
           kind: "literal",
           type: Type.double(),
@@ -780,7 +782,11 @@ export class Val<S extends string = any> {
       const lastChar = val.at(-1)!;
 
       if (lastChar === "f" || lastChar === "F") {
-        return Val.float(val);
+        return new Val({
+          kind: "literal",
+          type: Type.float(),
+          value: val,
+        });
       }
       //
       else if (lastChar === "l" || lastChar === "L") {
