@@ -766,7 +766,35 @@ export class Val<S extends string = any> {
     }
     //
     else if (typeof val === "number") {
+      if (val % 0 !== 0) {
+        return new Val({
+          kind: "literal",
+          type: Type.double(),
+          value: val,
+        });
+      }
       return Val.int(val);
+    }
+    //
+    else if (typeof val === "string") {
+      const lastChar = val.at(-1)!;
+
+      if (lastChar === "f" || lastChar === "F") {
+        return Val.float(val);
+      }
+      //
+      else if (lastChar === "l" || lastChar === "L") {
+        return Val.longDouble(val);
+      }
+      return Val.int(val);
+    }
+    //
+    else if (typeof val === "boolean") {
+      return new Val({
+        kind: "literal",
+        type: Type.bool(),
+        value: val,
+      });
     }
     //
     else {
