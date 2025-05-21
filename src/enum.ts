@@ -58,26 +58,4 @@ export class Enum<
   >(name: Name, values: Values) {
     return new Enum(name, values);
   }
-
-  /** Api-only Enum that comes from an external library. */
-  static api<Name extends string, const Keys extends readonly string[]>(
-    name: Name,
-    keys: Keys
-  ) {
-    return new Enum(
-      name,
-      keys.reduce((prev, key) => {
-        (prev as any)[key] = null;
-        return prev;
-      }, {} as ValuesFromKeys<Keys>)
-    );
-  }
 }
-
-type ValuesFromKeys<Keys extends readonly string[]> = Keys extends readonly []
-  ? {}
-  : Keys extends readonly [infer First extends string, ...infer Rest]
-  ? Rest extends readonly string[]
-    ? Record<First, null> & ValuesFromKeys<Rest>
-    : Record<First, null>
-  : {};

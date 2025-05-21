@@ -1,12 +1,11 @@
 import { BRANDING_MAP, isTcObject } from "./branding";
 import { Cond } from "./condition";
-import type { Func } from "./func";
+import type { Fn } from "./func";
 import { Lit } from "./literal";
 import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import type {
-  GenericFuncs,
   GenericMembers,
   Numberish,
   StatArg,
@@ -15,7 +14,7 @@ import type {
   ValArg,
 } from "./types";
 import type { Union } from "./union";
-import { createMemberValues, emptyFalsy, joinArgs, Utils } from "./utils";
+import { createMemberValues, emptyFalsy, joinArgs } from "./utils";
 
 /**
  * A value container containing an `rvalue` expression with helpers for generating all C literal and initializer expressions
@@ -466,11 +465,6 @@ export class Val<S extends string = any> {
     return Cond.if(this.not(), statements);
   }
 
-  /** Returns a `ValBound` object where the passed funcs are bound to this Val. */
-  bind<Funcs extends GenericFuncs>(funcs: Funcs) {
-    return new ValBound(this.exp, funcs);
-  }
-
   /**
    * Returns a Val for a string literal.
    *
@@ -687,7 +681,7 @@ export class Val<S extends string = any> {
   }
 
   /** Takes in a Func and args and returns a call expression Val for it. */
-  static call<S extends string>(func: Func<S, any>, ...args: ValArg[]) {
+  static call<S extends string>(func: Fn<S, any, any>, ...args: ValArg[]) {
     return new Val({
       kind: "call",
       type: func.returnType,
@@ -771,7 +765,7 @@ export class Val<S extends string = any> {
     }
     //
     else {
-      return new Val({ kind: "literal", type: Type.any(), value: val });
+      return new Val({ kind: "literal", type: Type.any(), value: val as any });
     }
   }
 }
@@ -885,25 +879,6 @@ type MemoryExp<S extends string> = BaseExp<S> & {
 type TypeExp<S extends string> = BaseExp<S> & {
   kind: "type";
 };
-
-/**
- * `tc` equivalent of a class based api for a Val.
- *
- * It allows you to bind Func calls to a value expression as their first argument.
- *
- * The `$` field contains a dictionary of JS functions that return the `.call()` result of the passed Funcs
- * where the first argument is always the value the Funcs are bound to.
- */
-export class ValBound<
-  S extends string,
-  Funcs extends GenericFuncs
-> extends Val<S> {
-  constructor(exp: ValueExp<S>, funcs: Funcs) {
-    super(exp);
-    this.$ = Utils.bindFuncs(new Val(exp), funcs);
-  }
-  $;
-}
 
 export class ValStruct<
   Name extends string,

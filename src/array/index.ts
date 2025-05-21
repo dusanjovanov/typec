@@ -8,7 +8,7 @@ import {
 import { DynamicArray } from "./types";
 
 /** tc equivalent of the JS Array class. */
-export const tcarray = {
+export const tc_arr = {
   DynamicArray,
   initDynamic,
   pushDynamic,

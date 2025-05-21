@@ -1,6 +1,6 @@
 import type { Cond } from "./condition";
 import type { Enum } from "./enum";
-import type { Func } from "./func";
+import type { Fn } from "./func";
 import type { Param } from "./param";
 import type { Stat } from "./statement";
 import type { Struct } from "./struct";
@@ -97,14 +97,17 @@ export type FuncArgsFromParams<Params extends readonly Param<any, any>[]> = {
   >;
 };
 
-export type GenericFunc = Func<any, any, any>;
+export type GenericFunc = {
+  hasVarArgs: boolean;
+  _params: readonly Param<any, any>[];
+} & ((...args: any[]) => Val);
 export type GenericFuncs = Record<string, GenericFunc>;
 
-export type BoundFunc<Fn extends GenericFunc> = (
-  ...args: Fn["hasVarArgs"] extends false
-    ? BoundArgs<Fn["_params"]>
-    : [...BoundArgs<Fn["_params"]>, ...CodeLike[]]
-) => Val<Fn extends Func<infer R, any, any> ? R : any>;
+export type BoundFunc<GenericFn extends GenericFunc> = (
+  ...args: GenericFn["hasVarArgs"] extends false
+    ? BoundArgs<GenericFn["_params"]>
+    : [...BoundArgs<GenericFn["_params"]>, ...CodeLike[]]
+) => Val<GenericFn extends Fn<infer R, any, any> ? R : any>;
 
 export type BoundFuncs<Funcs extends GenericFuncs> = {
   [key in keyof Funcs]: BoundFunc<Funcs[key]>;
@@ -128,7 +131,7 @@ export type ValArg =
   | Val
   | Type
   | Struct
-  | Func<any, any, any>
+  | GenericFunc
   | number
   | string
   | boolean;
@@ -138,7 +141,7 @@ export type FuncArg<_ extends string, __ extends string> =
   | Val
   | Type
   | Struct
-  | Func<any, any, any>
+  | GenericFunc
   | number
   | string
   | boolean;
@@ -148,7 +151,7 @@ export type StatArg =
   | Val
   | Cond
   | Switch
-  | Func<any, any, any>
+  | Fn<any, any, any>
   | Struct
   | Union
   | Enum;
@@ -162,3 +165,17 @@ export type ExtractTypeStr<T extends TypeArg> = T extends Type<infer S>
   : T extends Enum<infer Name>
   ? Name
   : any;
+
+export type ParamsListFromParams<Params extends readonly Param<any, any>[]> =
+  Params extends []
+    ? "void"
+    : Params extends readonly [
+        infer First extends Param<any, any>,
+        ...infer Rest extends readonly Param<any, any>[]
+      ]
+    ? Rest extends readonly Param<any, any>[]
+      ? `${First extends Param<infer T, any>
+          ? T
+          : any},${ParamsListFromParams<Rest>}`
+      : `${First extends Param<infer T, any> ? T : any}`
+    : any;

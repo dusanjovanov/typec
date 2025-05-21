@@ -4,6 +4,7 @@ import { Stat } from "./statement";
 import type {
   AutoSimpleType,
   GenericMembers,
+  ParamsListFromParams,
   PointerQualifier,
   TypeArg,
   TypeQualifier,
@@ -15,7 +16,7 @@ import { Val } from "./val";
 export class Type<S extends string = any> {
   constructor(desc: TypeDescription<S>) {
     this.desc = desc;
-    this.str = this.createTypeStr() as any;
+    this.str = this.createTypeStr();
   }
   kind = BRANDING_MAP.type;
   desc;
@@ -36,7 +37,7 @@ export class Type<S extends string = any> {
       return Type.new({
         ...this.desc,
         qualifiers: [...(this.desc.qualifiers as any[]), "const"],
-      });
+      }) as Type<S>;
     }
     return this;
   }
@@ -361,17 +362,3 @@ export type EnumType<Name extends string> = {
   name: Name;
   qualifiers: TypeQualifier[];
 };
-
-type ParamsListFromParams<Params extends readonly Param<any, any>[]> =
-  Params extends []
-    ? "void"
-    : Params extends readonly [
-        infer First extends Param<any, any>,
-        ...infer Rest extends readonly Param<any, any>[]
-      ]
-    ? Rest extends readonly Param<any, any>[]
-      ? `${First extends Param<infer T, any>
-          ? T
-          : any},${ParamsListFromParams<Rest>}`
-      : `${First extends Param<infer T, any> ? T : any}`
-    : any;

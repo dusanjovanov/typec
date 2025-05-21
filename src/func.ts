@@ -1,92 +1,68 @@
 import { BRANDING_MAP } from "./branding";
 import type { Param } from "./param";
-import { Val } from "./val";
 import { Stat } from "./statement";
 import { Type } from "./type";
-import { type FuncArgsFromParams, type StatArg, type ValArg } from "./types";
+import {
+  type FuncArgsFromParams,
+  type ParamsListFromParams,
+  type StatArg,
+  type ValArg,
+} from "./types";
+import { Val } from "./val";
 
-/** Used for creating and using functions or just declaring and using their api if they come from C libraries. */
-export class Func<
+const createCallable = <
   Return extends string,
   const Params extends readonly Param<any, any>[],
   VarArgs extends boolean = false
-> {
-  constructor(
-    returnType: Type<Return>,
-    name: string,
-    params: Params,
-    body?: BodyFn<Params>,
-    options?: FuncOptions<VarArgs>
-  ) {
-    this.returnType = returnType;
-    this.name = name;
-    this._params = params;
-    this.body = body;
-    this.hasVarArgs = options?.hasVarArgs as VarArgs extends void
-      ? false
-      : VarArgs;
+>(
+  returnType: Type<Return>,
+  name: string,
+  params: Params,
+  body?: BodyFn<Params>,
+  options?: FuncOptions<VarArgs>
+) => {
+  const obj = function (...args: any[]) {
+    return Val.call(obj as any, ...args);
+  };
+  obj.kind = BRANDING_MAP.func;
+  obj.returnType = returnType;
+  Object.defineProperty(obj, "name", {
+    value: name,
+    writable: false,
+    configurable: true,
+  });
+  obj._params = params;
+  obj.body = body;
+  obj.hasVarArgs = options?.hasVarArgs as VarArgs extends void
+    ? false
+    : VarArgs;
 
-    this.type = Type.func(returnType, this._params, this.hasVarArgs);
+  obj.type = Type.func(returnType, params, obj.hasVarArgs);
+  obj.declare = () => {
+    return Stat.funcDeclaration(obj.type, name);
+  };
+  const paramsByName: Record<string, any> = {};
+  params.forEach((p) => {
+    paramsByName[p.name] = p;
+  });
+  obj.paramsByName = paramsByName as FuncParamsByName<Params>;
+  obj.define = () => {
+    if (!obj.body) return obj.declare();
 
-    const paramsByName: Record<string, any> = {};
-    params.forEach((p) => {
-      paramsByName[p.name] = p;
-    });
-    this.params = paramsByName as FuncParamsByName<Params>;
-  }
-  kind = BRANDING_MAP.func;
-  returnType;
-  name;
-  /** Params by name */
-  params;
-  body;
-  hasVarArgs;
-  type;
-  _params;
-
-  /** Returns a Val for the name of this function. */
-  val() {
+    return Stat.funcDef(obj.type, name, obj.body({ params: obj.paramsByName }));
+  };
+  obj.val = () => {
     return new Val({
       kind: "name",
-      type: this.type,
-      name: this.name,
+      type: obj.type,
+      name: name,
     });
-  }
+  };
+  return obj as unknown as Fn<Return, Params, VarArgs>;
+};
 
-  /** Returns the address of this function. */
-  ref() {
-    return this.val().ref();
-  }
-
-  /** Returns the declaration ( prototype ) statement for the function. */
-  declare() {
-    return Stat.funcDeclaration(this.type, this.name);
-  }
-
-  /**
-   * Returns the definition ( implementation ) statement for the function.
-   *
-   * Returns a declaration statement if the body of the function is not defined.
-   */
-  define(): Stat {
-    if (!this.body) return this.declare();
-
-    return Stat.funcDef(
-      this.type,
-      this.name,
-      this.body({ params: this.params })
-    );
-  }
-
-  /** Returns this function's call expression Val. */
-  call(...args: FuncArgs<Params, VarArgs>) {
-    return Val.call(this, ...args);
-  }
-
-  toString() {
-    return this.name;
-  }
-
+/** Used for creating and using functions or just declaring and using their api if they come from C libraries. */
+export class Func {
   /** Returns a return statement expression. */
   static return(value?: ValArg) {
     return Stat.return(value);
@@ -102,7 +78,7 @@ export class Func<
     body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
-    return new Func(Type.void(), name, params, body, options);
+    return createCallable(Type.void(), name, params, body, options);
   }
 
   /** Shortcut for the `bool` return type. */
@@ -115,7 +91,7 @@ export class Func<
     body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
-    return new Func(Type.bool(), name, params, body, options);
+    return createCallable(Type.bool(), name, params, body, options);
   }
 
   /** Shortcut for the `int` return type. */
@@ -128,7 +104,7 @@ export class Func<
     body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
-    return new Func(Type.int(), name, params, body, options);
+    return createCallable(Type.int(), name, params, body, options);
   }
 
   /** Shortcut for the `double` return type. */
@@ -141,7 +117,7 @@ export class Func<
     body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
-    return new Func(Type.double(), name, params, body, options);
+    return createCallable(Type.double(), name, params, body, options);
   }
 
   /** Shortcut for the `char*` return type. */
@@ -154,7 +130,7 @@ export class Func<
     body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
-    return new Func(Type.string(), name, params, body, options);
+    return createCallable(Type.string(), name, params, body, options);
   }
 
   static new<
@@ -168,7 +144,7 @@ export class Func<
     body?: BodyFn<Params>,
     options?: FuncOptions<VarArgs>
   ) {
-    return new Func(returnType, name, params, body, options);
+    return createCallable(returnType, name, params, body, options);
   }
 }
 
@@ -198,3 +174,26 @@ export type FuncParamsByName<Params extends readonly Param<any, any>[]> =
 export type BodyFn<Params extends readonly Param<any, any>[]> = (arg: {
   params: FuncParamsByName<Params>;
 }) => StatArg[];
+
+export type Fn<
+  Return extends string,
+  Params extends readonly Param<any, any>[],
+  VarArgs extends boolean = false
+> = {
+  name: string;
+  /** Returns the declaration ( prototype ) statement for the function. */
+  declare(): Stat;
+  /**
+   * Returns the definition ( implementation ) statement for the function.
+   *
+   * If the body of the function is not defined, returns a declaration statement instead.
+   */
+  define(): Stat;
+  /** Returns a Val for the name of this function. */
+  val(): Val;
+  hasVarArgs: VarArgs extends void ? false : VarArgs;
+  _params: Params;
+  returnType: Type<Return>;
+  type: Type<`${Return}(${ParamsListFromParams<Params>})`>;
+  body: BodyFn<Params> | undefined;
+} & ((...args: FuncArgs<Params, VarArgs>) => Val<Return>);

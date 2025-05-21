@@ -31,8 +31,26 @@ export class Var<S extends string = any> extends Val<S> {
   }
 
   /** Initialize with a value. */
-  init(value: ValArg) {
-    return Stat.varInit(this, value);
+  init(...values: ValArg[]) {
+    if (values.length > 1) {
+      return Stat.varInit(this, Lit.compound(...values));
+    }
+    //
+    else if (
+      typeof values[0] === "object" &&
+      values[0].constructor === Object
+    ) {
+      return Stat.varInit(
+        this,
+        this.type.typeKind === "array"
+          ? Lit.designatedSub(values[0] as any)
+          : Lit.designatedDot(values[0] as any)
+      );
+    }
+    //
+    else {
+      return Stat.varInit(this, values[0]);
+    }
   }
 
   /** Returns the compound initialization. */
@@ -158,7 +176,7 @@ export class VarStruct<
     this._ = createMemberValues(this, struct);
   }
   struct;
-  /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
+  /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member. */
   _;
 }
 
@@ -173,6 +191,6 @@ export class VarUnion<
     this._ = createMemberValues(this, union);
   }
   union;
-  /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
+  /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member. */
   _;
 }

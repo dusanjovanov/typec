@@ -1,15 +1,6 @@
 import { isTcObject } from "./branding";
 import type { Struct } from "./struct";
-import type {
-  BoundFunc,
-  BoundFuncs,
-  CodeLike,
-  ExtractTypeStr,
-  GenericFunc,
-  GenericFuncs,
-  GenericMembers,
-  ValArg,
-} from "./types";
+import type { CodeLike, ExtractTypeStr, GenericMembers } from "./types";
 import type { Union } from "./union";
 import { ValStruct, ValUnion, type Val } from "./val";
 
@@ -80,38 +71,6 @@ export const unique = <T>(arr: T[]) => {
   return Array.from(new Set(arr));
 };
 
-/** Various useful utils. */
-export class Utils {
-  /**
-   * Returns a function that returns the `.call()` result for the passed Func
-   * with the first parameter of the Func bound to the expression.
-   */
-  static bindFunc<Func extends GenericFunc>(expression: ValArg, func: Func) {
-    return ((...args: any[]) =>
-      func.call(expression, ...args)) as BoundFunc<Func>;
-  }
-
-  /**
-   * Same as `bindFunc`, but for multiple Funcs.
-   */
-  static bindFuncs<Funcs extends GenericFuncs>(
-    expression: ValArg | ((fn: GenericFunc) => ValArg),
-    funcs: Funcs
-  ) {
-    const bound: Record<string, any> = {};
-    Object.entries(funcs).forEach(([key, fn]) => {
-      let exp = expression;
-      if (typeof exp === "function") {
-        exp = exp(fn);
-      }
-      bound[key] = (...args: any[]) => {
-        return fn.call(exp, ...args);
-      };
-    });
-    return bound as BoundFuncs<Funcs>;
-  }
-}
-
 export const createMemberValues = <Members extends GenericMembers>(
   val: Val,
   struct: Struct<any, Members> | Union<any, Members>
@@ -119,9 +78,7 @@ export const createMemberValues = <Members extends GenericMembers>(
   const vals: Record<any, any> = {};
   Object.keys(struct.members).forEach((key) => {
     const memberVal =
-      val.type.typeKind === "pointer"
-        ? val.arrow(key as any)
-        : val.dot(key as any);
+      val.type.typeKind === "pointer" ? val.arrow(key) : val.dot(key);
 
     if (isTcObject("struct", struct.members[key])) {
       vals[key] = new ValStruct(struct.members[key], memberVal.exp);

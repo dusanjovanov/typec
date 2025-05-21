@@ -17,6 +17,6 @@ describe("Func", () => {
     expect(fn.define().toString()).toBe(
       `int sum(int a,int b)\n{\nreturn a+b;\n}`
     );
-    expect(fn.call(2, 2).toString()).toBe(`sum(2,2)`);
+    expect(fn(2, 2).toString()).toBe(`sum(2,2)`);
   });
 });

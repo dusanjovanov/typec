@@ -27,8 +27,8 @@ export const indexOf = Func.new(
       // Handle NULL inputs
       str.equal(NULL).or(search.equal(NULL)).thenReturn(-1),
       // Get lengths
-      strLen.init(stdstring.strlen.call(str)),
-      searchLen.init(stdstring.strlen.call(search)),
+      strLen.init(stdstring.strlen(str)),
+      searchLen.init(stdstring.strlen(search)),
       // If search string is empty or longer than str, it can't be found
       searchLen.equal(0).or(searchLen.gt(strLen)).thenReturn(-1),
       // Determine starting index
@@ -46,8 +46,8 @@ export const indexOf = Func.new(
         i.lte(strLen.min(searchLen).cast(i.type)),
         i.postInc(),
         [
-          stdstring.strncmp
-            .call(str.plus(i), search, searchLen)
+          stdstring
+            .strncmp(str.plus(i), search, searchLen)
             .equal(0)
             // Found at index i
             .thenReturn(i),

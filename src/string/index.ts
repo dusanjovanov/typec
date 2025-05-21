@@ -3,7 +3,7 @@ import { indexOf } from "./indexOf";
 import { slice } from "./slice";
 
 /** tc equivalent of the JS String class. */
-export const tcstring = {
+export const tc_str = {
   concat,
   indexOf,
   slice,

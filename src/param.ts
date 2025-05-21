@@ -136,7 +136,7 @@ export class ParamStruct<
     this._ = createMemberValues(this, struct);
   }
   struct;
-  /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
+  /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member. */
   _;
 }
 
@@ -156,6 +156,6 @@ export class ParamUnion<
     this._ = createMemberValues(this, union);
   }
   union;
-  /** A typed dictionary of arrow/dot access ( depending on the type ) Val objects for each member. */
+  /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member. */
   _;
 }

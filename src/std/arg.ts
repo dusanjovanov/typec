@@ -48,7 +48,7 @@ export class VarArgs {
    * You have to pass the name of the last fixed param of the function.
    */
   start(nameOfLastFixedParam: ValArg) {
-    return stdarg.va_start.call(this.args, nameOfLastFixedParam);
+    return stdarg.va_start(this.args, nameOfLastFixedParam);
   }
 
   /**
@@ -62,12 +62,12 @@ export class VarArgs {
 
   /** Get the next arg. You have to pass it's type. */
   nextArg(type: Type) {
-    return stdarg.va_arg.call(this.args, type);
+    return stdarg.va_arg(this.args, type);
   }
 
   /** Cleanup - this has to be called when you're done reading the var args. */
   end() {
-    return stdarg.va_end.call(this.args);
+    return stdarg.va_end(this.args);
   }
 
   static new(argsName?: string) {

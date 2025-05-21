@@ -10,7 +10,7 @@ import { DynamicArray } from "./types";
 export const initDynamic = Func.void(
   "tc_array_dynamic_init",
   [
-    Param.new(DynamicArray.pointer(), "array"),
+    Param.structPointer(DynamicArray, "array"),
     Param.new(Type.size_t(), "size"),
   ],
   ({ params }) => {
@@ -19,11 +19,9 @@ export const initDynamic = Func.void(
       ...array.assignArrowMulti({
         count: 0,
         size,
-        items: stdlib.malloc.call(
-          array.arrow("size").mul(Type.void().pointer().sizeOf())
-        ),
+        items: stdlib.malloc(array._.size.mul(Type.void().pointer().sizeOf())),
       }),
-      array.arrow("items").notThen([array.arrow("size").assign(0)]),
+      array._.items.notThen([array._.size.assign(0)]),
     ];
   }
 );
@@ -46,14 +44,8 @@ export const forEachDynamicCallback = (
 export const forEachDynamic = Func.void(
   "tc_array_dynamic_for_each",
   [
-    Param.new(DynamicArray.pointer(), "array"),
-    Param.new(
-      Type.func(
-        Type.void(),
-        forEachDynamicParams as unknown as Param<any, any>[]
-      ),
-      "callback"
-    ),
+    Param.structPointer(DynamicArray, "array"),
+    Param.new(Type.func(Type.void(), forEachDynamicParams), "callback"),
     Param.new(Type.void().pointer(), "user_data"),
   ],
   ({ params }) => {
@@ -61,8 +53,8 @@ export const forEachDynamic = Func.void(
     const i = Var.int("i");
 
     return [
-      Loop.for(i.init(0), i.lt(array.arrow("count")), i.postDec(), [
-        callback.call(array.arrow("items").at(i), i, array, user_data),
+      Loop.for(i.init(0), i.lt(array._.count), i.postDec(), [
+        callback.call(array._.items.at(i), i, array, user_data),
       ]),
     ];
   }
@@ -71,7 +63,7 @@ export const forEachDynamic = Func.void(
 export const pushDynamic = Func.void(
   "tc_array_dynamic_push",
   [
-    Param.new(DynamicArray.pointer(), "array"),
+    Param.structPointer(DynamicArray, "array"),
     Param.new(Type.void().pointer(), "item"),
   ],
   ({ params }) => {
@@ -81,12 +73,12 @@ export const pushDynamic = Func.void(
     return [
       array
         .arrow("count")
-        .lte(array.arrow("size"))
+        .lte(array._.size)
         .then([
-          newSize.init(array.arrow("size").mul(2)),
+          newSize.init(array._.size.mul(2)),
           newItems.init(
-            stdlib.realloc.call(
-              array.arrow("items"),
+            stdlib.realloc(
+              array._.items,
               newSize.mul(Type.void().pointer().sizeOf())
             )
           ),
@@ -96,18 +88,18 @@ export const pushDynamic = Func.void(
             size: newSize,
           }),
         ]),
-      array.arrow("items").at(array.arrow("count").postInc()).assign(item),
+      array._.items.at(array._.count.postInc()).assign(item),
     ];
   }
 );
 
 export const destroyDynamic = Func.void(
   "tc_array_dynamic_destroy",
-  [Param.new(DynamicArray.type().pointer(), "array")],
+  [Param.structPointer(DynamicArray, "array")],
   ({ params }) => {
     const { array } = params;
     return [
-      stdlib.free.call(array.arrow("items")),
+      stdlib.free(array._.items),
       ...array.assignArrowMulti({
         items: NULL,
         count: 0,

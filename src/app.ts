@@ -21,7 +21,10 @@ export class App {
     return Stat.chunk(
       [...this.includes, ...this.embeds, mainFn].filter((e) => {
         // TODO: remove string type
-        return typeof e === "string" || (typeof e === "object" && "kind" in e);
+        return (
+          typeof e === "string" ||
+          ((typeof e === "object" || typeof e === "function") && "kind" in e)
+        );
       }) as StatArg[]
     ).toString();
   }

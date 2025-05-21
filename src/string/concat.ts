@@ -2,7 +2,6 @@ import { NULL } from "../constants";
 import { Func } from "../func";
 import { Loop } from "../loops";
 import { Param } from "../param";
-import { Val } from "../val";
 import { stdlib, stdstring, VarArgs } from "../std";
 import { Type } from "../type";
 import { Var } from "../variable";
@@ -24,7 +23,7 @@ export const concat = Func.new(
       // Return NULL if the initial string is NULL
       str.equalReturn(NULL, NULL),
       // Start with the length of the first string
-      totalLen.init(stdstring.strlen.call(str)),
+      totalLen.init(stdstring.strlen(str)),
       varArgs.declare(),
       varArgs.start(str),
       nextStr.declare(),
@@ -32,18 +31,18 @@ export const concat = Func.new(
         // Double-check to avoid issues with NULL in list
         nextStr
           .notEqual(NULL)
-          .then([totalLen.plusAssign(stdstring.strlen.call(nextStr))]),
+          .then([totalLen.plusAssign(stdstring.strlen(nextStr))]),
       ]),
       varArgs.end(),
       // Allocate memory for the result (+1 for null terminator)
-      result.init(stdlib.malloc.call(totalLen.plus(1))),
+      result.init(stdlib.malloc(totalLen.plus(1))),
       result.equalReturn(NULL, NULL),
       // Copy the first string
-      stdstring.strcpy.call(result, str),
+      stdstring.strcpy(result, str),
       // Second pass: Concatenate all additional strings
       varArgs.start(str),
       Loop.while(nextStr.assign(varArgs.nextArg(nextStr.type)).notEqual(NULL), [
-        nextStr.notEqual(NULL).then([stdstring.strcat.call(result, nextStr)]),
+        nextStr.notEqual(NULL).then([stdstring.strcat(result, nextStr)]),
       ]),
       varArgs.end(),
       Func.return(result),
