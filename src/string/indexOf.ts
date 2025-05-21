@@ -2,6 +2,7 @@ import { NULL } from "../constants";
 import { Func } from "../func";
 import { Loop } from "../loops";
 import { Param } from "../param";
+import { _ } from "../short";
 import { stdstring } from "../std";
 import { Type } from "../type";
 import { Var } from "../variable";
@@ -37,7 +38,7 @@ export const indexOf = Func.new(
       start
         .lt(0)
         .then([start.assign(0)])
-        .elseif(start.gt(strLen.cast(start.type)), [Func.return(-1)]),
+        .elseif(start.gt(strLen.cast(start.type)), [_.return(-1)]),
       // If remaining length is less than search length, it can't be found
       strLen.minus(start).lt(searchLen).thenReturn(-1),
       // Search for the substring
@@ -54,7 +55,7 @@ export const indexOf = Func.new(
         ]
       ),
       // Not found
-      Func.return(-1),
+      _.return(-1),
     ];
   }
 );

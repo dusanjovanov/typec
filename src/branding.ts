@@ -4,6 +4,7 @@ import type { Fn } from "./func";
 import type { Struct } from "./struct";
 import type { Switch } from "./switch";
 import type { Type } from "./type";
+import type { StructPointer } from "./types";
 import type { Union } from "./union";
 import type { Val } from "./val";
 
@@ -16,6 +17,7 @@ export const BRANDING_MAP = {
   switch: Symbol.for("tc_switch"),
   cond: Symbol.for("tc_cond"),
   type: Symbol.for("tc_type"),
+  structPointer: Symbol.for("tc_structPointer"),
 };
 
 export const isTcObject = <Which extends keyof BrandingMap>(
@@ -38,4 +40,5 @@ export type BrandingMap = {
   enum: Enum;
   val: Val;
   type: Type;
+  structPointer: StructPointer;
 };

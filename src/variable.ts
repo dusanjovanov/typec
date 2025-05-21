@@ -8,6 +8,7 @@ import type {
   TypeArg,
   TypeQualifier,
   ValArg,
+  ValArgWithArray,
 } from "./types";
 import type { Union } from "./union";
 import { createMemberValues } from "./utils";
@@ -30,10 +31,31 @@ export class Var<S extends string = any> extends Val<S> {
     return Stat.varDeclaration(this.type, this.name);
   }
 
-  /** Initialize with a value. */
-  init(...values: ValArg[]) {
+  /**
+   * Returns the initialization statement for this Var.
+   *
+   * - If a `single non-array` value is passed, it returns a regular value initialization. `=value`
+   *
+   * - If `multiple non-array` values are passed, it returns a compound initialization. `={123, 456}`
+   *
+   * - If a `single array` value is passed, it returns a compound initialization. `={123, 456}`
+   *
+   * - If `multiple array` values are passed, it returns a multi-level compound initialization. `={{123, 456}, {789, 123}}`
+   *
+   * - If a `plain object` is passed ( not Val ), it returns a designated initialization.
+   *
+   *   - `{[0] = 123, [1] = 456}` - if the Var holds an array.
+   *   - `{.abc = 123, .def = 456 }` - if the Var holds a struct or union.
+   *
+   */
+  init(...values: ValArgWithArray[]) {
     if (values.length > 1) {
-      return Stat.varInit(this, Lit.compound(...values));
+      return Stat.varInit(
+        this,
+        Lit.compound(
+          ...values.map((v) => (Array.isArray(v) ? Lit.compound(...v) : v))
+        )
+      );
     }
     //
     else if (
@@ -46,6 +68,10 @@ export class Var<S extends string = any> extends Val<S> {
           ? Lit.designatedSub(values[0] as any)
           : Lit.designatedDot(values[0] as any)
       );
+    }
+    //
+    else if (Array.isArray(values[0])) {
+      return Stat.varInit(this, Lit.compound(...values[0]));
     }
     //
     else {

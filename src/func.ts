@@ -7,7 +7,6 @@ import {
   type FuncArgs,
   type FuncParamsByName,
   type ParamsListFromParams,
-  type ValArg,
 } from "./types";
 import { Val } from "./val";
 
@@ -64,11 +63,6 @@ const createCallable = <
 
 /** Used for creating and using functions or just declaring and using their api if they come from C libraries. */
 export class Func {
-  /** Returns a return statement expression. */
-  static return(value?: ValArg) {
-    return Stat.return(value);
-  }
-
   /** Shortcut for the `void` return type. */
   static void<
     const Params extends readonly Param<any, any>[],

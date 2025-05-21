@@ -1,6 +1,13 @@
 import { isTcObject } from "./branding";
 import type { Struct } from "./struct";
-import type { CodeLike, ExtractTypeStr, GenericMembers } from "./types";
+import { Type } from "./type";
+import type {
+  CodeLike,
+  ExtractTypeStr,
+  GenericMembers,
+  MemberTypeArg,
+  StructPointer,
+} from "./types";
 import type { Union } from "./union";
 import { ValStruct, ValUnion, type Val } from "./val";
 
@@ -73,7 +80,10 @@ export const unique = <T>(arr: T[]) => {
 
 export const createMemberValues = <Members extends GenericMembers>(
   val: Val,
-  struct: Struct<any, Members> | Union<any, Members>
+  struct:
+    | Struct<any, Members>
+    | Union<any, Members>
+    | StructPointer<any, Members>
 ) => {
   const vals: Record<any, any> = {};
   Object.keys(struct.members).forEach((key) => {
@@ -82,6 +92,16 @@ export const createMemberValues = <Members extends GenericMembers>(
 
     if (isTcObject("struct", struct.members[key])) {
       vals[key] = new ValStruct(struct.members[key], memberVal.exp);
+    }
+    //
+    else if (isTcObject("structPointer", struct.members[key])) {
+      vals[key] = new ValStruct(
+        struct.members[key],
+        (val.type.typeKind === "pointer"
+          ? val.arrow(key, Type.pointer(Type.any()))
+          : val.dot(key, Type.pointer(Type.any()))
+        ).exp
+      );
     }
     //
     else if (isTcObject("union", struct.members[key])) {
@@ -97,6 +117,16 @@ export const createMemberValues = <Members extends GenericMembers>(
       ? ValStruct<N, M>
       : Members[Key] extends Union<infer N, infer M>
       ? ValUnion<N, M>
+      : Members[Key] extends StructPointer<infer N, infer M>
+      ? ValStruct<`${N}*`, M>
       : Val<ExtractTypeStr<Members[Key]>>;
   };
+};
+
+export const memberTypeArgToType = (type: MemberTypeArg) => {
+  return isTcObject("type", type)
+    ? type
+    : isTcObject("structPointer", type)
+    ? type.struct.pointer()
+    : type.type();
 };

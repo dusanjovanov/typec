@@ -2,6 +2,7 @@ import { NULL } from "../constants";
 import { Func } from "../func";
 import { Loop } from "../loops";
 import { Param } from "../param";
+import { _ } from "../short";
 import { stdlib, stdstring, VarArgs } from "../std";
 import { Type } from "../type";
 import { Var } from "../variable";
@@ -45,7 +46,7 @@ export const concat = Func.new(
         nextStr.notEqual(NULL).then([stdstring.strcat(result, nextStr)]),
       ]),
       varArgs.end(),
-      Func.return(result),
+      _.return(result),
     ];
   },
   { hasVarArgs: true }

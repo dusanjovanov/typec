@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import { App } from "./app";
 import { Directive } from "./directive";
-import { Func } from "./func";
+import { _ } from "./short";
 
 describe("App", () => {
   test("basic", () => {
     const app = App.new({
       includes: [Directive.includeSys("stdio.h")],
       main() {
-        return [Func.return(1)];
+        return [_.return(1)];
       },
     });
     expect(app.create()).toEqual(

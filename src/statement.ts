@@ -9,7 +9,7 @@ import type {
   StatArg,
   ValArg,
 } from "./types";
-import { emptyNotFalse } from "./utils";
+import { emptyNotFalse, memberTypeArgToType } from "./utils";
 import { Val } from "./val";
 import type { Var } from "./variable";
 
@@ -295,7 +295,7 @@ export class Stat {
 
   static memberStatements(members: GenericMembers): Stat[] {
     return Object.entries(members).map(([key, value]) => {
-      return Stat.varDeclaration(Type.typeArgToType(value), key);
+      return Stat.varDeclaration(memberTypeArgToType(value), key);
     });
   }
 }

@@ -1,7 +1,12 @@
 import { BRANDING_MAP } from "./branding";
 import { Stat } from "./statement";
 import { Type } from "./type";
-import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";
+import type {
+  GenericMembers,
+  PointerQualifier,
+  StructPointer,
+  TypeQualifier,
+} from "./types";
 import { Val } from "./val";
 
 /** Used for declaring and working with structs. */
@@ -33,6 +38,15 @@ export class Struct<
     pointerQualifiers?: PointerQualifier[]
   ) {
     return this.type(typeQualifiers).pointer(pointerQualifiers);
+  }
+
+  /** Helper for defining nested pointers to structs. */
+  structPointer(): StructPointer<Name, Members> {
+    return {
+      kind: BRANDING_MAP.structPointer,
+      struct: this,
+      members: this.members,
+    };
   }
 
   sizeOf() {

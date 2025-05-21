@@ -10,11 +10,17 @@ import type {
   Numberish,
   StatArg,
   StringKeyOf,
+  StructPointer,
   TypeArg,
   ValArg,
 } from "./types";
 import type { Union } from "./union";
-import { createMemberValues, emptyFalsy, joinArgs } from "./utils";
+import {
+  createMemberValues,
+  emptyFalsy,
+  joinArgs,
+  memberTypeArgToType,
+} from "./utils";
 
 /**
  * A value container containing an `rvalue` expression with helpers for generating all C literal and initializer expressions
@@ -233,7 +239,7 @@ export class Val<S extends string = any> {
   }
 
   /** Returns a Val with the `-` in front of this Val. */
-  negative() {
+  negate() {
     return new Val({
       kind: "preUnary",
       type: this.type,
@@ -254,23 +260,23 @@ export class Val<S extends string = any> {
   }
 
   /** Access a member of the struct directly. */
-  dot(key: string) {
+  dot(key: string, type = Type.any()) {
     return new Val({
       kind: "member",
-      type: Type.any(),
+      type,
       left: this,
-      right: new Val({ kind: "name", name: key, type: Type.any() }),
+      right: new Val({ kind: "name", name: key, type }),
       op: ".",
     });
   }
 
   /** Access a member of the struct through a pointer. */
-  arrow(key: string): Val {
+  arrow(key: string, type = Type.any()): Val {
     return new Val({
       kind: "member",
-      type: Type.any(),
+      type,
       left: this,
-      right: new Val({ kind: "name", name: key, type: Type.any() }),
+      right: new Val({ kind: "name", name: key, type }),
       op: "->",
     });
   }
@@ -289,8 +295,7 @@ export class Val<S extends string = any> {
   deRef() {
     return new Val({
       kind: "preUnary",
-      // TODO: Extract type from pointer
-      type: this.type,
+      type: this.type.desc.kind === "pointer" ? this.type.desc.type : this.type,
       value: this,
       op: "*",
     });
@@ -732,12 +737,12 @@ export class Val<S extends string = any> {
   ) {
     return new Val({
       kind: "member",
-      type: Type.typeArgToType(struct.members[key]),
+      type: memberTypeArgToType(struct.members[key]),
       left: Val.valArgToVal(left),
       right: new Val({
         kind: "name",
         name: key,
-        type: Type.typeArgToType(struct.members[key]),
+        type: memberTypeArgToType(struct.members[key]),
       }),
       op,
     });
@@ -884,7 +889,10 @@ export class ValStruct<
   Name extends string,
   Members extends GenericMembers
 > extends Val<Name> {
-  constructor(struct: Struct<Name, Members>, exp: ValueExp<any>) {
+  constructor(
+    struct: Struct<Name, Members> | StructPointer<Name, Members>,
+    exp: ValueExp<any>
+  ) {
     super(exp);
     this.struct = struct;
     this._ = createMemberValues(this, struct);

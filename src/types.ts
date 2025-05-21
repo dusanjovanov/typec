@@ -84,8 +84,15 @@ export type Numberish = number | string;
 /** `string`, `number`, `boolean`, or a tc object with `toString()` implemented. */
 export type CodeLike = TextLike | { toString(): string };
 
+export type MemberTypeArg<S extends string = any> =
+  | Type<S>
+  | Struct<S>
+  | Union<S>
+  | Enum<S>
+  | StructPointer<S>;
+
 export type GenericMembers = {
-  [Key: string]: TypeArg;
+  [Key: string]: MemberTypeArg;
 };
 
 export type GenericEnumValues = Record<string, string | number | null>;
@@ -121,6 +128,15 @@ type BoundArgs<Params extends readonly Param<any, any>[]> =
     ? FuncArgsFromParams<Rest>
     : [];
 
+export type StructPointer<
+  Name extends string = any,
+  Members extends GenericMembers = any
+> = {
+  kind: symbol;
+  struct: Struct<Name, Members>;
+  members: Members;
+};
+
 export type TypeArg<S extends string = any> =
   | Type<S>
   | Struct<S>
@@ -146,6 +162,16 @@ export type FuncArg<_ extends string, __ extends string> =
   | string
   | boolean;
 
+export type ValArgWithArray =
+  | Val
+  | Type
+  | Struct
+  | GenericFunc
+  | number
+  | string
+  | boolean
+  | ValArgWithArray[];
+
 export type StatArg =
   | Stat
   | Val
@@ -156,7 +182,7 @@ export type StatArg =
   | Union
   | Enum;
 
-export type ExtractTypeStr<T extends TypeArg> = T extends Type<infer S>
+export type ExtractTypeStr<T extends MemberTypeArg> = T extends Type<infer S>
   ? S
   : T extends Struct<infer Name>
   ? Name
@@ -164,6 +190,8 @@ export type ExtractTypeStr<T extends TypeArg> = T extends Type<infer S>
   ? Name
   : T extends Enum<infer Name>
   ? Name
+  : T extends StructPointer<infer Name>
+  ? `${Name}*`
   : any;
 
 export type ParamsListFromParams<Params extends readonly Param<any, any>[]> =

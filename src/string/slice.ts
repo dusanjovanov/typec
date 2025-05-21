@@ -9,11 +9,12 @@ import { Var } from "../variable";
 export const slice = Func.new(
   Type.string(),
   "str_slice",
-  [Param.string("str", ["const"]), Param.size_t("start"), Param.size_t("end")],
+  [Param.string("str", ["const"]), Param.int("start"), Param.int("end")],
   ({ params }) => {
     const len = Var.size_t("len");
-    const sliceLen = Var.size_t("copyLen");
+    const copyLen = Var.size_t("copy_len");
     const result = Var.string("result");
+    const startIdx = Var.int("start_idx");
     const endIdx = Var.int("end_idx");
 
     const { str, start, end } = params;
@@ -23,24 +24,33 @@ export const slice = Func.new(
       str.equalReturn(NULL, NULL),
       // Get the length of the input string
       len.init(stdstring.strlen(str)),
-      // Clamp start index: ensure it's within [0, len]
-      start.clamp(0, len),
-      // Determine end index: use string length if end is NULL, otherwise clamp
+      // Handle start index (including negative)
+      startIdx.declare(),
+      startIdx.assign(start),
+      startIdx.lt(0).then([startIdx.assign(len.plus(startIdx))]),
+      startIdx.lt(0).then([startIdx.assign(0)]),
+      startIdx.gt(len).then([startIdx.assign(len)]),
+      // Handle end index (including negative, default to len if SIZE_MAX)
       endIdx.declare(),
       end
-        .equal(NULL)
+        .equal(-1)
         .then([endIdx.assign(len)])
-        .else([endIdx.assign(end.deRef()), endIdx.clamp(start, len)]),
-      // calculate length to copy
-      sliceLen.init(end.minus(start)),
+        .else([
+          endIdx.assign(end),
+          endIdx.lt(0).then([endIdx.assign(len.plus(endIdx))]),
+          endIdx.lt(startIdx).then([endIdx.assign(startIdx)]),
+          endIdx.gt(len).then([endIdx.assign(len)]),
+        ]),
+      // Calculate length to copy
+      copyLen.init(endIdx.minus(startIdx)),
       // Allocate memory for the sliced string (+1 for null terminator)
-      result.init(stdlib.malloc(len.plus(1)).cast(result.type)),
+      result.init(stdlib.malloc(copyLen.plus(1)).cast(result.type)),
       // Return NULL if allocation fails
       result.equalReturn(NULL, NULL),
       // Copy the substring
-      stdstring.strncpy(result, str.plus(start), sliceLen),
+      stdstring.strncpy(result, str.plus(startIdx), copyLen),
       // Ensure null termination
-      result.subAssign(sliceLen, NULL_TERM),
+      result.subAssign(copyLen, NULL_TERM),
       result.return(),
     ];
   }
