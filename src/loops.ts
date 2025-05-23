@@ -1,5 +1,6 @@
 import { Stat } from "./statement";
 import type { StatArg, ValArg } from "./types";
+import { Var } from "./variable";
 
 export class Loop {
   /**
@@ -21,5 +22,13 @@ export class Loop {
    */
   static doWhile(statements: StatArg[], condition: ValArg) {
     return Stat.doWhile(statements, condition);
+  }
+
+  /**
+   * Returns a for loop statement that goes from `start` to `end-1`.
+   */
+  static range(counterVar: Var, start: ValArg, end: ValArg, body: StatArg[]) {
+    const i = counterVar;
+    return Loop.for(i.init(start), i.lt(end), i.postInc(), body);
   }
 }

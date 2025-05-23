@@ -22,14 +22,22 @@ import { Var } from "./variable";
 export class TcClass<
   Name extends string,
   Members extends GenericMembers,
-  const Methods extends GenericFuncs
+  const Methods extends GenericFuncs,
+  Static extends GenericFuncs
 > {
-  constructor(struct: Struct<Name, Members>, methods: Methods) {
+  constructor(
+    struct: Struct<Name, Members>,
+    methods: Methods,
+    staticMethods: Static = {} as Static
+  ) {
     this.struct = struct;
     this.methods = methods;
+    this._ = staticMethods;
   }
   struct;
   methods;
+  /** Static "methods" */
+  _;
 
   var(name: string) {
     return VarClass.var(this.struct, name, this.methods);
@@ -42,9 +50,14 @@ export class TcClass<
   static new<
     Name extends string,
     Members extends GenericMembers,
-    const Methods extends GenericFuncs
-  >(struct: Struct<Name, Members>, methods: Methods) {
-    return new TcClass(struct, methods);
+    const Methods extends GenericFuncs,
+    Static extends GenericFuncs
+  >(
+    struct: Struct<Name, Members>,
+    methods: Methods,
+    staticMethods: Static = {} as Static
+  ) {
+    return new TcClass(struct, methods, staticMethods);
   }
 }
 

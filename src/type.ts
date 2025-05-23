@@ -46,6 +46,10 @@ export class Type<S extends string = any> {
     return Val.sizeOf(this);
   }
 
+  alignOf() {
+    return Val.alignOf(this);
+  }
+
   /**
    * Returns a variable / parameter named declaration.
    */

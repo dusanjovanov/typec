@@ -202,32 +202,32 @@ export class Val<S extends string = any> {
   }
 
   /** Assign a value. */
-  assign(value: ValArg) {
+  set(value: ValArg) {
     return this.assignBinary(value, "=");
   }
 
   /** `+=` */
-  plusAssign(value: ValArg) {
+  plusSet(value: ValArg) {
     return this.assignBinary(value, "+=");
   }
 
   /** `-=` */
-  minusAssign(value: ValArg) {
+  minusSet(value: ValArg) {
     return this.assignBinary(value, "-=");
   }
 
   /** `*=` */
-  mulAssign(value: ValArg) {
+  mulSet(value: ValArg) {
     return this.assignBinary(value, "*=");
   }
 
   /** `/=` */
-  divAssign(value: ValArg) {
+  divSet(value: ValArg) {
     return this.assignBinary(value, "/=");
   }
 
   /** `%=` */
-  moduloAssign(value: ValArg) {
+  modSet(value: ValArg) {
     return this.assignBinary(value, "%=");
   }
 
@@ -386,30 +386,30 @@ export class Val<S extends string = any> {
   }
 
   /** Returns assignments to multiple struct members by value ( dot ). */
-  assignDotMulti(values: Record<string, ValArg>) {
+  setDotMulti(values: Record<string, ValArg>) {
     return Object.entries(values).map(([key, value]) => {
-      return this.dot(key).assign(value);
+      return this.dot(key).set(value);
     });
   }
 
   /** Returns assignments to multiple struct members by reference ( arrow ). */
-  assignArrowMulti(values: Record<string, ValArg>) {
+  setArrowMulti(values: Record<string, ValArg>) {
     return Object.entries(values).map(([key, value]) => {
-      return this.arrow(key).assign(value);
+      return this.arrow(key).set(value);
     });
   }
 
   /** Returns a subscript assignment statement. e.g. `ptr[3] = '\0'` */
-  subAssign(index: ValArg, value: ValArg) {
-    return this.at(index).assign(value);
+  setSub(index: ValArg, value: ValArg) {
+    return this.at(index).set(value);
   }
 
   /**
    * Returns a Chunk of subscript assignment statements
    * for each of the values passed starting from index 0 in increments of 1.
    */
-  subAssignMulti(...values: ValArg[]) {
-    return values.map((v, i) => this.subAssign(i, v));
+  setSubMulti(...values: ValArg[]) {
+    return values.map((v, i) => this.setSub(i, v));
   }
 
   /**
@@ -735,6 +735,15 @@ export class Val<S extends string = any> {
       kind: "memory",
       type: Type.size_t(),
       op: "sizeof",
+      value: Val.valArgToVal(value),
+    });
+  }
+
+  static alignOf(value: ValArg) {
+    return new Val({
+      kind: "memory",
+      type: Type.int(),
+      op: "alignof",
       value: Val.valArgToVal(value),
     });
   }

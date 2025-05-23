@@ -203,11 +203,11 @@ export class VarStruct<
   _;
 
   /** Returns assignments to multiple struct members. */
-  assignMulti(values: Partial<Record<keyof Members, ValArg>>) {
+  setMulti(values: Partial<Record<keyof Members, ValArg>>) {
     const memberAccess = this.type.typeKind === "pointer" ? "arrow" : "dot";
 
     return Object.entries(values).map(([key, value]) => {
-      return this[memberAccess](key).assign(value!);
+      return this[memberAccess](key).set(value!);
     });
   }
 }

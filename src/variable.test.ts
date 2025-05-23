@@ -19,7 +19,7 @@ describe("Variable", () => {
 
     // assignment
     const varValue = 3;
-    expect(v.assign(varValue).toString()).toBe(`${varName}=${varValue}`);
+    expect(v.set(varValue).toString()).toBe(`${varName}=${varValue}`);
     expect(v.init(varValue).toString()).toBe(
       `${varType.str} ${varName}=${varValue};`
     );
@@ -46,7 +46,7 @@ describe("Variable", () => {
 
     // assignment
     const pointerVar = Var.new(Type.int().pointer(), "var");
-    expect(v.assign(pointerVar).toString()).toBe(`${varName}=${pointerVar}`);
+    expect(v.set(pointerVar).toString()).toBe(`${varName}=${pointerVar}`);
     expect(v.init(pointerVar).toString()).toBe(
       `int* ${varName}=${pointerVar};`
     );

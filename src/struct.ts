@@ -53,6 +53,10 @@ export class Struct<
     return Val.sizeOf(this);
   }
 
+  alignOf() {
+    return Val.alignOf(this);
+  }
+
   static new<Name extends string, Members extends GenericMembers>(
     name: Name,
     members: Members
