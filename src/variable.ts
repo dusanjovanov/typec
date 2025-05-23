@@ -11,7 +11,7 @@ import type {
   ValArgWithArray,
 } from "./types";
 import type { Union } from "./union";
-import { createMemberValues } from "./utils";
+import { createMemberValues, isPlainObject } from "./utils";
 import { Val } from "./val";
 
 /** Used for working with variables of any type. */
@@ -58,10 +58,7 @@ export class Var<S extends string = any> extends Val<S> {
       );
     }
     //
-    else if (
-      typeof values[0] === "object" &&
-      values[0].constructor === Object
-    ) {
+    else if (isPlainObject(values[0])) {
       return Stat.varInit(
         this,
         this.type.typeKind === "array"
@@ -204,6 +201,15 @@ export class VarStruct<
   struct;
   /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member. */
   _;
+
+  /** Returns assignments to multiple struct members. */
+  assignMulti(values: Partial<Record<keyof Members, ValArg>>) {
+    const memberAccess = this.type.typeKind === "pointer" ? "arrow" : "dot";
+
+    return Object.entries(values).map(([key, value]) => {
+      return this[memberAccess](key).assign(value!);
+    });
+  }
 }
 
 export class VarUnion<

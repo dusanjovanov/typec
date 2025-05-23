@@ -4,6 +4,8 @@ import type { CodeLike } from "./types";
  * A collection of C code statements. Can be stringified.
  *
  * When turned to a string, it formats the statements by adding semicolons and new lines appropriately.
+ *
+ * @deprecated
  */
 export class Chunk {
   constructor(statements: CodeLike[]) {

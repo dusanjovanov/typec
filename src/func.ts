@@ -1,4 +1,4 @@
-import { BRANDING_MAP } from "./branding";
+import { BRANDING_MAP } from "./brand";
 import type { Param } from "./param";
 import { Stat } from "./statement";
 import { Type } from "./type";
@@ -58,11 +58,11 @@ const createCallable = <
       name: name,
     });
   };
-  return obj as unknown as Fn<Return, Params, VarArgs>;
+  return obj as unknown as Func<Return, Params, VarArgs>;
 };
 
 /** Used for creating and using functions or just declaring and using their api if they come from C libraries. */
-export class Func {
+export class Fn {
   /** Shortcut for the `void` return type. */
   static void<
     const Params extends readonly Param<any, any>[],
@@ -147,7 +147,7 @@ type FuncOptions<VarArgs extends boolean> = {
   hasVarArgs?: VarArgs;
 };
 
-export type Fn<
+export type Func<
   Return extends string,
   Params extends readonly Param<any, any>[],
   VarArgs extends boolean = false
@@ -163,7 +163,7 @@ export type Fn<
   define(): Stat;
   /** Returns a Val for the name of this function. */
   val(): Val;
-  hasVarArgs: VarArgs extends void ? false : VarArgs;
+  hasVarArgs: boolean;
   _params: Params;
   returnType: Type<Return>;
   type: Type<`${Return}(${ParamsListFromParams<Params>})`>;

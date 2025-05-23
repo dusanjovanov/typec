@@ -1,4 +1,4 @@
-import { Func, type Fn } from "./func";
+import { Fn, type Func } from "./func";
 import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";
@@ -118,13 +118,13 @@ export class Param<S extends string, Name extends string> extends Val<S> {
 
   static func<
     Return extends string,
-    const Params extends readonly Param<any, any>[],
     Name extends string,
+    const Params extends readonly Param<any, any>[],
     VarArgs extends boolean = false
   >(
     returnType: Type<Return>,
-    params: Params,
     name: Name,
+    params: Params,
     options?: {
       hasVarArgs?: VarArgs;
     }
@@ -208,7 +208,7 @@ const createFuncParam = <
     );
   };
   obj.duplicate = (name: string, body: BodyFn<Params>) => {
-    return Func.new(returnType, name, params, body, options);
+    return Fn.new(returnType, name, params, body, options);
   };
   return obj as ParamFunc<Return, Params, Name, VarArgs>;
 };
@@ -219,9 +219,9 @@ type ParamFunc<
   Name extends string,
   VarArgs extends boolean = false
 > = Param<`${Return}(${ParamsListFromParams<Params>})`, Name> & {
-  /** Returns a Fn with the same signature ( type ) and a different name and body ( that you pass ). */
+  /** Returns a Func with the same signature ( type ) and a different name and body ( that you pass ). */
   duplicate: (
     name: string,
     body: BodyFn<Params>
-  ) => Fn<Return, Params, VarArgs>;
+  ) => Func<Return, Params, VarArgs>;
 } & ((...args: FuncArgs<Params, VarArgs>) => Val<Return>);

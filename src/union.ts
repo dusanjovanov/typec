@@ -1,4 +1,4 @@
-import { BRANDING_MAP } from "./branding";
+import { BRANDING_MAP } from "./brand";
 import { Stat } from "./statement";
 import { Type } from "./type";
 import type { GenericMembers, PointerQualifier, TypeQualifier } from "./types";

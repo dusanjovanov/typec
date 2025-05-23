@@ -1,11 +1,11 @@
-import { isTcObject } from "./branding";
+import { isWhich } from "./brand";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import type {
   CodeLike,
-  ExtractTypeStr,
   GenericMembers,
   MemberTypeArg,
+  MemberValues,
   StructPointer,
 } from "./types";
 import type { Union } from "./union";
@@ -90,11 +90,11 @@ export const createMemberValues = <Members extends GenericMembers>(
     const memberVal =
       val.type.typeKind === "pointer" ? val.arrow(key) : val.dot(key);
 
-    if (isTcObject("struct", struct.members[key])) {
+    if (isWhich("struct", struct.members[key])) {
       vals[key] = new ValStruct(struct.members[key], memberVal.exp);
     }
     //
-    else if (isTcObject("structPointer", struct.members[key])) {
+    else if (isWhich("structPointer", struct.members[key])) {
       vals[key] = new ValStruct(
         struct.members[key],
         (val.type.typeKind === "pointer"
@@ -104,7 +104,7 @@ export const createMemberValues = <Members extends GenericMembers>(
       );
     }
     //
-    else if (isTcObject("union", struct.members[key])) {
+    else if (isWhich("union", struct.members[key])) {
       vals[key] = new ValUnion(struct.members[key], memberVal.exp);
     }
     //
@@ -112,21 +112,23 @@ export const createMemberValues = <Members extends GenericMembers>(
       vals[key] = memberVal;
     }
   });
-  return vals as {
-    [Key in keyof Members]: Members[Key] extends Struct<infer N, infer M>
-      ? ValStruct<N, M>
-      : Members[Key] extends Union<infer N, infer M>
-      ? ValUnion<N, M>
-      : Members[Key] extends StructPointer<infer N, infer M>
-      ? ValStruct<`${N}*`, M>
-      : Val<ExtractTypeStr<Members[Key]>>;
-  };
+  return vals as MemberValues<Members>;
 };
 
 export const memberTypeArgToType = (type: MemberTypeArg) => {
-  return isTcObject("type", type)
+  return isWhich("type", type)
     ? type
-    : isTcObject("structPointer", type)
+    : isWhich("structPointer", type)
     ? type.struct.pointer()
     : type.type();
+};
+
+export const isPlainObject = (val: any): val is object => {
+  return typeof val === "object" && val.constructor === Object;
+};
+
+export const isTcObject = (val: any) => {
+  return (
+    (typeof val === "object" || typeof val === "function") && "kind" in val
+  );
 };

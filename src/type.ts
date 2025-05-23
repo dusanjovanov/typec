@@ -1,4 +1,4 @@
-import { BRANDING_MAP, isTcObject } from "./branding";
+import { BRANDING_MAP, isWhich } from "./brand";
 import type { Param } from "./param";
 import { Stat } from "./statement";
 import type {
@@ -65,11 +65,8 @@ export class Type<S extends string = any> {
   }
 
   /** Used for creating an api for a c library type alias. */
-  static alias<S extends AutoSimpleType>(
-    specifier: S,
-    qualifiers: TypeQualifier[] = []
-  ) {
-    return Type.new({ kind: "simple", specifier, qualifiers });
+  static alias<S extends string>(name: S, type: Type | null = null) {
+    return Type.new({ kind: "alias", name, type, qualifiers: [] });
   }
 
   static any(qualifiers?: TypeQualifier[]) {
@@ -174,7 +171,7 @@ export class Type<S extends string = any> {
   }
 
   static typeArgToType<S extends string>(type: TypeArg<S>): Type<S> {
-    return isTcObject("type", type) ? type : type.type();
+    return isWhich("type", type) ? type : type.type();
   }
 
   static new<S extends string = any>(desc: TypeDescription<S>) {
@@ -197,6 +194,11 @@ export class Type<S extends string = any> {
     switch (desc.kind) {
       case "simple": {
         return `${this.qualifiersBefore(desc)}${desc.specifier}${this.nameAfter(
+          name
+        )}`;
+      }
+      case "alias": {
+        return `${this.qualifiersBefore(desc)}${desc.name}${this.nameAfter(
           name
         )}`;
       }
@@ -256,6 +258,7 @@ export class Type<S extends string = any> {
       case "pointer": {
         switch (desc.type.desc.kind) {
           case "simple":
+          case "alias":
           case "struct":
           case "union":
           case "enum": {
@@ -317,7 +320,8 @@ export type TypeDescription<S extends string> =
   | FuncType<S>
   | StructType<S>
   | EnumType<S>
-  | UnionType<S>;
+  | UnionType<S>
+  | AliasType<S>;
 
 export type Simple<S extends string> = {
   kind: "simple";
@@ -360,5 +364,12 @@ export type UnionType<Name extends string> = {
 export type EnumType<Name extends string> = {
   kind: "enum";
   name: Name;
+  qualifiers: TypeQualifier[];
+};
+
+export type AliasType<S extends string> = {
+  kind: "alias";
+  name: S;
+  type: Type | null;
   qualifiers: TypeQualifier[];
 };

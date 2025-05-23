@@ -1,6 +1,6 @@
 import { MACRO_TYPE } from "../constants";
 import { Directive } from "../directive";
-import { Func } from "../func";
+import { Fn } from "../func";
 import { Param } from "../param";
 import { Stat } from "../statement";
 import { Type } from "../type";
@@ -12,16 +12,16 @@ const va_list = Type.alias("va_list");
 export const stdarg = {
   include: Directive.includeSys("stdarg.h"),
   va_list,
-  va_start: Func.void("va_start", [
+  va_start: Fn.void("va_start", [
     Param.new(va_list, "ap"),
     Param.new(MACRO_TYPE, "parmN"),
   ]),
-  va_arg: Func.new(MACRO_TYPE, "va_arg", [
+  va_arg: Fn.new(MACRO_TYPE, "va_arg", [
     Param.new(va_list, "ap"),
     Param.new(MACRO_TYPE, "T"),
   ]),
-  va_end: Func.void("ap", [Param.new(va_list, "ap")]),
-  va_copy: Func.void("va_copy", [
+  va_end: Fn.void("ap", [Param.new(va_list, "ap")]),
+  va_copy: Fn.void("va_copy", [
     Param.new(va_list, "dest"),
     Param.new(va_list, "src"),
   ]),

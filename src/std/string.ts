@@ -1,35 +1,40 @@
 import { Directive } from "../directive";
-import { Func } from "../func";
+import { Fn } from "../func";
 import { Param } from "../param";
 import { Type } from "../type";
 
 export const stdstring = {
   include: Directive.includeSys("string.h"),
-  strlen: Func.new(Type.size_t(), "strlen", [Param.string("str")]),
-  strnlen_s: Func.new(Type.size_t(), "strnlen_s", [
+  strlen: Fn.new(Type.size_t(), "strlen", [Param.string("str")]),
+  strnlen_s: Fn.new(Type.size_t(), "strnlen_s", [
     Param.string("str"),
     Param.size_t("strsz"),
   ]),
-  strcat: Func.string("strcat", [
+  strcat: Fn.string("strcat", [
     Param.string("dest"),
     Param.string("src", ["const"]),
   ]),
-  strstr: Func.string("strstr", [
+  strstr: Fn.string("strstr", [
     Param.string("str", ["const"]),
     Param.string("substr", ["const"]),
   ]),
-  strcpy: Func.string("strcpy", [
+  strcpy: Fn.string("strcpy", [
     Param.string("dest", [], ["restrict"]),
     Param.string("src", [], ["restrict"]),
   ]),
-  strncpy: Func.string("strncpy", [
+  strncpy: Fn.string("strncpy", [
     Param.string("dest", [], ["restrict"]),
     Param.string("src", [], ["restrict"]),
     Param.size_t("count"),
   ]),
-  strncmp: Func.int("strncmp", [
+  strncmp: Fn.int("strncmp", [
     Param.string("lhs", ["const"]),
     Param.string("rhs", ["const"]),
     Param.size_t("count"),
+  ]),
+  memcpy: Fn.void("memcpy", [
+    Param.new(Type.void().pointer(), "dest"),
+    Param.new(Type.void().const().pointer(), "src"),
+    Param.size_t("n"),
   ]),
 };

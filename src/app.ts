@@ -1,6 +1,7 @@
-import { Func } from "./func";
+import { Fn } from "./func";
 import { Stat } from "./statement";
 import type { StatArg } from "./types";
+import { isTcObject } from "./utils";
 
 export class App {
   constructor({ includes = [], embeds = [], main }: AppOptions) {
@@ -14,17 +15,14 @@ export class App {
 
   /** Returns the entire main .c file code in a string. */
   create() {
-    const mainFn = Func.int("main", [], () => {
+    const mainFn = Fn.int("main", [], () => {
       return this.main();
     });
 
     return Stat.chunk(
       [...this.includes, ...this.embeds, mainFn].filter((e) => {
         // TODO: remove string type
-        return (
-          typeof e === "string" ||
-          ((typeof e === "object" || typeof e === "function") && "kind" in e)
-        );
+        return typeof e === "string" || isTcObject(e);
       }) as StatArg[]
     ).toString();
   }

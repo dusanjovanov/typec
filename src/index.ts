@@ -1,6 +1,7 @@
 export * from "./app";
 export * from "./array";
 export * from "./chunk";
+export * from "./class";
 export * from "./condition";
 export * from "./constants";
 export * from "./directive";
@@ -12,7 +13,6 @@ export * from "./loops";
 export * from "./param";
 export * from "./short";
 export * from "./std";
-export * from "./string";
 export * from "./struct";
 export * from "./switch";
 export * from "./type";

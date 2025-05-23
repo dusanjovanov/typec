@@ -86,7 +86,23 @@ export class Lit {
    * `23.45F`
    */
   static float(n: Numberish) {
-    return `${typeof n === "number" && n % 2 === 0 ? `${n}.0` : n}F`;
+    if (typeof n === "number" && n % 1 === 0) {
+      return `${n}.0f`;
+    }
+    //
+    else if (typeof n === "string") {
+      const lastChar = n.at(-1);
+
+      if (lastChar === "f" || lastChar === "F") {
+        return n;
+      }
+      //
+      else if (parseFloat(n) % 1 === 0) {
+        return `${n}.0f`;
+      }
+    }
+
+    return `${n}f`;
   }
 
   /**

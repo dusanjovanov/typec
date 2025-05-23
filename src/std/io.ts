@@ -1,5 +1,5 @@
 import { Directive } from "../directive";
-import { Func } from "../func";
+import { Fn } from "../func";
 import { Param } from "../param";
 import { Val } from "../val";
 import { Type } from "../type";
@@ -27,7 +27,7 @@ export const stdio = {
   SEEK_END: Val.macro("SEEK_END"),
   SEEK_SET: Val.macro("SEEK_SET"),
   SEEK_CUR: Val.macro("SEEK_CUR"),
-  printf: Func.int(
+  printf: Fn.int(
     "printf",
     [Param.string("format", ["const"], ["const"])],
     undefined,
@@ -35,7 +35,7 @@ export const stdio = {
       hasVarArgs: true,
     }
   ),
-  scanf: Func.int(
+  scanf: Fn.int(
     "scanf",
     [Param.string("format", ["const"], ["const"])],
     undefined,
@@ -43,7 +43,7 @@ export const stdio = {
       hasVarArgs: true,
     }
   ),
-  fprintf: Func.int(
+  fprintf: Fn.int(
     "fprintf",
     [
       Param.new(FILE.pointer().const(), "stream"),
@@ -54,7 +54,7 @@ export const stdio = {
       hasVarArgs: true,
     }
   ),
-  fscanf: Func.int(
+  fscanf: Fn.int(
     "fscanf",
     [
       Param.new(FILE.pointer().const(), "stream"),
@@ -65,7 +65,7 @@ export const stdio = {
       hasVarArgs: true,
     }
   ),
-  sprintf: Func.int(
+  sprintf: Fn.int(
     "sprintf",
     [Param.string("str"), Param.string("format", ["const"], ["const"])],
     undefined,
@@ -73,17 +73,17 @@ export const stdio = {
       hasVarArgs: true,
     }
   ),
-  tmpnam: Func.string("tmpnam", [Param.string("str")]),
-  tmpfile: Func.new(FILE.pointer(), "tmpfile", []),
-  rename: Func.int("rename", [
+  tmpnam: Fn.string("tmpnam", [Param.string("str")]),
+  tmpfile: Fn.new(FILE.pointer(), "tmpfile", []),
+  rename: Fn.int("rename", [
     Param.string("oldFilename", ["const"]),
     Param.string("newFilename", ["const"]),
   ]),
-  remove: Func.int("rename", [Param.string("filename", ["const"])]),
-  fopen: Func.new(FILE, "fopen", [
+  remove: Fn.int("rename", [Param.string("filename", ["const"])]),
+  fopen: Fn.new(FILE, "fopen", [
     Param.string("filename", ["const"]),
     Param.string("_Mode", ["const"]),
   ]),
-  fclose: Func.int("fclose", [Param.new(FILE.pointer(), "stream")]),
-  puts: Func.int("puts", [Param.string("str", ["const"])]),
+  fclose: Fn.int("fclose", [Param.new(FILE.pointer(), "stream")]),
+  puts: Fn.int("puts", [Param.string("str", ["const"])]),
 };

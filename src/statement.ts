@@ -1,4 +1,4 @@
-import { BRANDING_MAP, isTcObject } from "./branding";
+import { BRANDING_MAP, isWhich } from "./brand";
 import { curly } from "./chunk";
 import type { Cond } from "./condition";
 import type { Switch } from "./switch";
@@ -112,35 +112,35 @@ export class Stat {
   }
 
   static statArgToStat(arg: StatArg) {
-    if (isTcObject("stat", arg)) {
+    if (isWhich("stat", arg)) {
       return arg;
     }
     //
-    else if (isTcObject("val", arg)) {
+    else if (isWhich("val", arg)) {
       return new Stat({ kind: "value", value: arg });
     }
     //
-    else if (isTcObject("cond", arg)) {
+    else if (isWhich("cond", arg)) {
       return new Stat({ kind: "cond", cond: arg });
     }
     //
-    else if (isTcObject("switch", arg)) {
+    else if (isWhich("switch", arg)) {
       return new Stat({ kind: "switch", switch: arg });
     }
     //
-    else if (isTcObject("func", arg)) {
+    else if (isWhich("func", arg)) {
       return arg.define();
     }
     //
-    else if (isTcObject("struct", arg)) {
+    else if (isWhich("struct", arg)) {
       return arg.declare();
     }
     //
-    else if (isTcObject("union", arg)) {
+    else if (isWhich("union", arg)) {
       return arg.declare();
     }
     //
-    else if (isTcObject("enum", arg)) {
+    else if (isWhich("enum", arg)) {
       return arg.declare();
     }
     // keep TS happy

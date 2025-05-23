@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { Func } from "./func";
+import { Fn } from "./func";
 import { Param } from "./param";
 import { Type } from "./type";
 
 describe("Func", () => {
   test("simple", () => {
-    const fn = Func.new(
+    const fn = Fn.new(
       Type.int(),
       "sum",
       [Param.int("a"), Param.int("b")],

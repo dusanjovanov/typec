@@ -1,12 +1,13 @@
 import type { Cond } from "./condition";
 import type { Enum } from "./enum";
-import type { Fn } from "./func";
+import type { Func } from "./func";
 import type { Stat } from "./statement";
 import type { Struct } from "./struct";
 import type { Switch } from "./switch";
 import type { Type } from "./type";
 import type { StructPointer } from "./types";
 import type { Union } from "./union";
+import { isTcObject } from "./utils";
 import type { Val } from "./val";
 
 export const BRANDING_MAP = {
@@ -22,22 +23,18 @@ export const BRANDING_MAP = {
   structPointer: Symbol.for("tc_structPointer"),
 };
 
-export const isTcObject = <Which extends keyof BrandingMap>(
+export const isWhich = <Which extends keyof BrandingMap>(
   which: Which,
   val: any
 ): val is BrandingMap[Which] => {
-  return (
-    (typeof val === "object" || typeof val === "function") &&
-    "kind" in val &&
-    val.kind === BRANDING_MAP[which]
-  );
+  return isTcObject(val) && val.kind === BRANDING_MAP[which];
 };
 
 export type BrandingMap = {
   stat: Stat;
   struct: Struct;
   union: Union;
-  func: Fn<any, any, any>;
+  func: Func<any, any, any>;
   switch: Switch;
   cond: Cond;
   enum: Enum;

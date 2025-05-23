@@ -1,6 +1,6 @@
-import { BRANDING_MAP, isTcObject } from "./branding";
+import { BRANDING_MAP, isWhich } from "./brand";
 import { Cond } from "./condition";
-import type { Fn } from "./func";
+import type { Func } from "./func";
 import { Lit } from "./literal";
 import { Stat } from "./statement";
 import type { Struct } from "./struct";
@@ -39,43 +39,60 @@ export class Val<S extends string = any> {
     return this.exp.type;
   }
 
-  toString() {
-    switch (this.exp.kind) {
+  get expKind() {
+    return this.exp.kind;
+  }
+
+  private expToString(exp: ValueExp<any>): string {
+    switch (exp.kind) {
       case "literal": {
-        return String(this.exp.value);
+        return String(exp.value);
       }
       case "name": {
-        return this.exp.name;
+        return exp.name;
       }
       case "binary": {
-        return `${this.exp.left}${this.exp.op}${this.exp.right}`;
+        return `${exp.left}${exp.op}${exp.right}`;
       }
       case "preUnary": {
-        return `${this.exp.op}${this.exp.value}`;
+        return `${exp.op}${exp.value}`;
       }
       case "postUnary": {
-        return `${this.exp.value}${this.exp.op}`;
+        return `${exp.value}${exp.op}`;
       }
       case "member": {
-        if (this.exp.op === "[]") return `${this.exp.left}[${this.exp.right}]`;
-        return `${this.exp.left}${this.exp.op}${this.exp.right}`;
+        if (exp.op === "[]") return `${exp.left}[${exp.right}]`;
+        return `${exp.left}${exp.op}${exp.right}`;
       }
       case "call": {
-        return `${this.exp.funcName}(${emptyFalsy(this.exp.args, joinArgs)})`;
+        return `${exp.funcName}(${emptyFalsy(exp.args, joinArgs)})`;
       }
       case "cast": {
-        return `(${this.exp.type})${this.exp.value}`;
+        const typePart = `(${exp.type})`;
+        const expPart =
+          exp.value.expKind === "binary" || exp.value.expKind === "ternary"
+            ? `(${exp.value})`
+            : exp.value;
+
+        return typePart + expPart;
       }
       case "memory": {
-        return `${this.exp.op}(${this.exp.value})`;
+        return `${exp.op}(${exp.value})`;
       }
       case "ternary": {
-        return `${this.exp.cond}?${this.exp.exp1}:${this.exp.exp2}`;
+        return `${exp.cond}?${exp.exp1}:${exp.exp2}`;
       }
       case "type": {
-        return `${this.exp.type}`;
+        return `${exp.type}`;
+      }
+      case "parens": {
+        return `(${this.expToString(exp.exp)})`;
       }
     }
+  }
+
+  toString() {
+    return this.expToString(this.exp);
   }
 
   private binary(value: ValArg, op: BinaryExp<any>["op"]): Val {
@@ -109,7 +126,7 @@ export class Val<S extends string = any> {
   }
 
   /** Returns a Val for the `%` binary expression between this and another expression. */
-  modulo(value: ValArg) {
+  mod(value: ValArg) {
     return this.binary(value, "%");
   }
 
@@ -470,6 +487,11 @@ export class Val<S extends string = any> {
     return Cond.if(this.not(), statements);
   }
 
+  /** Returns a Val for the current expression wrapped in parenthesis. */
+  parens() {
+    return new Val({ kind: "parens", exp: this.exp, type: this.type });
+  }
+
   /**
    * Returns a Val for a string literal.
    *
@@ -688,7 +710,7 @@ export class Val<S extends string = any> {
   }
 
   /** Takes in a Func and args and returns a call expression Val for it. */
-  static call<S extends string>(func: Fn<S, any, any>, ...args: ValArg[]) {
+  static call<S extends string>(func: Func<S, any, any>, ...args: ValArg[]) {
     return new Val({
       kind: "call",
       type: func.returnType,
@@ -751,24 +773,24 @@ export class Val<S extends string = any> {
   }
 
   static valArgToVal(val: ValArg): Val {
-    if (isTcObject("val", val)) {
+    if (isWhich("val", val)) {
       return val;
     }
     //
-    else if (isTcObject("type", val)) {
+    else if (isWhich("type", val)) {
       return new Val({ kind: "type", type: val });
     }
     //
-    else if (isTcObject("struct", val)) {
+    else if (isWhich("struct", val)) {
       return new Val({ kind: "type", type: val.type() });
     }
     //
-    else if (isTcObject("func", val)) {
+    else if (isWhich("func", val)) {
       return new Val({ kind: "name", type: val.type, name: val.name });
     }
     //
     else if (typeof val === "number") {
-      if (val % 2 !== 0) {
+      if (val % 1 !== 0) {
         return new Val({
           kind: "literal",
           type: Type.double(),
@@ -782,17 +804,16 @@ export class Val<S extends string = any> {
       const lastChar = val.at(-1)!;
 
       if (lastChar === "f" || lastChar === "F") {
-        return new Val({
-          kind: "literal",
-          type: Type.float(),
-          value: val,
-        });
+        return Val.float(val);
       }
       //
       else if (lastChar === "l" || lastChar === "L") {
         return Val.longDouble(val);
       }
-      return Val.int(val);
+      //
+      else {
+        return Val.int(val);
+      }
     }
     //
     else if (typeof val === "boolean") {
@@ -820,7 +841,8 @@ type ValueExp<S extends string> =
   | FuncCallExp<S>
   | CastExp<S>
   | MemoryExp<S>
-  | TypeExp<S>;
+  | TypeExp<S>
+  | ParensExp<S>;
 
 type BaseExp<S extends string> = {
   type: Type<S>;
@@ -917,6 +939,11 @@ type MemoryExp<S extends string> = BaseExp<S> & {
 
 type TypeExp<S extends string> = BaseExp<S> & {
   kind: "type";
+};
+
+type ParensExp<S extends string> = BaseExp<S> & {
+  kind: "parens";
+  exp: ValueExp<S>;
 };
 
 export class ValStruct<

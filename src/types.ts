@@ -1,13 +1,13 @@
 import type { Cond } from "./condition";
 import type { Enum } from "./enum";
-import type { Fn } from "./func";
+import type { Func } from "./func";
 import type { Param } from "./param";
 import type { Stat } from "./statement";
 import type { Struct } from "./struct";
 import type { Switch } from "./switch";
 import type { Type } from "./type";
 import type { Union } from "./union";
-import type { Val } from "./val";
+import type { Val, ValStruct, ValUnion } from "./val";
 
 export const INTEGER_TYPES = [
   "char",
@@ -97,27 +97,19 @@ export type GenericMembers = {
 
 export type GenericEnumValues = Record<string, string | number | null>;
 
+type GenericFunc = {
+  hasVarArgs: boolean;
+  _params: readonly Param<any, any>[];
+  returnType: Type;
+} & ((...args: any[]) => any);
+
+export type GenericFuncs = Record<string, GenericFunc>;
+
 export type FuncArgsFromParams<Params extends readonly Param<any, any>[]> = {
   [index in keyof Params]: FuncArg<
     ExtractTypeStr<Params[index]["type"]>,
     Params[index]["name"]
   >;
-};
-
-export type GenericFunc = {
-  hasVarArgs: boolean;
-  _params: readonly Param<any, any>[];
-} & ((...args: any[]) => Val);
-export type GenericFuncs = Record<string, GenericFunc>;
-
-export type BoundFunc<GenericFn extends GenericFunc> = (
-  ...args: GenericFn["hasVarArgs"] extends false
-    ? BoundArgs<GenericFn["_params"]>
-    : [...BoundArgs<GenericFn["_params"]>, ...CodeLike[]]
-) => Val<GenericFn extends Fn<infer R, any, any> ? R : any>;
-
-export type BoundFuncs<Funcs extends GenericFuncs> = {
-  [key in keyof Funcs]: BoundFunc<Funcs[key]>;
 };
 
 type BoundArgs<Params extends readonly Param<any, any>[]> =
@@ -127,6 +119,16 @@ type BoundArgs<Params extends readonly Param<any, any>[]> =
   ]
     ? FuncArgsFromParams<Rest>
     : [];
+
+export type BoundFunc<F extends GenericFunc> = (
+  ...args: F["hasVarArgs"] extends true
+    ? [...BoundArgs<F["_params"]>, ...ValArg[]]
+    : BoundArgs<F["_params"]>
+) => Val<F["returnType"] extends Type<infer S> ? S : any>;
+
+export type BoundFuncs<Funcs extends GenericFuncs> = {
+  [key in keyof Funcs]: BoundFunc<Funcs[key]>;
+};
 
 export type StructPointer<
   Name extends string = any,
@@ -177,7 +179,7 @@ export type StatArg =
   | Val
   | Cond
   | Switch
-  | Fn<any, any, any>
+  | Func<any, any, any>
   | Struct
   | Union
   | Enum;
@@ -230,3 +232,13 @@ export type FuncArgs<
 > = VarArgs extends false
   ? FuncArgsFromParams<Params>
   : [...FuncArgsFromParams<Params>, ...ValArg[]];
+
+export type MemberValues<Members extends GenericMembers> = {
+  [Key in keyof Members]: Members[Key] extends Struct<infer N, infer M>
+    ? ValStruct<N, M>
+    : Members[Key] extends Union<infer N, infer M>
+    ? ValUnion<N, M>
+    : Members[Key] extends StructPointer<infer N, infer M>
+    ? ValStruct<`${N}*`, M>
+    : Val<ExtractTypeStr<Members[Key]>>;
+};
