@@ -222,8 +222,13 @@ export type FuncParamsByName<Params extends readonly Param<any, any>[]> =
       : Record<First["name"], First>
     : {};
 
-export type BodyFn<Params extends readonly Param<any, any>[]> = (arg: {
+export type BodyFn<
+  Return extends string,
+  Params extends readonly Param<any, any>[],
+  VarArgs extends boolean
+> = (arg: {
   params: FuncParamsByName<Params>;
+  self: Func<Return, Params, VarArgs>;
 }) => StatArg[];
 
 export type FuncArgs<

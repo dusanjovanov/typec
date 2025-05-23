@@ -207,7 +207,7 @@ const createFuncParam = <
       name
     );
   };
-  obj.duplicate = (name: string, body: BodyFn<Params>) => {
+  obj.duplicate = (name: string, body: BodyFn<Return, Params, VarArgs>) => {
     return Fn.new(returnType, name, params, body, options);
   };
   return obj as ParamFunc<Return, Params, Name, VarArgs>;
@@ -222,6 +222,6 @@ type ParamFunc<
   /** Returns a Func with the same signature ( type ) and a different name and body ( that you pass ). */
   duplicate: (
     name: string,
-    body: BodyFn<Params>
+    body: BodyFn<Return, Params, VarArgs>
   ) => Func<Return, Params, VarArgs>;
 } & ((...args: FuncArgs<Params, VarArgs>) => Val<Return>);

@@ -18,7 +18,7 @@ const createCallable = <
   returnType: Type<Return>,
   name: string,
   params: Params,
-  body?: BodyFn<Params>,
+  body?: BodyFn<Return, Params, VarArgs>,
   options?: FuncOptions<VarArgs>
 ) => {
   const obj = function (...args: any[]) {
@@ -49,7 +49,11 @@ const createCallable = <
   obj.define = () => {
     if (!obj.body) return obj.declare();
 
-    return Stat.funcDef(obj.type, name, obj.body({ params: obj.params }));
+    return Stat.funcDef(
+      obj.type,
+      name,
+      obj.body({ params: obj.params, self: obj as any })
+    );
   };
   obj.val = () => {
     return new Val({
@@ -70,7 +74,7 @@ export class Fn {
   >(
     name: string,
     params: Params,
-    body?: BodyFn<Params>,
+    body?: BodyFn<"void", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
     return createCallable(Type.void(), name, params, body, options);
@@ -83,7 +87,7 @@ export class Fn {
   >(
     name: string,
     params: Params,
-    body?: BodyFn<Params>,
+    body?: BodyFn<"bool", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
     return createCallable(Type.bool(), name, params, body, options);
@@ -96,7 +100,7 @@ export class Fn {
   >(
     name: string,
     params: Params,
-    body?: BodyFn<Params>,
+    body?: BodyFn<"int", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
     return createCallable(Type.int(), name, params, body, options);
@@ -109,7 +113,7 @@ export class Fn {
   >(
     name: string,
     params: Params,
-    body?: BodyFn<Params>,
+    body?: BodyFn<"double", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
     return createCallable(Type.double(), name, params, body, options);
@@ -122,7 +126,7 @@ export class Fn {
   >(
     name: string,
     params: Params,
-    body?: BodyFn<Params>,
+    body?: BodyFn<"char*", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
     return createCallable(Type.string(), name, params, body, options);
@@ -136,7 +140,7 @@ export class Fn {
     returnType: Type<Return>,
     name: string,
     params: Params,
-    body?: BodyFn<Params>,
+    body?: BodyFn<Return, Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
     return createCallable(returnType, name, params, body, options);
@@ -167,6 +171,6 @@ export type Func<
   _params: Params;
   returnType: Type<Return>;
   type: Type<`${Return}(${ParamsListFromParams<Params>})`>;
-  body: BodyFn<Params> | undefined;
+  body: BodyFn<Return, Params, VarArgs> | undefined;
   params: FuncParamsByName<Params>;
 } & ((...args: FuncArgs<Params, VarArgs>) => Val<Return>);
