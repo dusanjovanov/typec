@@ -39,7 +39,7 @@ describe("literal", () => {
   });
 
   test("float 23.45", () => {
-    expect(Lit.float(23.45)).toBe(`23.45F`);
+    expect(Lit.float(23.45)).toBe(`23.45f`);
   });
 
   test("longDouble 23.45", () => {
