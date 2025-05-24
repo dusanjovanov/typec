@@ -132,11 +132,23 @@ export class Type<S extends string = any> {
     return Type.char(typeQualifiers).pointer(pointerQualifiers);
   }
 
-  static array<S extends string>(
-    elementType: Type<S>,
-    length: number | number[] | undefined = undefined
+  /** `void*` */
+  static voidPointer(
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
   ) {
-    return Type.new({ kind: "array", elementType, length });
+    return Type.void(typeQualifiers).pointer(pointerQualifiers);
+  }
+
+  static array<S extends string, Length extends number = any>(
+    elementType: Type<S>,
+    length: Length | number[] | undefined = undefined
+  ) {
+    return Type.new({
+      kind: "array",
+      elementType,
+      length,
+    }) as Length extends number ? Type<`${S}[${Length}]`> : Type<S>;
   }
 
   static func<Return extends string, Params extends readonly Param<any, any>[]>(

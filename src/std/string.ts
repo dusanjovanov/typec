@@ -33,8 +33,8 @@ export const stdstring = {
     Param.size_t("count"),
   ]),
   memcpy: Fn.void("memcpy", [
-    Param.new(Type.void().pointer(), "dest"),
-    Param.new(Type.void().const().pointer(), "src"),
+    Param.new(Type.voidPointer(), "dest"),
+    Param.new(Type.voidPointer(["const"]), "src"),
     Param.size_t("n"),
   ]),
 };

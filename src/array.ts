@@ -14,13 +14,13 @@ const ArrayStruct = Struct.new("tc_Array", {
   capacity: Type.size_t(),
   element_size: Type.size_t(),
   alignment: Type.size_t(),
-  data: Type.void().pointer(),
+  data: Type.voidPointer(),
 });
 
 const arrParam = Param.structPointer(ArrayStruct, "arr");
 
 const at = Fn.new(
-  Type.void().pointer(),
+  Type.voidPointer(),
   "tc_array_at",
   [arrParam, Param.size_t("index")],
   ({ params }) => {
@@ -34,12 +34,12 @@ const at = Fn.new(
 
 const push = Fn.int(
   "tc_array_push",
-  [arrParam, Param.new(Type.void().pointer(), "element")],
+  [arrParam, Param.new(Type.voidPointer(), "element")],
   ({ params }) => {
     const { arr, element } = params;
     const newCapacity = Var.size_t("new_capacity");
     const newSize = Var.size_t("new_size");
-    const newData = Var.new(Type.void().pointer(), "new_data");
+    const newData = Var.new(Type.voidPointer(), "new_data");
 
     return [
       arr.not().or(element.not()).thenReturn(-1),
@@ -92,7 +92,7 @@ const forEach = Fn.void(
   [
     arrParam,
     Param.func(Type.void(), "callback", [
-      Param.new(Type.void().pointer(), "element"),
+      Param.new(Type.voidPointer(), "element"),
       Param.size_t("index"),
       arrParam,
     ]),
@@ -100,10 +100,10 @@ const forEach = Fn.void(
   ({ params }) => {
     const { arr, callback } = params;
     const i = Var.size_t("i");
-    const element = Var.new(Type.void().pointer(), "element");
+    const element = Var.new(Type.voidPointer(), "element");
     return [
       arr.not().or(callback.not()).thenReturn(),
-      Loop.for(i.init(), i.lt(arr.length), i.postInc(), [
+      Loop.range(i, 0, arr.length, [
         element.init(at(arr, i)),
         element.then([callback(element, i, arr)]),
       ]),
