@@ -7,12 +7,14 @@ import {
   type FuncArgs,
   type GenericMembers,
   type ParamsListFromParams,
+  type ParamStruct,
+  type ParamUnion,
   type PointerQualifier,
   type TypeArg,
   type TypeQualifier,
 } from "./types";
 import type { Union } from "./union";
-import { createMemberValues } from "./utils";
+import { copyInstance, createMemberValues } from "./utils";
 import { Val } from "./val";
 
 export class Param<S extends string, Name extends string> extends Val<S> {
@@ -92,7 +94,7 @@ export class Param<S extends string, Name extends string> extends Val<S> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return new ParamStruct<`${StructName}*`, Members, Name>(
+    return createParamStruct<`${StructName}*`, Members, Name>(
       struct.type(typeQualifiers).pointer(pointerQualifiers),
       name,
       struct as any
@@ -109,7 +111,7 @@ export class Param<S extends string, Name extends string> extends Val<S> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return new ParamUnion<`${UnionName}*`, Members, Name>(
+    return createParamUnion<`${UnionName}*`, Members, Name>(
       union.type(typeQualifiers).pointer(pointerQualifiers),
       name,
       union as any
@@ -140,45 +142,41 @@ export class Param<S extends string, Name extends string> extends Val<S> {
   }
 }
 
-export class ParamStruct<
+const createParamStruct = <
   StructName extends string,
   Members extends GenericMembers,
   Name extends string
-> extends Param<StructName, Name> {
-  constructor(
-    type: TypeArg<StructName>,
-    name: Name,
-    struct: Struct<StructName, Members>
-  ) {
-    super(type, name);
-    this.struct = struct;
+>(
+  type: TypeArg<StructName>,
+  name: Name,
+  struct: Struct<StructName, Members>
+) => {
+  const param = new Param(type, name);
 
-    this._ = createMemberValues(this, struct);
-  }
-  struct;
-  /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member. */
-  _;
-}
+  const obj = copyInstance(param);
 
-export class ParamUnion<
+  Object.assign(obj, createMemberValues(obj, struct));
+
+  return obj as ParamStruct<StructName, Members, Name>;
+};
+
+const createParamUnion = <
   UnionName extends string,
   Members extends GenericMembers,
   Name extends string
-> extends Param<UnionName, Name> {
-  constructor(
-    type: TypeArg<UnionName>,
-    name: Name,
-    union: Union<UnionName, Members>
-  ) {
-    super(type, name);
-    this.union = union;
+>(
+  type: TypeArg<UnionName>,
+  name: Name,
+  union: Union<UnionName, Members>
+) => {
+  const param = new Param(type, name);
 
-    this._ = createMemberValues(this, union);
-  }
-  union;
-  /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member. */
-  _;
-}
+  const obj = copyInstance(param);
+
+  Object.assign(obj, createMemberValues(obj, union));
+
+  return obj as ParamUnion<UnionName, Members, Name>;
+};
 
 const createFuncParam = <
   Return extends string,

@@ -7,9 +7,12 @@ import type {
   MemberTypeArg,
   MemberValues,
   StructPointer,
+  ValStruct,
+  ValueExp,
+  ValUnion,
 } from "./types";
 import type { Union } from "./union";
-import { ValStruct, ValUnion, type Val } from "./val";
+import { Val } from "./val";
 
 /**
  * Returns an empty string when the value is falsy or an empty array.
@@ -91,11 +94,11 @@ export const createMemberValues = <Members extends GenericMembers>(
       val.type.typeKind === "pointer" ? val.arrow(key) : val.dot(key);
 
     if (isWhich("struct", struct.members[key])) {
-      vals[key] = new ValStruct(struct.members[key], memberVal.exp);
+      vals[key] = createValStruct(struct.members[key], memberVal.exp);
     }
     //
     else if (isWhich("structPointer", struct.members[key])) {
-      vals[key] = new ValStruct(
+      vals[key] = createValStruct(
         struct.members[key],
         (val.type.typeKind === "pointer"
           ? val.arrow(key, Type.pointer(Type.any()))
@@ -105,7 +108,7 @@ export const createMemberValues = <Members extends GenericMembers>(
     }
     //
     else if (isWhich("union", struct.members[key])) {
-      vals[key] = new ValUnion(struct.members[key], memberVal.exp);
+      vals[key] = createValUnion(struct.members[key], memberVal.exp);
     }
     //
     else {
@@ -113,6 +116,32 @@ export const createMemberValues = <Members extends GenericMembers>(
     }
   });
   return vals as MemberValues<Members>;
+};
+
+const createValStruct = <Name extends string, Members extends GenericMembers>(
+  struct: Struct<Name, Members> | StructPointer<Name, Members>,
+  exp: ValueExp<any>
+) => {
+  const val = new Val(exp);
+
+  const obj = copyInstance(val);
+
+  Object.assign(obj, createMemberValues(obj, struct));
+
+  return obj as ValStruct<Name, Members>;
+};
+
+const createValUnion = <Name extends string, Members extends GenericMembers>(
+  union: Union<Name, Members>,
+  exp: ValueExp<any>
+) => {
+  const val = new Val(exp);
+
+  const obj = copyInstance(val);
+
+  Object.assign(obj, createMemberValues(obj, union));
+
+  return obj as ValUnion<Name, Members>;
 };
 
 export const memberTypeArgToType = (type: MemberTypeArg) => {
@@ -131,4 +160,20 @@ export const isTcObject = (val: any) => {
   return (
     (typeof val === "object" || typeof val === "function") && "kind" in val
   );
+};
+
+export const copyInstance = <T extends Record<string, any>>(original: T) => {
+  const copy = Object.create(original.constructor.prototype);
+
+  for (const key of Object.getOwnPropertyNames(original)) {
+    if (typeof original[key] === "function") {
+      copy[key] = original[key].bind(original);
+    }
+    //
+    else {
+      copy[key] = original[key];
+    }
+  }
+
+  return copy as T;
 };

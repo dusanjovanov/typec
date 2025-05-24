@@ -1,14 +1,14 @@
 import type { Struct } from "./struct";
 import type {
-  BoundFuncs,
   GenericFuncs,
   GenericMembers,
-  MemberValues,
   PointerQualifier,
+  TcClassObj,
   TypeArg,
   TypeQualifier,
+  VarClass,
 } from "./types";
-import { createMemberValues } from "./utils";
+import { copyInstance, createMemberValues } from "./utils";
 import type { Val } from "./val";
 import { Var } from "./variable";
 
@@ -19,34 +19,7 @@ import { Var } from "./variable";
  *
  * Has helpers for creating variables and params that have a `_` field with struct field access Vals and "methods" ( bound functions ) on it.
  */
-export class TcClass<
-  Name extends string,
-  Members extends GenericMembers,
-  const Methods extends GenericFuncs,
-  Static extends GenericFuncs
-> {
-  constructor(
-    struct: Struct<Name, Members>,
-    methods: Methods,
-    staticMethods: Static = {} as Static
-  ) {
-    this.struct = struct;
-    this.methods = methods;
-    this._ = staticMethods;
-  }
-  struct;
-  methods;
-  /** Static "methods" */
-  _;
-
-  var(name: string) {
-    return VarClass.var(this.struct, name, this.methods);
-  }
-
-  pointer(name: string) {
-    return VarClass.pointer(this.struct, name, this.methods);
-  }
-
+export class TcClass {
   static new<
     Name extends string,
     Members extends GenericMembers,
@@ -57,72 +30,93 @@ export class TcClass<
     methods: Methods,
     staticMethods: Static = {} as Static
   ) {
-    return new TcClass(struct, methods, staticMethods);
+    return createClass(struct, methods, staticMethods);
   }
 }
 
-/** tc equivalent of a class based api for c. */
-export class VarClass<
+const createClass = <
+  Name extends string,
+  Members extends GenericMembers,
+  const Methods extends GenericFuncs,
+  Static extends GenericFuncs
+>(
+  struct: Struct<Name, Members>,
+  methods: Methods,
+  staticMethods: Static = {} as Static
+) => {
+  return {
+    ...staticMethods,
+    struct,
+    methods,
+    var(name: string, typeQualifiers?: TypeQualifier[]) {
+      return createVarClass(
+        this.struct.type(typeQualifiers),
+        name,
+        this.struct,
+        this.methods
+      );
+    },
+    pointer(
+      name: string,
+      typeQualifiers?: TypeQualifier[],
+      pointerQualifiers?: PointerQualifier[]
+    ) {
+      return createVarClass<`${Name}*`, Members, Methods>(
+        this.struct.type(typeQualifiers).pointer(pointerQualifiers),
+        name,
+        this.struct as any,
+        this.methods
+      );
+    },
+  } as TcClassObj<Name, Members, Methods, Static>;
+};
+
+const createVarClass = <
   Name extends string,
   Members extends GenericMembers,
   const Methods extends GenericFuncs
-> extends Var<Name> {
-  constructor(
-    type: TypeArg<Name>,
-    name: string,
-    struct: Struct<Name, Members>,
-    methods: Methods
-  ) {
-    super(type, name);
-    this.struct = struct;
+>(
+  type: TypeArg<Name>,
+  name: string,
+  struct: Struct<Name, Members>,
+  methods: Methods
+) => {
+  const variable = new Var(type, name);
 
-    this._ = {
-      ...createMemberValues(this, struct),
-      ...createBoundFuncs(this, methods),
-    } as MemberValues<Members> & BoundFuncs<Methods>;
-  }
-  struct;
-  /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member and bound functions that serve as methods. */
-  _;
+  const obj = copyInstance(variable);
 
-  static var<
-    Name extends string,
-    Members extends GenericMembers,
-    const Methods extends GenericFuncs
-  >(
-    struct: Struct<Name, Members>,
-    name: string,
-    methods: Methods,
-    typeQualifiers?: TypeQualifier[]
-  ) {
-    return new VarClass(struct.type(typeQualifiers), name, struct, methods);
-  }
+  Object.assign(
+    obj,
+    createMemberValues(obj, struct),
+    createBoundFuncs(obj, methods)
+  );
 
-  static pointer<
-    Name extends string,
-    Members extends GenericMembers,
-    const Methods extends GenericFuncs
-  >(
-    struct: Struct<Name, Members>,
-    name: string,
-    methods: Methods,
-    typeQualifiers?: TypeQualifier[],
-    pointerQualifiers?: PointerQualifier[]
-  ) {
-    return new VarClass<`${Name}*`, Members, Methods>(
-      struct.type(typeQualifiers).pointer(pointerQualifiers),
-      name,
-      struct as any,
-      methods
-    );
-  }
-}
+  return obj as VarClass<Name, Members, Methods>;
+};
 
 const createBoundFuncs = (exp: Val, funcs: GenericFuncs) => {
   const bound: Record<string, any> = {};
   Object.entries(funcs).forEach(([key, fn]) => {
     bound[key] = (...args: any[]) => {
-      return fn(exp, ...args);
+      const firstParam = fn._params[0];
+
+      let e = exp;
+
+      if (
+        firstParam.type.typeKind === "pointer" &&
+        exp.type.typeKind !== "pointer"
+      ) {
+        e = exp.ref();
+      }
+      //
+      else if (
+        firstParam.type.typeKind !== "pointer" &&
+        exp.type.typeKind === "pointer"
+      ) {
+        e = exp.deRef();
+      }
+
+      return fn(e, ...args);
     };
   });
   return bound;

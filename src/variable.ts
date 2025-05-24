@@ -9,9 +9,11 @@ import type {
   TypeQualifier,
   ValArg,
   ValArgWithArray,
+  VarStruct,
+  VarUnion,
 } from "./types";
 import type { Union } from "./union";
-import { createMemberValues, isPlainObject } from "./utils";
+import { copyInstance, createMemberValues, isPlainObject } from "./utils";
 import { Val } from "./val";
 
 /** Used for working with variables of any type. */
@@ -142,7 +144,7 @@ export class Var<S extends string = any> extends Val<S> {
     name: string,
     typeQualifiers?: TypeQualifier[]
   ) {
-    return new VarStruct(struct.type(typeQualifiers), name, struct);
+    return createVarStruct(struct.type(typeQualifiers), name, struct);
   }
 
   static structPointer<Name extends string, Members extends GenericMembers>(
@@ -151,7 +153,7 @@ export class Var<S extends string = any> extends Val<S> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return new VarStruct<`${Name}*`, Members>(
+    return createVarStruct<`${Name}*`, Members>(
       struct.type(typeQualifiers).pointer(pointerQualifiers),
       name,
       struct as any
@@ -163,7 +165,7 @@ export class Var<S extends string = any> extends Val<S> {
     name: string,
     typeQualifiers?: TypeQualifier[]
   ) {
-    return new VarUnion(union.type(typeQualifiers), name, union);
+    return createVarUnion(union.type(typeQualifiers), name, union);
   }
 
   static unionPointer<Name extends string, Members extends GenericMembers>(
@@ -172,7 +174,7 @@ export class Var<S extends string = any> extends Val<S> {
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
   ) {
-    return new VarUnion<`${Name}*`, Members>(
+    return createVarUnion<`${Name}*`, Members>(
       union.type(typeQualifiers).pointer(pointerQualifiers),
       name,
       union as any
@@ -184,45 +186,44 @@ export class Var<S extends string = any> extends Val<S> {
   }
 }
 
-export class VarStruct<
-  Name extends string,
-  Members extends GenericMembers
-> extends Var<Name> {
-  constructor(
-    type: TypeArg<Name>,
-    name: string,
-    struct: Struct<Name, Members>
-  ) {
-    super(type, name);
-    this.struct = struct;
+const createVarStruct = <Name extends string, Members extends GenericMembers>(
+  type: TypeArg<Name>,
+  name: string,
+  struct: Struct<Name, Members>
+) => {
+  const variable = new Var(type, name);
 
-    this._ = createMemberValues(this, struct);
-  }
-  struct;
-  /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member. */
-  _;
+  const obj = copyInstance(variable);
 
-  /** Returns assignments to multiple struct members. */
-  setMulti(values: Partial<Record<keyof Members, ValArg>>) {
-    const memberAccess = this.type.typeKind === "pointer" ? "arrow" : "dot";
+  Object.assign(obj, createMemberValues(obj, struct), {
+    setMulti(values: Partial<Record<keyof Members, ValArg>>) {
+      const memberAccess = obj.type.typeKind === "pointer" ? "arrow" : "dot";
+      return Object.entries(values).map(([key, value]) => {
+        return obj[memberAccess](key).set(value!);
+      });
+    },
+  });
 
-    return Object.entries(values).map(([key, value]) => {
-      return this[memberAccess](key).set(value!);
-    });
-  }
-}
+  return obj as VarStruct<Name, Members>;
+};
 
-export class VarUnion<
-  Name extends string,
-  Members extends GenericMembers
-> extends Var<Name> {
-  constructor(type: TypeArg<Name>, name: string, union: Union<Name, Members>) {
-    super(type, name);
-    this.union = union;
+const createVarUnion = <Name extends string, Members extends GenericMembers>(
+  type: TypeArg<Name>,
+  name: string,
+  union: Union<Name, Members>
+) => {
+  const variable = new Var(type, name);
 
-    this._ = createMemberValues(this, union);
-  }
-  union;
-  /** A typed dictionary of arrow/dot access ( arrow if pointer ) Val objects for each member. */
-  _;
-}
+  const obj = copyInstance(variable);
+
+  Object.assign(obj, createMemberValues(obj, union), {
+    setMulti(values: Partial<Record<keyof Members, ValArg>>) {
+      const memberAccess = obj.type.typeKind === "pointer" ? "arrow" : "dot";
+      return Object.entries(values).map(([key, value]) => {
+        return obj[memberAccess](key).set(value!);
+      });
+    },
+  });
+
+  return obj as VarUnion<Name, Members>;
+};

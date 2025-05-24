@@ -26,10 +26,8 @@ const at = Fn.new(
   ({ params }) => {
     const { arr, index } = params;
     return [
-      arr.not().or(index.gte(arr._.length)).thenReturn(NULL),
-      _.return(
-        arr._.data.plus(index.mul(arr._.element_size)).cast(Type.string())
-      ),
+      arr.not().or(index.gte(arr.length)).thenReturn(NULL),
+      _.return(arr.data.plus(index.mul(arr.element_size)).cast(Type.string())),
     ];
   }
 );
@@ -45,24 +43,22 @@ const push = Fn.int(
 
     return [
       arr.not().or(element.not()).thenReturn(-1),
-      arr._.length.gte(arr._.capacity).then([
+      arr.length.gte(arr.capacity).then([
         // Double capacity
-        newCapacity.init(
-          arr._.capacity.equal(0).ternary(1, arr._.capacity.mul(2))
-        ),
-        newSize.init(newCapacity.mul(arr._.element_size)),
+        newCapacity.init(arr.capacity.equal(0).ternary(1, arr.capacity.mul(2))),
+        newSize.init(newCapacity.mul(arr.element_size)),
         // Ensure new_size is a multiple of alignment
         newSize
-          .mod(arr._.alignment)
+          .mod(arr.alignment)
           .notEqual(0)
           .then([
             newSize.set(
-              newSize.div(arr._.alignment).plus(1).parens().mul(arr._.alignment)
+              newSize.div(arr.alignment).plus(1).parens().mul(arr.alignment)
             ),
-            newCapacity.set(newSize.div(arr._.element_size)),
+            newCapacity.set(newSize.div(arr.element_size)),
           ]),
         // Allocate new aligned block
-        newData.init(stdlib.aligned_alloc(arr._.alignment, newSize)),
+        newData.init(stdlib.aligned_alloc(arr.alignment, newSize)),
         newData.notThen([
           // Fallback to malloc
           newData.set(stdlib.malloc(newSize)),
@@ -70,27 +66,22 @@ const push = Fn.int(
         ]),
         // Copy existing data
         stdstring.memcpy(
-          arr._.data
-            .plus(arr._.length.mul(arr._.element_size))
-            .cast(Type.string()),
+          arr.data.plus(arr.length.mul(arr.element_size)).cast(Type.string()),
           element,
-          arr._.element_size
+          arr.element_size
         ),
         // Free old data
-        stdlib.free(arr._.data),
+        stdlib.free(arr.data),
         // Update array
-        arr._.data.set(newData),
-        arr._.capacity.set(newCapacity),
+        arr.data.set(newData),
+        arr.capacity.set(newCapacity),
       ]),
       stdstring.memcpy(
-        arr._.data
-          .plus(arr._.length)
-          .mul(arr._.element_size)
-          .cast(Type.string()),
+        arr.data.plus(arr.length).mul(arr.element_size).cast(Type.string()),
         element,
-        arr._.element_size
+        arr.element_size
       ),
-      arr._.length.postInc(),
+      arr.length.postInc(),
       _.return(0),
     ];
   }
@@ -112,7 +103,7 @@ const forEach = Fn.void(
     const element = Var.new(Type.void().pointer(), "element");
     return [
       arr.not().or(callback.not()).thenReturn(),
-      Loop.for(i.init(), i.lt(arr._.length), i.postInc(), [
+      Loop.for(i.init(), i.lt(arr.length), i.postInc(), [
         element.init(at(arr, i)),
         element.then([callback(element, i, arr)]),
       ]),
@@ -122,7 +113,7 @@ const forEach = Fn.void(
 
 const free = Fn.void("tc_array_free", [arrParam], ({ params }) => {
   return [
-    params.arr.then([stdlib.free(params.arr._.data), stdlib.free(params.arr)]),
+    params.arr.then([stdlib.free(params.arr.data), stdlib.free(params.arr)]),
   ];
 });
 
@@ -172,12 +163,12 @@ export const TcArray = TcClass.new(
           arr.init(stdlib.malloc(ArrayStruct.sizeOf())),
           arr.notReturn(NULL),
           // Allocate aligned data
-          arr._.data.set(stdlib.aligned_alloc(alignment, allocSize)),
-          arr._.data.not().then([
+          arr.data.set(stdlib.aligned_alloc(alignment, allocSize)),
+          arr.data.not().then([
             // Fallback to malloc
-            arr._.data.set(stdlib.malloc(allocSize)),
+            arr.data.set(stdlib.malloc(allocSize)),
             // malloc didnt work
-            arr._.data.not().then([stdlib.free(arr), _.return(NULL)]),
+            arr.data.not().then([stdlib.free(arr), _.return(NULL)]),
           ]),
           ...arr.setMulti({
             length: 0,

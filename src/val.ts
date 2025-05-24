@@ -6,21 +6,17 @@ import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import type {
+  BinaryExp,
   GenericMembers,
   Numberish,
   StatArg,
   StringKeyOf,
-  StructPointer,
   TypeArg,
   ValArg,
+  ValueExp,
 } from "./types";
 import type { Union } from "./union";
-import {
-  createMemberValues,
-  emptyFalsy,
-  joinArgs,
-  memberTypeArgToType,
-} from "./utils";
+import { emptyFalsy, joinArgs, memberTypeArgToType } from "./utils";
 
 /**
  * A value container containing an `rvalue` expression with helpers for generating all C literal and initializer expressions
@@ -201,7 +197,7 @@ export class Val<S extends string = any> {
     });
   }
 
-  /** Assign a value. */
+  /** Returns a Val for the assignment expression of the passed value to the current Val. */
   set(value: ValArg) {
     return this.assignBinary(value, "=");
   }
@@ -837,149 +833,4 @@ export class Val<S extends string = any> {
       return new Val({ kind: "literal", type: Type.any(), value: val as any });
     }
   }
-}
-
-type ValueExp<S extends string> =
-  | LiteralExp<S>
-  | NameExp<S>
-  | BinaryExp<S>
-  | PreUnaryExp<S>
-  | PostUnaryExp<S>
-  | MemberExp<S>
-  | TernaryExp<S>
-  | FuncCallExp<S>
-  | CastExp<S>
-  | MemoryExp<S>
-  | TypeExp<S>
-  | ParensExp<S>;
-
-type BaseExp<S extends string> = {
-  type: Type<S>;
-};
-
-type LiteralExp<S extends string> = BaseExp<S> & {
-  kind: "literal";
-  value: string | number | boolean | Type;
-};
-
-type NameExp<S extends string> = BaseExp<S> & {
-  kind: "name";
-  name: string;
-};
-
-type BinaryExp<S extends string> = BaseExp<S> & {
-  kind: "binary";
-  left: Val;
-  right: Val;
-  op:
-    | "="
-    | "+="
-    | "-="
-    | "*="
-    | "/="
-    | "%="
-    | "&="
-    | "|="
-    | "^="
-    | "<<="
-    | ">>="
-    | "+"
-    | "-"
-    | "*"
-    | "/"
-    | "%"
-    | "&"
-    | "|"
-    | "^"
-    | "<<"
-    | ">>"
-    | "&&"
-    | "||"
-    | "=="
-    | "!="
-    | "<"
-    | ">"
-    | "<="
-    | ">=";
-};
-
-type PreUnaryExp<S extends string> = BaseExp<S> & {
-  kind: "preUnary";
-  value: Val;
-  op: "++" | "--" | "*" | "&" | "!" | "+" | "-" | "~";
-};
-
-type PostUnaryExp<S extends string> = BaseExp<S> & {
-  kind: "postUnary";
-  value: Val;
-  op: "++" | "--";
-};
-
-type MemberExp<S extends string> = BaseExp<S> & {
-  kind: "member";
-  left: Val;
-  right: Val;
-  op: "->" | "." | "[]";
-};
-
-type TernaryExp<S extends string> = BaseExp<S> & {
-  kind: "ternary";
-  cond: Val;
-  exp1: Val;
-  exp2: Val;
-};
-
-type FuncCallExp<S extends string> = BaseExp<S> & {
-  kind: "call";
-  funcName: string;
-  args: Val[];
-};
-
-type CastExp<S extends string> = BaseExp<S> & {
-  kind: "cast";
-  value: Val;
-};
-
-type MemoryExp<S extends string> = BaseExp<S> & {
-  kind: "memory";
-  value: Val;
-  op: "sizeof" | "alignof";
-};
-
-type TypeExp<S extends string> = BaseExp<S> & {
-  kind: "type";
-};
-
-type ParensExp<S extends string> = BaseExp<S> & {
-  kind: "parens";
-  exp: ValueExp<S>;
-};
-
-export class ValStruct<
-  Name extends string,
-  Members extends GenericMembers
-> extends Val<Name> {
-  constructor(
-    struct: Struct<Name, Members> | StructPointer<Name, Members>,
-    exp: ValueExp<any>
-  ) {
-    super(exp);
-    this.struct = struct;
-    this._ = createMemberValues(this, struct);
-  }
-  _;
-  struct;
-}
-
-export class ValUnion<
-  Name extends string,
-  Members extends GenericMembers
-> extends Val<Name> {
-  constructor(union: Union<Name, Members>, exp: ValueExp<any>) {
-    super(exp);
-    this.union = union;
-    this._ = createMemberValues(this, union);
-  }
-  _;
-  union;
 }

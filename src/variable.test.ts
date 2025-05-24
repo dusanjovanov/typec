@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Type } from "./type";
 import { Var } from "./variable";
+import { Struct } from "./struct";
 
 describe("Variable", () => {
   test("Simple", () => {
@@ -62,5 +63,27 @@ describe("Variable", () => {
     const varMinusPointer = Var.new(Type.int().pointer(), "var");
     const minusPointerVal = v.minus(varMinusPointer);
     expect(minusPointerVal.toString()).toBe(`${varName}-${varMinusPointer}`);
+  });
+
+  test("struct", () => {
+    const struct = Struct.new("Test", {
+      a: Type.int(),
+    });
+
+    const v = Var.struct(struct, "test");
+
+    expect(v.declare().toString()).toBe(`struct Test test;`);
+    expect(v.a.toString()).toBe(`test.a`);
+  });
+
+  test("struct pointer", () => {
+    const struct = Struct.new("Test", {
+      a: Type.int(),
+    });
+
+    const v = Var.structPointer(struct, "test");
+
+    expect(v.declare().toString()).toBe(`struct Test* test;`);
+    expect(v.a.toString()).toBe(`test->a`);
   });
 });

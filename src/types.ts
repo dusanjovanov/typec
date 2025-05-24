@@ -7,7 +7,8 @@ import type { Struct } from "./struct";
 import type { Switch } from "./switch";
 import type { Type } from "./type";
 import type { Union } from "./union";
-import type { Val, ValStruct, ValUnion } from "./val";
+import type { Val } from "./val";
+import type { Var } from "./variable";
 
 export const INTEGER_TYPES = [
   "char",
@@ -238,6 +239,16 @@ export type FuncArgs<
   ? FuncArgsFromParams<Params>
   : [...FuncArgsFromParams<Params>, ...ValArg[]];
 
+export type ValStruct<
+  Name extends string,
+  Members extends GenericMembers
+> = Val<Name> & MemberValues<Members>;
+
+export type ValUnion<
+  Name extends string,
+  Members extends GenericMembers
+> = ValStruct<Name, Members>;
+
 export type MemberValues<Members extends GenericMembers> = {
   [Key in keyof Members]: Members[Key] extends Struct<infer N, infer M>
     ? ValStruct<N, M>
@@ -246,4 +257,170 @@ export type MemberValues<Members extends GenericMembers> = {
     : Members[Key] extends StructPointer<infer N, infer M>
     ? ValStruct<`${N}*`, M>
     : Val<ExtractTypeStr<Members[Key]>>;
+};
+
+export type TcClassObj<
+  Name extends string,
+  Members extends GenericMembers,
+  Methods extends GenericFuncs,
+  Static extends GenericFuncs
+> = Static & {
+  struct: Struct<Name, Members>;
+  methods: Methods;
+  var(
+    name: string,
+    typeQualifiers?: TypeQualifier[]
+  ): VarClass<Name, Members, Methods>;
+  pointer(
+    name: string,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ): VarClass<`${Name}*`, Members, Methods>;
+};
+
+export type VarClass<
+  Name extends string,
+  Members extends GenericMembers,
+  Methods extends GenericFuncs
+> = Var<Name> & MemberValues<Members> & BoundFuncs<Methods>;
+
+export type VarStruct<
+  Name extends string,
+  Members extends GenericMembers
+> = Var<Name> &
+  MemberValues<Members> & {
+    setMulti(values: Partial<Record<keyof Members, ValArg>>): Val<any>[];
+  };
+
+export type VarUnion<
+  Name extends string,
+  Members extends GenericMembers
+> = VarStruct<Name, Members>;
+
+export type ParamStruct<
+  StructName extends string,
+  Members extends GenericMembers,
+  Name extends string
+> = Param<StructName, Name> & MemberValues<Members>;
+
+export type ParamUnion<
+  UnionName extends string,
+  Members extends GenericMembers,
+  Name extends string
+> = ParamStruct<UnionName, Members, Name>;
+
+export type ValueExp<S extends string> =
+  | LiteralExp<S>
+  | NameExp<S>
+  | BinaryExp<S>
+  | PreUnaryExp<S>
+  | PostUnaryExp<S>
+  | MemberExp<S>
+  | TernaryExp<S>
+  | FuncCallExp<S>
+  | CastExp<S>
+  | MemoryExp<S>
+  | TypeExp<S>
+  | ParensExp<S>;
+
+type BaseExp<S extends string> = {
+  type: Type<S>;
+};
+
+type LiteralExp<S extends string> = BaseExp<S> & {
+  kind: "literal";
+  value: string | number | boolean | Type;
+};
+
+type NameExp<S extends string> = BaseExp<S> & {
+  kind: "name";
+  name: string;
+};
+
+export type BinaryExp<S extends string> = BaseExp<S> & {
+  kind: "binary";
+  left: Val;
+  right: Val;
+  op:
+    | "="
+    | "+="
+    | "-="
+    | "*="
+    | "/="
+    | "%="
+    | "&="
+    | "|="
+    | "^="
+    | "<<="
+    | ">>="
+    | "+"
+    | "-"
+    | "*"
+    | "/"
+    | "%"
+    | "&"
+    | "|"
+    | "^"
+    | "<<"
+    | ">>"
+    | "&&"
+    | "||"
+    | "=="
+    | "!="
+    | "<"
+    | ">"
+    | "<="
+    | ">=";
+};
+
+type PreUnaryExp<S extends string> = BaseExp<S> & {
+  kind: "preUnary";
+  value: Val;
+  op: "++" | "--" | "*" | "&" | "!" | "+" | "-" | "~";
+};
+
+type PostUnaryExp<S extends string> = BaseExp<S> & {
+  kind: "postUnary";
+  value: Val;
+  op: "++" | "--";
+};
+
+type MemberExp<S extends string> = BaseExp<S> & {
+  kind: "member";
+  left: Val;
+  right: Val;
+  op: "->" | "." | "[]";
+};
+
+type TernaryExp<S extends string> = BaseExp<S> & {
+  kind: "ternary";
+  cond: Val;
+  exp1: Val;
+  exp2: Val;
+};
+
+type FuncCallExp<S extends string> = BaseExp<S> & {
+  kind: "call";
+  funcName: string;
+  args: Val[];
+};
+
+type CastExp<S extends string> = BaseExp<S> & {
+  kind: "cast";
+  value: Val;
+};
+
+type MemoryExp<S extends string> = BaseExp<S> & {
+  kind: "memory";
+  value: Val;
+  op: "sizeof" | "alignof";
+};
+
+type TypeExp<S extends string> = BaseExp<S> & {
+  kind: "type";
+};
+
+type ParensExp<S extends string> = BaseExp<S> & {
+  kind: "parens";
+  exp: ValueExp<S>;
 };
