@@ -8,7 +8,7 @@ import type {
   TypeQualifier,
   VarClass,
 } from "./types";
-import { copyInstance, createMemberValues } from "./utils";
+import { copyInstance, createMemberValues, setMulti } from "./utils";
 import type { Val } from "./val";
 import { Var } from "./variable";
 
@@ -88,7 +88,10 @@ const createVarClass = <
   Object.assign(
     obj,
     createMemberValues(obj, struct),
-    createBoundFuncs(obj, methods)
+    createBoundFuncs(obj, methods),
+    {
+      setMulti: setMulti(obj),
+    }
   );
 
   return obj as VarClass<Name, Members, Methods>;

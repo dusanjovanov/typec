@@ -7,6 +7,7 @@ import type {
   MemberTypeArg,
   MemberValues,
   StructPointer,
+  ValArg,
   ValStruct,
   ValueExp,
   ValUnion,
@@ -162,7 +163,7 @@ export const isTcObject = (val: any) => {
   );
 };
 
-export const copyInstance = <T extends Record<string, any>>(original: T) => {
+export const copyInstance = <T extends Record<any, any>>(original: T) => {
   const copy = Object.create(original.constructor.prototype);
 
   for (const key of Object.getOwnPropertyNames(original)) {
@@ -177,3 +178,11 @@ export const copyInstance = <T extends Record<string, any>>(original: T) => {
 
   return copy as T;
 };
+
+export const setMulti =
+  (obj: Val) => (values: Partial<Record<string, ValArg>>) => {
+    const memberAccess = obj.type.typeKind === "pointer" ? "arrow" : "dot";
+    return Object.entries(values).map(([key, value]) => {
+      return obj[memberAccess](key).set(value!);
+    });
+  };

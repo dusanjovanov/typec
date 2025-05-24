@@ -13,7 +13,12 @@ import type {
   VarUnion,
 } from "./types";
 import type { Union } from "./union";
-import { copyInstance, createMemberValues, isPlainObject } from "./utils";
+import {
+  copyInstance,
+  createMemberValues,
+  isPlainObject,
+  setMulti,
+} from "./utils";
 import { Val } from "./val";
 
 /** Used for working with variables of any type. */
@@ -196,12 +201,7 @@ const createVarStruct = <Name extends string, Members extends GenericMembers>(
   const obj = copyInstance(variable);
 
   Object.assign(obj, createMemberValues(obj, struct), {
-    setMulti(values: Partial<Record<keyof Members, ValArg>>) {
-      const memberAccess = obj.type.typeKind === "pointer" ? "arrow" : "dot";
-      return Object.entries(values).map(([key, value]) => {
-        return obj[memberAccess](key).set(value!);
-      });
-    },
+    setMulti: setMulti(obj),
   });
 
   return obj as VarStruct<Name, Members>;
@@ -217,12 +217,7 @@ const createVarUnion = <Name extends string, Members extends GenericMembers>(
   const obj = copyInstance(variable);
 
   Object.assign(obj, createMemberValues(obj, union), {
-    setMulti(values: Partial<Record<keyof Members, ValArg>>) {
-      const memberAccess = obj.type.typeKind === "pointer" ? "arrow" : "dot";
-      return Object.entries(values).map(([key, value]) => {
-        return obj[memberAccess](key).set(value!);
-      });
-    },
+    setMulti: setMulti(obj),
   });
 
   return obj as VarUnion<Name, Members>;

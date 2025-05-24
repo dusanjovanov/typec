@@ -41,7 +41,7 @@ export class Struct<
   }
 
   /** Helper for defining nested pointers to structs. */
-  structPointer(): StructPointer<Name, Members> {
+  nestedPointer(): StructPointer<Name, Members> {
     return {
       kind: BRANDING_MAP.structPointer,
       struct: this,

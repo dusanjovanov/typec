@@ -132,6 +132,19 @@ export class Fn {
     return createCallable(Type.string(), name, params, body, options);
   }
 
+  /** Shortcut for the `double` return type. */
+  static float<
+    const Params extends readonly Param<any, any>[],
+    VarArgs extends boolean = false
+  >(
+    name: string,
+    params: Params,
+    body?: BodyFn<"float", Params, VarArgs>,
+    options?: FuncOptions<VarArgs>
+  ) {
+    return createCallable(Type.float(), name, params, body, options);
+  }
+
   static new<
     Return extends string,
     const Params extends readonly Param<any, any>[],

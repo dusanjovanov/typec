@@ -282,20 +282,26 @@ export type VarClass<
   Name extends string,
   Members extends GenericMembers,
   Methods extends GenericFuncs
-> = Var<Name> & MemberValues<Members> & BoundFuncs<Methods>;
+> = Var<Name> &
+  MemberValues<Members> &
+  BoundFuncs<Methods> & {
+    setMulti: SetMultiFn<Members>;
+  };
 
 export type VarStruct<
   Name extends string,
   Members extends GenericMembers
 > = Var<Name> &
   MemberValues<Members> & {
-    setMulti(values: Partial<Record<keyof Members, ValArg>>): Val<any>[];
+    setMulti: SetMultiFn<Members>;
   };
 
 export type VarUnion<
   Name extends string,
   Members extends GenericMembers
-> = VarStruct<Name, Members>;
+> = VarStruct<Name, Members> & {
+  setMulti: SetMultiFn<Members>;
+};
 
 export type ParamStruct<
   StructName extends string,
@@ -424,3 +430,7 @@ type ParensExp<S extends string> = BaseExp<S> & {
   kind: "parens";
   exp: ValueExp<S>;
 };
+
+type SetMultiFn<Members extends GenericMembers> = (
+  values: Partial<Record<keyof Members, ValArg>>
+) => Val[];

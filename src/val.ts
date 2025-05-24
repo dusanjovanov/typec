@@ -311,7 +311,7 @@ export class Val<S extends string = any> {
       type: this.type.desc.kind === "pointer" ? this.type.desc.type : this.type,
       value: this,
       op: "*",
-    });
+    }) as Val<S extends `${infer T}*` ? T : S>;
   }
 
   /** `a++` */
