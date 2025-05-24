@@ -34,6 +34,98 @@ const at = Fn.new(
   }
 );
 
+const push = Fn.int(
+  "tc_array_push",
+  [arrParam, Param.new(Type.void().pointer(), "element")],
+  ({ params }) => {
+    const { arr, element } = params;
+    const newCapacity = Var.size_t("new_capacity");
+    const newSize = Var.size_t("new_size");
+    const newData = Var.new(Type.void().pointer(), "new_data");
+
+    return [
+      arr.not().or(element.not()).thenReturn(-1),
+      arr._.length.gte(arr._.capacity).then([
+        // Double capacity
+        newCapacity.init(
+          arr._.capacity.equal(0).ternary(1, arr._.capacity.mul(2))
+        ),
+        newSize.init(newCapacity.mul(arr._.element_size)),
+        // Ensure new_size is a multiple of alignment
+        newSize
+          .mod(arr._.alignment)
+          .notEqual(0)
+          .then([
+            newSize.set(
+              newSize.div(arr._.alignment).plus(1).parens().mul(arr._.alignment)
+            ),
+            newCapacity.set(newSize.div(arr._.element_size)),
+          ]),
+        // Allocate new aligned block
+        newData.init(stdlib.aligned_alloc(arr._.alignment, newSize)),
+        newData.notThen([
+          // Fallback to malloc
+          newData.set(stdlib.malloc(newSize)),
+          newData.notReturn(-1),
+        ]),
+        // Copy existing data
+        stdstring.memcpy(
+          arr._.data
+            .plus(arr._.length.mul(arr._.element_size))
+            .cast(Type.string()),
+          element,
+          arr._.element_size
+        ),
+        // Free old data
+        stdlib.free(arr._.data),
+        // Update array
+        arr._.data.set(newData),
+        arr._.capacity.set(newCapacity),
+      ]),
+      stdstring.memcpy(
+        arr._.data
+          .plus(arr._.length)
+          .mul(arr._.element_size)
+          .cast(Type.string()),
+        element,
+        arr._.element_size
+      ),
+      arr._.length.postInc(),
+      _.return(0),
+    ];
+  }
+);
+
+const forEach = Fn.void(
+  "tc_array_for_each",
+  [
+    arrParam,
+    Param.func(Type.void(), "callback", [
+      Param.new(Type.void().pointer(), "element"),
+      Param.size_t("index"),
+      arrParam,
+    ]),
+  ],
+  ({ params }) => {
+    const { arr, callback } = params;
+    const i = Var.size_t("i");
+    const element = Var.new(Type.void().pointer(), "element");
+    return [
+      arr.not().or(callback.not()).thenReturn(),
+      Loop.for(i.init(), i.lt(arr._.length), i.postInc(), [
+        element.init(at(arr, i)),
+        element.then([callback(element, i, arr)]),
+      ]),
+    ];
+  }
+);
+
+const free = Fn.void("tc_array_free", [arrParam], ({ params }) => {
+  return [
+    params.arr.then([stdlib.free(params.arr._.data), stdlib.free(params.arr)]),
+  ];
+});
+
 /**
  * A `tc` equivalent of the js `Array` class.
  */
@@ -41,92 +133,9 @@ export const TcArray = TcClass.new(
   ArrayStruct,
   {
     at,
-    push: Fn.int(
-      "tc_array_push",
-      [arrParam, Param.new(Type.void().pointer(), "element")],
-      ({ params }) => {
-        const { arr, element } = params;
-        const newCapacity = Var.size_t("new_capacity");
-        const newSize = Var.size_t("new_size");
-        const newData = Var.new(Type.void().pointer(), "new_data");
-
-        return [
-          arr.not().or(element.not()).thenReturn(-1),
-          arr._.length.gte(arr._.capacity).then([
-            // Double capacity
-            newCapacity.init(
-              arr._.capacity.equal(0).ternary(1, arr._.capacity.mul(2))
-            ),
-            newSize.init(newCapacity.mul(arr._.element_size)),
-            // Ensure new_size is a multiple of alignment
-            newSize
-              .mod(arr._.alignment)
-              .notEqual(0)
-              .then([
-                newSize.set(
-                  newSize
-                    .div(arr._.alignment)
-                    .plus(1)
-                    .parens()
-                    .mul(arr._.alignment)
-                ),
-                newCapacity.set(newSize.div(arr._.element_size)),
-              ]),
-            // Allocate new aligned block
-            newData.init(stdlib.aligned_alloc(arr._.alignment, newSize)),
-            newData.notThen([
-              // Fallback to malloc
-              newData.set(stdlib.malloc(newSize)),
-              newData.notReturn(-1),
-            ]),
-            // Copy existing data
-            stdstring.memcpy(
-              arr._.data
-                .plus(arr._.length.mul(arr._.element_size))
-                .cast(Type.string()),
-              element,
-              arr._.element_size
-            ),
-            // Free old data
-            stdlib.free(arr._.data),
-            // Update array
-            arr._.data.set(newData),
-            arr._.capacity.set(newCapacity),
-          ]),
-        ];
-      }
-    ),
-    forEach: Fn.void(
-      "tc_array_for_each",
-      [
-        arrParam,
-        Param.func(Type.void(), "callback", [
-          Param.new(Type.void().pointer(), "element"),
-          Param.size_t("index"),
-          arrParam,
-        ]),
-      ],
-      ({ params }) => {
-        const { arr, callback } = params;
-        const i = Var.size_t("i");
-        const element = Var.new(Type.void().pointer(), "element");
-        return [
-          arr.not().or(callback.not()).thenReturn(),
-          Loop.for(i.init(), i.lt(arr._.length), i.postInc(), [
-            element.init(at(arr, i)),
-            element.then([callback(element, i, arr)]),
-          ]),
-        ];
-      }
-    ),
-    free: Fn.void("tc_array_free", [arrParam], ({ params }) => {
-      return [
-        params.arr.then([
-          stdlib.free(params.arr._.data),
-          stdlib.free(params.arr),
-        ]),
-      ];
-    }),
+    push,
+    forEach,
+    free,
   },
   {
     new: Fn.new(
@@ -181,5 +190,8 @@ export const TcArray = TcClass.new(
       }
     ),
     at,
+    push,
+    forEach,
+    free,
   }
 );
