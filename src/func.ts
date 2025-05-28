@@ -7,10 +7,11 @@ import {
   type FuncArgs,
   type FuncParamsByName,
   type ParamsListFromParams,
+  type TypeArg,
 } from "./types";
 import { Val } from "./val";
 
-const createCallable = <
+const createFunc = <
   Return extends string,
   const Params extends readonly Param<any, any>[],
   VarArgs extends boolean = false
@@ -62,6 +63,17 @@ const createCallable = <
       name: name,
     });
   };
+  obj.cast = (type: TypeArg) => {
+    return new Val({
+      kind: "cast",
+      type: Type.typeArgToType(type),
+      value: obj.val(),
+    });
+  };
+  obj.withBody = (body: BodyFn<Return, Params, VarArgs>) => {
+    return createFunc(returnType, name, params, body);
+  };
+
   return obj as unknown as Func<Return, Params, VarArgs>;
 };
 
@@ -77,7 +89,7 @@ export class Fn {
     body?: BodyFn<"void", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
-    return createCallable(Type.void(), name, params, body, options);
+    return createFunc(Type.void(), name, params, body, options);
   }
 
   /** Shortcut for the `bool` return type. */
@@ -90,7 +102,7 @@ export class Fn {
     body?: BodyFn<"bool", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
-    return createCallable(Type.bool(), name, params, body, options);
+    return createFunc(Type.bool(), name, params, body, options);
   }
 
   /** Shortcut for the `int` return type. */
@@ -103,7 +115,7 @@ export class Fn {
     body?: BodyFn<"int", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
-    return createCallable(Type.int(), name, params, body, options);
+    return createFunc(Type.int(), name, params, body, options);
   }
 
   /** Shortcut for the `double` return type. */
@@ -116,7 +128,7 @@ export class Fn {
     body?: BodyFn<"double", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
-    return createCallable(Type.double(), name, params, body, options);
+    return createFunc(Type.double(), name, params, body, options);
   }
 
   /** Shortcut for the `char*` return type. */
@@ -129,7 +141,7 @@ export class Fn {
     body?: BodyFn<"char*", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
-    return createCallable(Type.string(), name, params, body, options);
+    return createFunc(Type.string(), name, params, body, options);
   }
 
   /** Shortcut for the `double` return type. */
@@ -142,7 +154,7 @@ export class Fn {
     body?: BodyFn<"float", Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
-    return createCallable(Type.float(), name, params, body, options);
+    return createFunc(Type.float(), name, params, body, options);
   }
 
   static new<
@@ -156,7 +168,7 @@ export class Fn {
     body?: BodyFn<Return, Params, VarArgs>,
     options?: FuncOptions<VarArgs>
   ) {
-    return createCallable(returnType, name, params, body, options);
+    return createFunc(returnType, name, params, body, options);
   }
 }
 
@@ -178,6 +190,7 @@ export type Func<
    * If the body of the function is not defined, returns a declaration statement instead.
    */
   define(): Stat;
+  cast<S extends string>(type: TypeArg<S>): Val<S>;
   /** Returns a Val for the name of this function. */
   val(): Val;
   hasVarArgs: boolean;
@@ -186,4 +199,7 @@ export type Func<
   type: Type<`${Return}(${ParamsListFromParams<Params>})`>;
   body: BodyFn<Return, Params, VarArgs> | undefined;
   params: FuncParamsByName<Params>;
+  withBody(
+    body: BodyFn<Return, Params, VarArgs>
+  ): Func<Return, Params, VarArgs>;
 } & ((...args: FuncArgs<Params, VarArgs>) => Val<Return>);

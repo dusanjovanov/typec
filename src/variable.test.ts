@@ -11,7 +11,7 @@ describe("Variable", () => {
     // constructor
     const v = Var.new(varType, varName);
     expect(v.name).toBe(varName);
-    expect(v.type).toBe(varType);
+    expect(v.expType).toBe(varType);
     expect(v.declare().toString()).toBe(`int ${varName};`);
 
     // ref
@@ -34,7 +34,7 @@ describe("Variable", () => {
     // constructor
     const v = Var.new(varType, varName);
     expect(v.name).toBe(varName);
-    expect(v.type).toBe(varType);
+    expect(v.expType).toBe(varType);
     expect(v.declare().toString()).toBe(`${varType.str} ${varName};`);
 
     // ref

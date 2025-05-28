@@ -64,6 +64,16 @@ export const joinArgs = (args: CodeLike[]) => {
   return join(args, ",");
 };
 
+/** Code between curly braces */
+export const curly = (code: CodeLike) => {
+  return `{${code}}`;
+};
+
+/** Adds a semicolon at the end. */
+export const semicolon = (code: CodeLike) => {
+  return `${code};`;
+};
+
 export const stringSplice = (
   str: string,
   offset: number,
@@ -92,7 +102,7 @@ export const createMemberValues = <Members extends GenericMembers>(
   const vals: Record<any, any> = {};
   Object.keys(struct.members).forEach((key) => {
     const memberVal =
-      val.type.typeKind === "pointer" ? val.arrow(key) : val.dot(key);
+      val.expType.typeKind === "pointer" ? val.arrow(key) : val.dot(key);
 
     if (isWhich("struct", struct.members[key])) {
       vals[key] = createValStruct(struct.members[key], memberVal.exp);
@@ -101,7 +111,7 @@ export const createMemberValues = <Members extends GenericMembers>(
     else if (isWhich("structPointer", struct.members[key])) {
       vals[key] = createValStruct(
         struct.members[key],
-        (val.type.typeKind === "pointer"
+        (val.expType.typeKind === "pointer"
           ? val.arrow(key, Type.pointer(Type.any()))
           : val.dot(key, Type.pointer(Type.any()))
         ).exp
@@ -165,7 +175,6 @@ export const isTcObject = (val: any) => {
 
 export const copyInstance = <T extends Record<any, any>>(original: T) => {
   const copy = Object.create(original.constructor.prototype);
-
   for (const key of Object.getOwnPropertyNames(original)) {
     if (typeof original[key] === "function") {
       copy[key] = original[key].bind(original);
@@ -175,13 +184,12 @@ export const copyInstance = <T extends Record<any, any>>(original: T) => {
       copy[key] = original[key];
     }
   }
-
   return copy as T;
 };
 
 export const setMulti =
   (obj: Val) => (values: Partial<Record<string, ValArg>>) => {
-    const memberAccess = obj.type.typeKind === "pointer" ? "arrow" : "dot";
+    const memberAccess = obj.expType.typeKind === "pointer" ? "arrow" : "dot";
     return Object.entries(values).map(([key, value]) => {
       return obj[memberAccess](key).set(value!);
     });

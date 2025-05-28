@@ -1,11 +1,17 @@
 import type { Cond } from "./condition";
+import type { Directive } from "./directive";
 import type { Enum } from "./enum";
 import type { Func } from "./func";
 import type { Stat } from "./statement";
 import type { Struct } from "./struct";
 import type { Switch } from "./switch";
 import type { Type } from "./type";
-import type { StructPointer } from "./types";
+import type {
+  GenericFuncs,
+  ParamFunc,
+  StructPointer,
+  TcClassObj,
+} from "./types";
 import type { Union } from "./union";
 import { isTcObject } from "./utils";
 import type { Val } from "./val";
@@ -21,6 +27,9 @@ export const BRANDING_MAP = {
   cond: Symbol.for("tc_cond"),
   type: Symbol.for("tc_type"),
   structPointer: Symbol.for("tc_structPointer"),
+  cls: Symbol.for("tc_class"),
+  paramFunc: Symbol.for("tc_param_func"),
+  directive: Symbol.for("tc_directive"),
 };
 
 export const isWhich = <Which extends keyof BrandingMap>(
@@ -41,4 +50,7 @@ export type BrandingMap = {
   val: Val;
   type: Type;
   structPointer: StructPointer;
+  cls: TcClassObj<any, any, any, Record<string, any>>;
+  paramFunc: ParamFunc<any, any, any>;
+  directive: Directive;
 };

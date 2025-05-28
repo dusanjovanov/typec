@@ -1,3 +1,4 @@
+import type { Autocomplete } from "./types";
 import { join, joinArgs, joinWithPrefix } from "./utils";
 
 /**
@@ -63,6 +64,9 @@ export const gcc = (options: GccOptions) => {
           }
           case "output": {
             return `-o ${value}`;
+          }
+          case "std": {
+            return `std=${value}`;
           }
         }
       })
@@ -180,8 +184,38 @@ export type GccOptions = {
    * @default "0"
    */
   optimizationLevel?: GccOptimizationLevel;
+  /**
+   * Determines the language standard.
+   *
+   * Flag: `-std`
+   */
+  std?: Autocomplete<GccStd>;
 };
 
 export type GccStoppingStage = "preprocessing" | "compilation" | "assembly";
 
 export type GccOptimizationLevel = "0" | "1" | "2" | "3" | "s";
+
+export type GccStd =
+  | "c90"
+  | "c89"
+  | "c99"
+  | "c9x"
+  | "c11"
+  | "c1x"
+  | "c17"
+  | "c18"
+  | "c23"
+  | "c2x"
+  | "c2y"
+  | "gnu90"
+  | "gnu89"
+  | "gnu99"
+  | "gnu9x"
+  | "gnu11"
+  | "gnu1x"
+  | "gnu17"
+  | "gnu18"
+  | "gnu23"
+  | "gnu2x"
+  | "gnu2y";

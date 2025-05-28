@@ -1,72 +1,204 @@
-import { Chunk } from "./chunk";
-import type { CodeLike } from "./types";
-import { joinArgs } from "./utils";
+import { BRANDING_MAP } from "./brand";
+import type { ValArg } from "./types";
+import { emptyFalsy, joinArgs } from "./utils";
+import { Val } from "./val";
 
 /** C preprocessor directives. */
 export class Directive {
-  static defineValue(name: string, value: CodeLike) {
-    return `#define ${name} ${value}`;
+  constructor(desc: DirectiveDesc) {
+    this.desc = desc;
   }
+  kind = BRANDING_MAP.directive;
+  desc;
 
-  static defineWithArgs(name: string, args: string[], body: CodeLike) {
-    return `#define ${name}(${joinArgs(args)}) (${body})`;
-  }
-
-  static undef(name: string) {
-    return `#undef ${name}`;
-  }
-
-  /** Generates an include directive for a relative ( project ) header file. `""` */
-  static includeRel(name: string) {
-    return `#include "${name}"`;
+  toString() {
+    switch (this.desc.kind) {
+      case "includeSys": {
+        return `#include <${this.desc.path}>`;
+      }
+      case "includeRel": {
+        return `#include "${this.desc.path}"`;
+      }
+      case "define": {
+        return `#define ${this.desc.name}${emptyFalsy(
+          this.desc.value,
+          (v) => ` ${v}`
+        )}`;
+      }
+      case "defineArgs": {
+        return `#define ${this.desc.name}(${joinArgs(this.desc.args)}) (${
+          this.desc.text
+        })`;
+      }
+      case "undef": {
+        return `#undef ${this.desc.name}`;
+      }
+      case "if": {
+        return `#if ${this.desc.exp}`;
+      }
+      case "ifdef": {
+        return `#ifdef ${this.desc.macro}`;
+      }
+      case "ifndef": {
+        return `#ifndef ${this.desc.macro}`;
+      }
+      case "elif": {
+        return `#elif ${this.desc.exp}`;
+      }
+      case "else": {
+        return `#else`;
+      }
+      case "endif": {
+        return `#endif`;
+      }
+      case "pragma": {
+        return `#pragma ${this.desc.directive}`;
+      }
+    }
   }
 
   /** Generates an include directive for a system ( standard ) header file. `<>` */
-  static includeSys(name: string) {
-    return `#include <${name}>`;
+  static includeSys(path: string) {
+    return new Directive({ kind: "includeSys", path });
   }
 
-  static if(condition: CodeLike, body: CodeLike[]) {
-    return new ConditionalDirective("if", condition, body);
+  /** Generates an include directive for a relative ( project ) header file. `""` */
+  static includeRel(path: string) {
+    return new Directive({ kind: "includeRel", path });
   }
 
-  static ifdef(condition: CodeLike, body: CodeLike[]) {
-    return new ConditionalDirective("ifdef", condition, body);
+  static defineValue(name: string, value: ValArg | null) {
+    return new Directive({
+      kind: "define",
+      name,
+      value: value != null ? Val.valArgToVal(value) : value,
+    });
   }
 
-  static ifndef(condition: CodeLike, body: CodeLike[]) {
-    return new ConditionalDirective("ifndef", condition, body);
+  static defineWithArgs(name: string, args: string[], text: string) {
+    return new Directive({ kind: "defineArgs", name, args, text });
   }
 
-  static pragma(directive: CodeLike) {
-    return `#pragma ${directive}`;
+  static undef(name: string) {
+    return new Directive({ kind: "undef", name });
+  }
+
+  static if(exp: string) {
+    return new Directive({
+      kind: "if",
+      exp,
+    });
+  }
+
+  static ifdef(macro: ValArg) {
+    return new Directive({ kind: "ifdef", macro: Val.valArgToVal(macro) });
+  }
+
+  static ifndef(macro: ValArg) {
+    return new Directive({
+      kind: "ifndef",
+      macro: Val.valArgToVal(macro),
+    });
+  }
+
+  static elif(exp: string) {
+    return new Directive({
+      kind: "elif",
+      exp,
+    });
+  }
+
+  static else() {
+    return new Directive({
+      kind: "else",
+    });
+  }
+
+  static endif() {
+    return new Directive({
+      kind: "endif",
+    });
+  }
+
+  static pragma(directive: string) {
+    return new Directive({
+      kind: "pragma",
+      directive,
+    });
   }
 }
 
-export class ConditionalDirective {
-  constructor(
-    directive: "if" | "ifdef" | "ifndef",
-    condition: CodeLike,
-    body: CodeLike[]
-  ) {
-    this.statements.push(`#${directive} ${condition}${Chunk.new(...body)}`);
-  }
-  kind = "conditionDirective" as const;
-  statements: CodeLike[] = [];
+type DirectiveDesc =
+  | IncludeSys
+  | IncludeRel
+  | Define
+  | DefineArgs
+  | Undef
+  | IfDirective
+  | IfDef
+  | IfNotDef
+  | ElIf
+  | ElseDirective
+  | EndIf
+  | Pragma;
 
-  elif(condition: CodeLike, body: CodeLike[]) {
-    this.statements.push(`#elif ${condition}${Chunk.new(...body)}`);
-  }
+type IncludeSys = {
+  kind: "includeSys";
+  path: string;
+};
 
-  else(body: CodeLike[]) {
-    this.statements.push(`#else${Chunk.new(...body)}`);
-  }
+type IncludeRel = {
+  kind: "includeRel";
+  path: string;
+};
 
-  end() {
-    return this.statements.push(`#endif`);
-  }
+type Define = {
+  kind: "define";
+  name: string;
+  value: Val | null;
+};
 
-  toString() {
-    return Chunk.new(...this.statements).toString();
-  }
-}
+type DefineArgs = {
+  kind: "defineArgs";
+  name: string;
+  args: string[];
+  text: string;
+};
+
+type Undef = {
+  kind: "undef";
+  name: string;
+};
+
+type IfDirective = {
+  kind: "if";
+  exp: string;
+};
+
+type IfDef = {
+  kind: "ifdef";
+  macro: Val;
+};
+
+type IfNotDef = {
+  kind: "ifndef";
+  macro: Val;
+};
+
+type ElIf = {
+  kind: "elif";
+  exp: string;
+};
+
+type ElseDirective = {
+  kind: "else";
+};
+
+type EndIf = {
+  kind: "endif";
+};
+
+type Pragma = {
+  kind: "pragma";
+  directive: string;
+};

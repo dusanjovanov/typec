@@ -1,7 +1,10 @@
+import { BRANDING_MAP } from "./brand";
+import { Param } from "./param";
 import type { Struct } from "./struct";
 import type {
   GenericFuncs,
   GenericMembers,
+  ParamClass,
   PointerQualifier,
   TcClassObj,
   TypeArg,
@@ -25,29 +28,29 @@ export class TcClass {
     Members extends GenericMembers,
     const Methods extends GenericFuncs,
     Static extends GenericFuncs
-  >(
-    struct: Struct<Name, Members>,
-    methods: Methods,
-    staticMethods: Static = {} as Static
-  ) {
-    return createClass(struct, methods, staticMethods);
+  >(options: ClassOptions<Name, Members, Methods, Static>) {
+    return createClass(options);
   }
 }
 
 const createClass = <
-  Name extends string,
+  StructName extends string,
   Members extends GenericMembers,
   const Methods extends GenericFuncs,
   Static extends GenericFuncs
->(
-  struct: Struct<Name, Members>,
-  methods: Methods,
-  staticMethods: Static = {} as Static
-) => {
+>({
+  struct,
+  methods = {} as Methods,
+  staticMethods: staticMethods = {} as Static,
+  embed = [],
+}: ClassOptions<StructName, Members, Methods, Static>) => {
   return {
     ...staticMethods,
+    __static: staticMethods,
+    kind: BRANDING_MAP.cls,
     struct,
     methods,
+    embed,
     var(name: string, typeQualifiers?: TypeQualifier[]) {
       return createVarClass(
         this.struct.type(typeQualifiers),
@@ -61,14 +64,38 @@ const createClass = <
       typeQualifiers?: TypeQualifier[],
       pointerQualifiers?: PointerQualifier[]
     ) {
-      return createVarClass<`${Name}*`, Members, Methods>(
+      return createVarClass<`${StructName}*`, Members, Methods>(
         this.struct.type(typeQualifiers).pointer(pointerQualifiers),
         name,
         this.struct as any,
         this.methods
       );
     },
-  } as TcClassObj<Name, Members, Methods, Static>;
+    paramPointer<Name extends string>(
+      name: Name,
+      typeQualifiers?: TypeQualifier[],
+      pointerQualifiers?: PointerQualifier[]
+    ) {
+      return createParamClass<`${StructName}*`, Members, Methods, Name>(
+        this.struct.type(typeQualifiers).pointer(pointerQualifiers),
+        name,
+        this.struct as any,
+        this.methods
+      );
+    },
+  } as TcClassObj<StructName, Members, Methods, Static>;
+};
+
+type ClassOptions<
+  Name extends string,
+  Members extends GenericMembers,
+  Methods extends GenericFuncs,
+  Static extends GenericFuncs
+> = {
+  struct: Struct<Name, Members>;
+  methods?: Methods;
+  staticMethods?: Static;
+  embed?: any[];
 };
 
 const createVarClass = <
@@ -97,6 +124,30 @@ const createVarClass = <
   return obj as VarClass<Name, Members, Methods>;
 };
 
+const createParamClass = <
+  StructName extends string,
+  Members extends GenericMembers,
+  const Methods extends GenericFuncs,
+  Name extends string
+>(
+  type: TypeArg<StructName>,
+  name: Name,
+  struct: Struct<StructName, Members>,
+  methods: Methods
+) => {
+  const param = new Param(type, name);
+
+  const obj = copyInstance(param);
+
+  Object.assign(
+    obj,
+    createMemberValues(obj, struct),
+    createBoundFuncs(obj, methods)
+  );
+
+  return obj as ParamClass<StructName, Members, Methods, Name>;
+};
+
 const createBoundFuncs = (exp: Val, funcs: GenericFuncs) => {
   const bound: Record<string, any> = {};
   Object.entries(funcs).forEach(([key, fn]) => {
@@ -106,15 +157,15 @@ const createBoundFuncs = (exp: Val, funcs: GenericFuncs) => {
       let e = exp;
 
       if (
-        firstParam.type.typeKind === "pointer" &&
-        exp.type.typeKind !== "pointer"
+        firstParam.expType.typeKind === "pointer" &&
+        exp.expType.typeKind !== "pointer"
       ) {
         e = exp.ref();
       }
       //
       else if (
-        firstParam.type.typeKind !== "pointer" &&
-        exp.type.typeKind === "pointer"
+        firstParam.expType.typeKind !== "pointer" &&
+        exp.expType.typeKind === "pointer"
       ) {
         e = exp.deRef();
       }

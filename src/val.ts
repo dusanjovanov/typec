@@ -31,7 +31,7 @@ export class Val<S extends string = any> {
   kind = BRANDING_MAP.val;
   exp;
 
-  get type() {
+  get expType() {
     return this.exp.type;
   }
 
@@ -170,6 +170,11 @@ export class Val<S extends string = any> {
   }
 
   /** Returns a Val for the `||` expression between this and another expression.  */
+  and(value: ValArg) {
+    return this.binaryLogical(value, "&&");
+  }
+
+  /** Returns a Val for the `||` expression between this and another expression.  */
   or(value: ValArg) {
     return this.binaryLogical(value, "||");
   }
@@ -190,7 +195,7 @@ export class Val<S extends string = any> {
   ): Val<S> {
     return new Val({
       kind: "binary",
-      type: this.type,
+      type: this.expType,
       left: this,
       right: Val.valArgToVal(value),
       op,
@@ -238,10 +243,10 @@ export class Val<S extends string = any> {
   }
 
   /** Returns a Val for the cast `(type)exp` expression of this expression to the passed Type.  */
-  cast<S extends string>(type: Type<S>): Val<S> {
+  cast<S extends string>(type: TypeArg<S>): Val<S> {
     return new Val({
       kind: "cast",
-      type,
+      type: Type.typeArgToType(type),
       value: this,
     });
   }
@@ -255,7 +260,7 @@ export class Val<S extends string = any> {
   negate() {
     return new Val({
       kind: "preUnary",
-      type: this.type,
+      type: this.expType,
       value: this,
       op: "-",
     });
@@ -298,7 +303,7 @@ export class Val<S extends string = any> {
   ref(): Val<`${S}*`> {
     return new Val({
       kind: "preUnary",
-      type: this.type.pointer(),
+      type: this.expType.pointer(),
       value: this,
       op: "&",
     });
@@ -308,7 +313,10 @@ export class Val<S extends string = any> {
   deRef() {
     return new Val({
       kind: "preUnary",
-      type: this.type.desc.kind === "pointer" ? this.type.desc.type : this.type,
+      type:
+        this.expType.desc.kind === "pointer"
+          ? this.expType.desc.type
+          : this.expType,
       value: this,
       op: "*",
     }) as Val<S extends `${infer T}*` ? T : S>;
@@ -318,7 +326,7 @@ export class Val<S extends string = any> {
   postInc() {
     return new Val({
       kind: "postUnary",
-      type: this.type,
+      type: this.expType,
       value: this,
       op: "++",
     });
@@ -328,7 +336,7 @@ export class Val<S extends string = any> {
   postDec() {
     return new Val({
       kind: "postUnary",
-      type: this.type,
+      type: this.expType,
       value: this,
       op: "--",
     });
@@ -338,7 +346,7 @@ export class Val<S extends string = any> {
   preInc() {
     return new Val({
       kind: "preUnary",
-      type: this.type,
+      type: this.expType,
       value: this,
       op: "++",
     });
@@ -348,7 +356,7 @@ export class Val<S extends string = any> {
   preDec() {
     return new Val({
       kind: "preUnary",
-      type: this.type,
+      type: this.expType,
       value: this,
       op: "--",
     });
@@ -485,7 +493,7 @@ export class Val<S extends string = any> {
 
   /** Returns a Val for the current expression wrapped in parenthesis. */
   parens() {
-    return new Val({ kind: "parens", exp: this.exp, type: this.type });
+    return new Val({ kind: "parens", exp: this.exp, type: this.expType });
   }
 
   /**
@@ -653,7 +661,7 @@ export class Val<S extends string = any> {
     return new Val({
       kind: "literal",
       type: Type.any(),
-      value: Lit.compound(...values),
+      value: Lit.compound(...values.map((v) => Val.valArgToVal(v))),
     });
   }
 
@@ -683,19 +691,6 @@ export class Val<S extends string = any> {
     });
   }
 
-  /**
-   * Returns a Val for a union single value initializer expression.
-   *
-   * `{23}`
-   */
-  static singleMemberInit(value: ValArg) {
-    return new Val({
-      kind: "literal",
-      type: Type.any(),
-      value: Lit.singleMemberInit(value),
-    });
-  }
-
   /** Returns a Val for a macro value. */
   static macro<S extends string = "any">(name: string, type?: TypeArg<S>) {
     return new Val<S>({
@@ -719,7 +714,7 @@ export class Val<S extends string = any> {
   static ref<S extends string>(value: Val<S>) {
     return new Val({
       kind: "preUnary",
-      type: value.type.pointer(),
+      type: value.expType.pointer(),
       value,
       op: "&",
     });
@@ -790,7 +785,7 @@ export class Val<S extends string = any> {
       return new Val({ kind: "type", type: val.type() });
     }
     //
-    else if (isWhich("func", val)) {
+    else if (isWhich("func", val) || isWhich("paramFunc", val)) {
       return new Val({ kind: "name", type: val.type, name: val.name });
     }
     //

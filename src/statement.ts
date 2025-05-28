@@ -1,6 +1,6 @@
 import { BRANDING_MAP, isWhich } from "./brand";
-import { curly } from "./chunk";
 import type { Cond } from "./condition";
+import type { Directive } from "./directive";
 import type { Switch } from "./switch";
 import { Type } from "./type";
 import type {
@@ -9,7 +9,7 @@ import type {
   StatArg,
   ValArg,
 } from "./types";
-import { emptyNotFalse, memberTypeArgToType } from "./utils";
+import { curly, emptyNotFalse, memberTypeArgToType } from "./utils";
 import { Val } from "./val";
 import type { Var } from "./variable";
 
@@ -44,7 +44,7 @@ export class Stat {
         return `${this.desc.type.declare(this.desc.name)}`;
       }
       case "varInit": {
-        return `${this.desc.var.type.declare(this.desc.var.name)}=${
+        return `${this.desc.var.expType.declare(this.desc.var.name)}=${
           this.desc.value
         };`;
       }
@@ -73,7 +73,7 @@ export class Stat {
         return this.desc.switch.toString();
       }
       case "funcDeclaration": {
-        return `${this.desc.type.declare(this.desc.name)}`;
+        return `${this.desc.type.declare(this.desc.name)};`;
       }
       case "funcDef": {
         return `${this.desc.type.declare(this.desc.name)}${Stat.block(
@@ -95,15 +95,18 @@ export class Stat {
       case "enum": {
         return `enum ${this.desc.name}${Stat.block(this.desc.statements)};`;
       }
+      case "manual": {
+        return this.desc.code;
+      }
+      case "directive": {
+        return this.desc.directive.toString();
+      }
     }
   }
 
-  // TODO: remove string from type
   /** Helper to add new lines between statements which represent a chunk of code, but not necessarily a block ( chunk with curly braces ). */
-  static chunk(statements: (StatArg | string)[]): string {
-    return statements
-      .map((s) => (typeof s === "string" ? s : Stat.statArgToStat(s)))
-      .join(`\n`);
+  static chunk(statements: StatArg[]): string {
+    return statements.map((s) => Stat.statArgToStat(s)).join(`\n`);
   }
 
   /** Helper for creating a curly braces enclosed block containing the passed statements. */
@@ -111,7 +114,7 @@ export class Stat {
     return `\n${curly(`\n${Stat.chunk(statements)}\n`)}`;
   }
 
-  static statArgToStat(arg: StatArg) {
+  static statArgToStat(arg: StatArg): Stat {
     if (isWhich("stat", arg)) {
       return arg;
     }
@@ -142,6 +145,10 @@ export class Stat {
     //
     else if (isWhich("enum", arg)) {
       return arg.declare();
+    }
+    //
+    else if (isWhich("directive", arg)) {
+      return new Stat({ kind: "directive", directive: arg });
     }
     // keep TS happy
     else {
@@ -298,6 +305,13 @@ export class Stat {
     });
   }
 
+  static manual(code: string) {
+    return new Stat({
+      kind: "manual",
+      code,
+    });
+  }
+
   static memberStatements(members: GenericMembers): Stat[] {
     return Object.entries(members).map(([key, value]) => {
       return Stat.varDeclaration(memberTypeArgToType(value), key);
@@ -326,7 +340,9 @@ type Statement =
   | VarDeclarationStatement
   | ParamDeclarationStatement
   | EnumStatement
-  | EnumValueStatement;
+  | EnumValueStatement
+  | ManualStatement
+  | DirectiveStatement;
 
 type ReturnStatement = {
   kind: "return";
@@ -449,4 +465,14 @@ type EnumValueStatement = {
   kind: "enumValue";
   name: string;
   value: Val | null;
+};
+
+type ManualStatement = {
+  kind: "manual";
+  code: string;
+};
+
+type DirectiveStatement = {
+  kind: "directive";
+  directive: Directive;
 };

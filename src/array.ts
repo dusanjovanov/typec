@@ -1,5 +1,8 @@
 import { TcClass } from "./class";
+import { Cond } from "./condition";
 import { NULL } from "./constants";
+import { crt } from "./crt";
+import { Directive } from "./directive";
 import { Fn } from "./func";
 import { Loop } from "./loops";
 import { Param } from "./param";
@@ -17,6 +20,35 @@ const ArrayStruct = Struct.new("tc_Array", {
   data: Type.voidPointer(),
 });
 
+const wrappedAlignedAlloc = Fn.new(
+  Type.voidPointer(),
+  "wrapped_aligned_alloc",
+  [Param.size_t("alignment"), Param.size_t("size")],
+  ({ params: { alignment, size } }) => {
+    return [
+      Directive.ifdef(crt._WIN32),
+      _.return(crt._aligned_malloc(size, alignment)),
+      Directive.else(),
+      _.return(stdlib.aligned_alloc(alignment, size)),
+      Directive.endif(),
+    ];
+  }
+);
+
+const wrappedAlignedFree = Fn.void(
+  "wrapped_aligned_free",
+  [Param.new(Type.voidPointer(), "ptr")],
+  ({ params: { ptr } }) => {
+    return [
+      Directive.ifdef(crt._WIN32),
+      _.return(crt._aligned_free(ptr)),
+      Directive.else(),
+      _.return(stdlib.free(ptr)),
+      Directive.endif(),
+    ];
+  }
+);
+
 const arrParam = Param.structPointer(ArrayStruct, "arr");
 
 const at = Fn.new(
@@ -27,7 +59,7 @@ const at = Fn.new(
     const { arr, index } = params;
     return [
       arr.not().or(index.gte(arr.length)).thenReturn(NULL),
-      _.return(arr.data.plus(index.mul(arr.element_size)).cast(Type.string())),
+      _.return(arr.data.cast(Type.string()).plus(index.mul(arr.element_size))),
     ];
   }
 );
@@ -35,8 +67,7 @@ const at = Fn.new(
 const push = Fn.int(
   "tc_array_push",
   [arrParam, Param.new(Type.voidPointer(), "element")],
-  ({ params }) => {
-    const { arr, element } = params;
+  ({ params: { arr, element } }) => {
     const newCapacity = Var.size_t("new_capacity");
     const newSize = Var.size_t("new_size");
     const newData = Var.new(Type.voidPointer(), "new_data");
@@ -58,7 +89,7 @@ const push = Fn.int(
             newCapacity.set(newSize.div(arr.element_size)),
           ]),
         // Allocate new aligned block
-        newData.init(stdlib.aligned_alloc(arr.alignment, newSize)),
+        newData.init(wrappedAlignedAlloc(arr.alignment, newSize)),
         newData.notThen([
           // Fallback to malloc
           newData.set(stdlib.malloc(newSize)),
@@ -66,18 +97,18 @@ const push = Fn.int(
         ]),
         // Copy existing data
         stdstring.memcpy(
-          arr.data.plus(arr.length.mul(arr.element_size)).cast(Type.string()),
+          arr.data.cast(Type.string()).plus(arr.length.mul(arr.element_size)),
           element,
           arr.element_size
         ),
         // Free old data
-        stdlib.free(arr.data),
+        wrappedAlignedFree(arr.data),
         // Update array
         arr.data.set(newData),
         arr.capacity.set(newCapacity),
       ]),
       stdstring.memcpy(
-        arr.data.plus(arr.length).mul(arr.element_size).cast(Type.string()),
+        arr.data.cast(Type.string()).plus(arr.length).mul(arr.element_size),
         element,
         arr.element_size
       ),
@@ -94,95 +125,105 @@ const forEach = Fn.void(
     Param.func(Type.void(), "callback", [
       Param.new(Type.voidPointer(), "element"),
       Param.size_t("index"),
+      Param.new(Type.voidPointer(), "userData"),
       arrParam,
     ]),
+    Param.new(Type.voidPointer(), "userData"),
   ],
-  ({ params }) => {
-    const { arr, callback } = params;
+  ({ params: { arr, callback, userData } }) => {
     const i = Var.size_t("i");
     const element = Var.new(Type.voidPointer(), "element");
     return [
-      arr.not().or(callback.not()).thenReturn(),
+      Cond.anyNotReturn([arr, callback]),
       Loop.range(i, 0, arr.length, [
         element.init(at(arr, i)),
-        element.then([callback(element, i, arr)]),
+        element.then([callback(element, i, arr, userData)]),
       ]),
     ];
   }
 );
 
-const free = Fn.void("tc_array_free", [arrParam], ({ params }) => {
-  return [
-    params.arr.then([stdlib.free(params.arr.data), stdlib.free(params.arr)]),
-  ];
+const free = Fn.void("tc_array_free", [arrParam], ({ params: { arr } }) => {
+  return [arr.then([wrappedAlignedFree(arr.data), stdlib.free(arr)])];
 });
+
+const newFn = Fn.new(
+  ArrayStruct.pointer(),
+  "tc_array_new",
+  [
+    Param.size_t("element_size"),
+    Param.size_t("initial_capacity"),
+    Param.size_t("alignment"),
+  ],
+  ({ params: { element_size, initial_capacity, alignment } }) => {
+    const allocSize = Var.size_t("alloc_size");
+    const arr = Var.structPointer(ArrayStruct, "arr");
+
+    return [
+      // Validate alignment (must be power of 2)
+      alignment
+        .equal(0)
+        .or(alignment.bitAnd(alignment.minus(1).parens()).parens().notEqual(0))
+        .thenReturn(NULL),
+      // Ensure size is a multiple of alignment
+      allocSize.init(element_size.mul(initial_capacity)),
+      allocSize
+        .mod(alignment)
+        .notEqual(0)
+        .then([
+          allocSize.set(
+            allocSize.div(alignment).plus(1).parens().mul(alignment)
+          ),
+          initial_capacity.set(allocSize.div(element_size)),
+        ]),
+      // Allocate Array struct
+      arr.init(stdlib.malloc(ArrayStruct.sizeOf())),
+      arr.notReturn(NULL),
+      // Allocate aligned data
+      arr.data.set(wrappedAlignedAlloc(alignment, allocSize)),
+      arr.data.notThen([
+        // Fallback to malloc
+        arr.data.set(stdlib.malloc(allocSize)),
+        // malloc didnt work
+        arr.data.notThen([stdlib.free(arr), _.return(NULL)]),
+      ]),
+      ...arr.setMulti({
+        length: 0,
+        capacity: initial_capacity,
+        element_size,
+        alignment,
+      }),
+      _.return(arr),
+    ];
+  }
+);
 
 /**
  * A `tc` equivalent of the js `Array` class.
  */
-export const TcArray = TcClass.new(
-  ArrayStruct,
-  {
+export const TcArray = TcClass.new({
+  struct: ArrayStruct,
+  methods: {
     at,
     push,
     forEach,
     free,
   },
-  {
-    new: Fn.new(
-      ArrayStruct.pointer(),
-      "tc_array_new",
-      [
-        Param.size_t("element_size"),
-        Param.size_t("initial_capacity"),
-        Param.size_t("alignment"),
-      ],
-      ({ params }) => {
-        const { element_size, initial_capacity, alignment } = params;
-        const allocSize = Var.size_t("alloc_size");
-        const arr = Var.structPointer(ArrayStruct, "arr");
-
-        return [
-          // Validate alignment (must be power of 2)
-          alignment
-            .equal(0)
-            .or(alignment.bitAnd(alignment.minus(1).parens()).notEqual(0))
-            .thenReturn(NULL),
-          // Ensure size is a multiple of alignment
-          allocSize.init(element_size.mul(initial_capacity)),
-          allocSize
-            .mod(alignment)
-            .notEqual(0)
-            .then([
-              allocSize.set(
-                allocSize.div(alignment).plus(1).parens().mul(alignment)
-              ),
-              initial_capacity.set(allocSize.div(element_size)),
-            ]),
-          // Allocate Array struct
-          arr.init(stdlib.malloc(ArrayStruct.sizeOf())),
-          arr.notReturn(NULL),
-          // Allocate aligned data
-          arr.data.set(stdlib.aligned_alloc(alignment, allocSize)),
-          arr.data.not().then([
-            // Fallback to malloc
-            arr.data.set(stdlib.malloc(allocSize)),
-            // malloc didnt work
-            arr.data.not().then([stdlib.free(arr), _.return(NULL)]),
-          ]),
-          ...arr.setMulti({
-            length: 0,
-            capacity: initial_capacity,
-            element_size,
-            alignment,
-          }),
-          _.return(arr),
-        ];
-      }
-    ),
+  staticMethods: {
+    new: newFn,
     at,
     push,
     forEach,
     free,
-  }
-);
+  },
+  embed: [
+    ArrayStruct,
+    wrappedAlignedAlloc,
+    wrappedAlignedFree,
+    newFn,
+    at,
+    push,
+    forEach,
+    free,
+  ],
+});

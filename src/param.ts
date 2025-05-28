@@ -1,12 +1,12 @@
-import { Fn, type Func } from "./func";
+import { BRANDING_MAP } from "./brand";
+import { Fn } from "./func";
 import { Stat } from "./statement";
 import type { Struct } from "./struct";
 import { Type } from "./type";
 import {
   type BodyFn,
-  type FuncArgs,
   type GenericMembers,
-  type ParamsListFromParams,
+  type ParamFunc,
   type ParamStruct,
   type ParamUnion,
   type PointerQualifier,
@@ -30,7 +30,7 @@ export class Param<S extends string, Name extends string> extends Val<S> {
 
   /** Returns the param declaration statement. */
   declare() {
-    return Stat.paramDeclaration(this.type, this.name);
+    return Stat.paramDeclaration(this.expType, this.name);
   }
 
   static int<Name extends string>(
@@ -194,6 +194,11 @@ const createFuncParam = <
   const obj = (...args: any[]) => {
     return Val.call(obj as any, ...args);
   };
+  obj.kind = BRANDING_MAP.paramFunc;
+  obj.hasVarArgs = options?.hasVarArgs as VarArgs extends void
+    ? false
+    : VarArgs;
+  obj.type = Type.func(returnType, params, obj.hasVarArgs);
   Object.defineProperty(obj, "name", {
     value: name,
     writable: false,
@@ -208,18 +213,5 @@ const createFuncParam = <
   obj.duplicate = (name: string, body: BodyFn<Return, Params, VarArgs>) => {
     return Fn.new(returnType, name, params, body, options);
   };
-  return obj as ParamFunc<Return, Params, Name, VarArgs>;
+  return obj as unknown as ParamFunc<Return, Params, Name, VarArgs>;
 };
-
-type ParamFunc<
-  Return extends string,
-  Params extends readonly Param<any, any>[],
-  Name extends string,
-  VarArgs extends boolean = false
-> = Param<`${Return}(${ParamsListFromParams<Params>})`, Name> & {
-  /** Returns a Func with the same signature ( type ) and a different name and body ( that you pass ). */
-  duplicate: (
-    name: string,
-    body: BodyFn<Return, Params, VarArgs>
-  ) => Func<Return, Params, VarArgs>;
-} & ((...args: FuncArgs<Params, VarArgs>) => Val<Return>);

@@ -81,6 +81,10 @@ export class Type<S extends string = any> {
     return Type.simple("int", qualifiers);
   }
 
+  static unsigned(qualifiers?: TypeQualifier[]) {
+    return Type.simple("unsigned int", qualifiers);
+  }
+
   static size_t(qualifiers?: TypeQualifier[]) {
     return Type.simple("size_t", qualifiers);
   }

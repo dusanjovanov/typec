@@ -1,4 +1,5 @@
 import type { Cond } from "./condition";
+import type { Directive } from "./directive";
 import type { Enum } from "./enum";
 import type { Func } from "./func";
 import type { Param } from "./param";
@@ -108,7 +109,7 @@ export type GenericFuncs = Record<string, GenericFunc>;
 
 export type FuncArgsFromParams<Params extends readonly Param<any, any>[]> = {
   [index in keyof Params]: FuncArg<
-    ExtractTypeStr<Params[index]["type"]>,
+    ExtractTypeStr<Params[index]["expType"]>,
     Params[index]["name"]
   >;
 };
@@ -173,6 +174,7 @@ export type ValArgWithArray =
   | number
   | string
   | boolean
+  | Record<any, any>
   | ValArgWithArray[];
 
 export type StatArg =
@@ -183,7 +185,8 @@ export type StatArg =
   | Func<any, any, any>
   | Struct
   | Union
-  | Enum;
+  | Enum
+  | Directive;
 
 export type ExtractTypeStr<T extends MemberTypeArg> = T extends Type<infer S>
   ? S
@@ -260,22 +263,30 @@ export type MemberValues<Members extends GenericMembers> = {
 };
 
 export type TcClassObj<
-  Name extends string,
-  Members extends GenericMembers,
-  Methods extends GenericFuncs,
-  Static extends GenericFuncs
+  StructName extends string = any,
+  Members extends GenericMembers = any,
+  Methods extends GenericFuncs = any,
+  Static extends GenericFuncs = any
 > = Static & {
-  struct: Struct<Name, Members>;
+  kind: Symbol;
+  __static: Static;
+  struct: Struct<StructName, Members>;
   methods: Methods;
+  embed: any[];
   var(
     name: string,
     typeQualifiers?: TypeQualifier[]
-  ): VarClass<Name, Members, Methods>;
+  ): VarClass<StructName, Members, Methods>;
   pointer(
     name: string,
     typeQualifiers?: TypeQualifier[],
     pointerQualifiers?: PointerQualifier[]
-  ): VarClass<`${Name}*`, Members, Methods>;
+  ): VarClass<`${StructName}*`, Members, Methods>;
+  paramPointer<Name extends string>(
+    name: Name,
+    typeQualifiers?: TypeQualifier[],
+    pointerQualifiers?: PointerQualifier[]
+  ): ParamClass<`${StructName}*`, Members, Methods, Name>;
 };
 
 export type VarClass<
@@ -287,6 +298,13 @@ export type VarClass<
   BoundFuncs<Methods> & {
     setMulti: SetMultiFn<Members>;
   };
+
+export type ParamClass<
+  StructName extends string,
+  Members extends GenericMembers,
+  Methods extends GenericFuncs,
+  Name extends string
+> = Param<StructName, Name> & MemberValues<Members> & BoundFuncs<Methods>;
 
 export type VarStruct<
   Name extends string,
@@ -314,6 +332,22 @@ export type ParamUnion<
   Members extends GenericMembers,
   Name extends string
 > = ParamStruct<UnionName, Members, Name>;
+
+export type ParamFunc<
+  Return extends string,
+  Params extends readonly Param<any, any>[],
+  Name extends string,
+  VarArgs extends boolean = false
+> = Param<`${Return}(${ParamsListFromParams<Params>})`, Name> & {
+  kind: Symbol;
+  type: Type<`${Return}(${ParamsListFromParams<Params>})`>;
+  hasVarArgs: boolean;
+  /** Returns a Func with the same signature ( type ) and a different name and body ( that you pass ). */
+  duplicate: (
+    name: string,
+    body: BodyFn<Return, Params, VarArgs>
+  ) => Func<Return, Params, VarArgs>;
+} & ((...args: FuncArgs<Params, VarArgs>) => Val<Return>);
 
 export type ValueExp<S extends string> =
   | LiteralExp<S>
@@ -434,3 +468,5 @@ type ParensExp<S extends string> = BaseExp<S> & {
 type SetMultiFn<Members extends GenericMembers> = (
   values: Partial<Record<keyof Members, ValArg>>
 ) => Val[];
+
+export type FilePart = StatArg | TcClassObj<any, any, any, Record<string, any>>;

@@ -1,6 +1,5 @@
-import { curly } from "./chunk";
 import type { CodeLike, Numberish } from "./types";
-import { joinArgs } from "./utils";
+import { curly, joinArgs } from "./utils";
 
 /** Helpers for creating C literals. */
 export class Lit {

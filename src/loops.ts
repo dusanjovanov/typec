@@ -20,8 +20,8 @@ export class Loop {
   /**
    * Returns a do while loop statement.
    */
-  static doWhile(statements: StatArg[], condition: ValArg) {
-    return Stat.doWhile(statements, condition);
+  static doWhile(body: StatArg[], condition: ValArg) {
+    return Stat.doWhile(body, condition);
   }
 
   /**

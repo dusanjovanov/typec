@@ -14,7 +14,11 @@ const fn = Fn.void("fnTest", [
   Param.int("b"),
 ]);
 
-const Cls = TcClass.new(struct, { test: fn }, { test: fn });
+const Cls = TcClass.new({
+  struct,
+  methods: { test: fn },
+  staticMethods: { test: fn },
+});
 
 describe("Class", () => {
   test("var", () => {

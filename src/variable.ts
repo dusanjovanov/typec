@@ -35,7 +35,7 @@ export class Var<S extends string = any> extends Val<S> {
 
   /** Returns the variable declaration statement. */
   declare() {
-    return Stat.varDeclaration(this.type, this.name);
+    return Stat.varDeclaration(this.expType, this.name);
   }
 
   /**
@@ -68,7 +68,7 @@ export class Var<S extends string = any> extends Val<S> {
     else if (isPlainObject(values[0])) {
       return Stat.varInit(
         this,
-        this.type.typeKind === "array"
+        this.expType.typeKind === "array"
           ? Lit.designatedSub(values[0] as any)
           : Lit.designatedDot(values[0] as any)
       );
