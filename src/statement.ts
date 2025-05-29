@@ -1,6 +1,6 @@
 import { BRANDING_MAP, isWhich } from "./brand";
 import type { Cond } from "./condition";
-import type { Directive } from "./directive";
+import type { Dir } from "./directive";
 import type { Switch } from "./switch";
 import { Type } from "./type";
 import type {
@@ -474,5 +474,5 @@ type ManualStatement = {
 
 type DirectiveStatement = {
   kind: "directive";
-  directive: Directive;
+  directive: Dir;
 };

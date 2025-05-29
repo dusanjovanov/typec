@@ -1,5 +1,5 @@
 import { MACRO_TYPE } from "../constants";
-import { Directive } from "../directive";
+import { Dir } from "../directive";
 import { Fn } from "../func";
 import { Param } from "../param";
 import { Stat } from "../statement";
@@ -10,7 +10,7 @@ import { Var } from "../variable";
 const va_list = Type.alias("va_list");
 
 export const stdarg = {
-  include: Directive.includeSys("stdarg.h"),
+  include: Dir.includeSys("stdarg.h"),
   va_list,
   va_start: Fn.void("va_start", [
     Param.new(va_list, "ap"),

@@ -1,5 +1,5 @@
 import type { Cond } from "./condition";
-import type { Directive } from "./directive";
+import type { Dir } from "./directive";
 import type { Enum } from "./enum";
 import type { Func } from "./func";
 import type { Stat } from "./statement";
@@ -52,5 +52,5 @@ export type BrandingMap = {
   structPointer: StructPointer;
   cls: TcClassObj<any, any, any, Record<string, any>>;
   paramFunc: ParamFunc<any, any, any>;
-  directive: Directive;
+  directive: Dir;
 };

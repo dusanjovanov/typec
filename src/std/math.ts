@@ -1,9 +1,9 @@
-import { Directive } from "../directive";
+import { Dir } from "../directive";
 import { Fn } from "../func";
 import { Param } from "../param";
 
 export const math = {
-  include: Directive.includeSys("math.h"),
+  include: Dir.includeSys("math.h"),
   sin: Fn.double("sin", [Param.double("x")]),
   cos: Fn.double("cos", [Param.double("x")]),
   acos: Fn.double("acos", [Param.double("x")]),

@@ -66,7 +66,10 @@ export const gcc = (options: GccOptions) => {
             return `-o ${value}`;
           }
           case "std": {
-            return `std=${value}`;
+            return `-std=${value}`;
+          }
+          case "fsanitize": {
+            return `-fsanitize=${joinArgs(value as any[])}`;
           }
         }
       })
@@ -190,11 +193,33 @@ export type GccOptions = {
    * Flag: `-std`
    */
   std?: Autocomplete<GccStd>;
+  /**
+   * Enables runtime checks for various forms of behavior that can lead to program errors or crashes,
+   * such as memory errors, undefined behavior,
+   * and memory leaks.
+   *
+   * It's a powerful tool for debugging and finding bugs in programs.
+   *
+   * Flag: `-fsanitize`
+   */
+  fsanitize?: Autocomplete<GccFSanitizeType>[];
 };
 
 export type GccStoppingStage = "preprocessing" | "compilation" | "assembly";
 
 export type GccOptimizationLevel = "0" | "1" | "2" | "3" | "s";
+
+export type GccFSanitizeType =
+  | "address"
+  | "kernel-address"
+  | "hwaddress"
+  | "kernel-hwaddress"
+  | "pointer-compare"
+  | "pointer-subtract"
+  | "shadow-call-stack"
+  | "thread"
+  | "leak"
+  | "undefined";
 
 export type GccStd =
   | "c90"

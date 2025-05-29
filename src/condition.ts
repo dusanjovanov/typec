@@ -45,26 +45,43 @@ export class Cond {
     return Cond.all(values, [Stat.return(returnValue)]);
   }
 
-  static anyEqual(values: ValArg[], valueToCheck: ValArg, body: StatArg[]) {
+  static any(values: ValArg[], body: StatArg[]) {
     const _values = values.map((v) => Val.valArgToVal(v));
-    const valToCheck = Val.valArgToVal(valueToCheck);
-    let exp = _values[0].equal(valToCheck);
+    let exp = _values[0];
     _values.slice(1).forEach((v) => {
-      exp = exp.or(v.equal(valToCheck));
+      exp = exp.or(v);
     });
     return Cond.if(exp, body);
+  }
+
+  static anyReturn(values: ValArg[], returnValue?: ValArg) {
+    return Cond.any(values, [Stat.return(returnValue)]);
+  }
+
+  static anyEqual(values: ValArg[], valueToCheck: ValArg, body: StatArg[]) {
+    const valToCheck = Val.valArgToVal(valueToCheck);
+    return Cond.any(
+      values.map((v) => Val.valArgToVal(v).equal(valToCheck)),
+      body
+    );
+  }
+
+  static anyEqualReturn(
+    values: ValArg[],
+    valueToCheck: ValArg,
+    returnValue?: ValArg
+  ) {
+    return Cond.anyEqual(values, valueToCheck, [Stat.return(returnValue)]);
   }
 
   /**
    * Returns a condition that checks if any of the values are falsy (`!`).
    */
   static anyNot(values: ValArg[], body: StatArg[]) {
-    const _values = values.map((v) => Val.valArgToVal(v));
-    let exp = _values[0].not();
-    _values.slice(1).forEach((v) => {
-      exp = exp.or(v.not());
-    });
-    return Cond.if(exp, body);
+    return Cond.any(
+      values.map((v) => Val.valArgToVal(v).not()),
+      body
+    );
   }
 
   /**

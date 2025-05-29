@@ -1,10 +1,10 @@
-import { Directive } from "../directive";
+import { Dir } from "../directive";
 import { Fn } from "../func";
 import { Param } from "../param";
 import { Type } from "../type";
 
 export const stdlib = {
-  include: Directive.includeSys("stdlib.h"),
+  include: Dir.includeSys("stdlib.h"),
   malloc: Fn.new(Type.voidPointer(), "malloc", [Param.size_t("size")]),
   calloc: Fn.new(Type.voidPointer(), "calloc", [
     Param.size_t("count"),

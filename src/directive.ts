@@ -4,7 +4,7 @@ import { emptyFalsy, joinArgs } from "./utils";
 import { Val } from "./val";
 
 /** C preprocessor directives. */
-export class Directive {
+export class Dir {
   constructor(desc: DirectiveDesc) {
     this.desc = desc;
   }
@@ -59,16 +59,16 @@ export class Directive {
 
   /** Generates an include directive for a system ( standard ) header file. `<>` */
   static includeSys(path: string) {
-    return new Directive({ kind: "includeSys", path });
+    return new Dir({ kind: "includeSys", path });
   }
 
   /** Generates an include directive for a relative ( project ) header file. `""` */
   static includeRel(path: string) {
-    return new Directive({ kind: "includeRel", path });
+    return new Dir({ kind: "includeRel", path });
   }
 
   static defineValue(name: string, value: ValArg | null) {
-    return new Directive({
+    return new Dir({
       kind: "define",
       name,
       value: value != null ? Val.valArgToVal(value) : value,
@@ -76,52 +76,52 @@ export class Directive {
   }
 
   static defineWithArgs(name: string, args: string[], text: string) {
-    return new Directive({ kind: "defineArgs", name, args, text });
+    return new Dir({ kind: "defineArgs", name, args, text });
   }
 
   static undef(name: string) {
-    return new Directive({ kind: "undef", name });
+    return new Dir({ kind: "undef", name });
   }
 
   static if(exp: string) {
-    return new Directive({
+    return new Dir({
       kind: "if",
       exp,
     });
   }
 
   static ifdef(macro: ValArg) {
-    return new Directive({ kind: "ifdef", macro: Val.valArgToVal(macro) });
+    return new Dir({ kind: "ifdef", macro: Val.valArgToVal(macro) });
   }
 
   static ifndef(macro: ValArg) {
-    return new Directive({
+    return new Dir({
       kind: "ifndef",
       macro: Val.valArgToVal(macro),
     });
   }
 
   static elif(exp: string) {
-    return new Directive({
+    return new Dir({
       kind: "elif",
       exp,
     });
   }
 
   static else() {
-    return new Directive({
+    return new Dir({
       kind: "else",
     });
   }
 
   static endif() {
-    return new Directive({
+    return new Dir({
       kind: "endif",
     });
   }
 
   static pragma(directive: string) {
-    return new Directive({
+    return new Dir({
       kind: "pragma",
       directive,
     });

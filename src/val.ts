@@ -82,7 +82,7 @@ export class Val<S extends string = any> {
         return `${exp.type}`;
       }
       case "parens": {
-        return `(${this.expToString(exp.exp)})`;
+        return `(${this.expToString(exp.value.exp)})`;
       }
     }
   }
@@ -493,7 +493,12 @@ export class Val<S extends string = any> {
 
   /** Returns a Val for the current expression wrapped in parenthesis. */
   parens() {
-    return new Val({ kind: "parens", exp: this.exp, type: this.expType });
+    return Val.parens(this);
+  }
+
+  static parens(value: ValArg) {
+    const v = Val.valArgToVal(value);
+    return new Val({ kind: "parens", value: v, type: v.expType });
   }
 
   /**

@@ -1,5 +1,5 @@
 import type { Cond } from "./condition";
-import type { Directive } from "./directive";
+import type { Dir } from "./directive";
 import type { Enum } from "./enum";
 import type { Func } from "./func";
 import type { Param } from "./param";
@@ -186,7 +186,7 @@ export type StatArg =
   | Struct
   | Union
   | Enum
-  | Directive;
+  | Dir;
 
 export type ExtractTypeStr<T extends MemberTypeArg> = T extends Type<infer S>
   ? S
@@ -462,7 +462,7 @@ type TypeExp<S extends string> = BaseExp<S> & {
 
 type ParensExp<S extends string> = BaseExp<S> & {
   kind: "parens";
-  exp: ValueExp<S>;
+  value: Val;
 };
 
 type SetMultiFn<Members extends GenericMembers> = (

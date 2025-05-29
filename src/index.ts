@@ -12,6 +12,7 @@ export * from "./literal";
 export * from "./loops";
 export * from "./misc";
 export * from "./param";
+export * from "./posix";
 export * from "./short";
 export * from "./statement";
 export * from "./std";
