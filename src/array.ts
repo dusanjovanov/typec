@@ -234,8 +234,6 @@ const push = Fn.int(
   [arrParam, Param.new(Type.voidPointer(["const"]), "element")],
   ({ params: { arr, element } }) => {
     const newCapacity = Var.size_t("new_capacity");
-    const newSize = Var.size_t("new_size");
-    const newData = Var.new(Type.voidPointer(), "new_data");
 
     return [
       // Invalid array or element
